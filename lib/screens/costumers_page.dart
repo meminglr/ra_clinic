@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/screens/add_costumer_page.dart';
+import 'package:ra_clinic/screens/add_costumer_pagecopy.dart';
 
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
@@ -16,7 +16,7 @@ class _CostumersState extends State<Costumers> {
   void navigateToAddCostumerPage() async {
     final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
       context,
-      CupertinoPageRoute(builder: (builder) => const AddCostumerPage()),
+      CupertinoPageRoute(builder: (builder) => const AddCostumerPage2()),
     );
 
     if (newCostumer != null) {

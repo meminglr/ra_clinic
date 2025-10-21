@@ -4,17 +4,19 @@ class SeansModel {
   final int id;
   final String name;
   final String description;
-  final String startDate;
-  final String endDate;
+  final DateTime startDate;
+  final DateTime? endDate;
   final int seansCount;
   final TextEditingController noteController = TextEditingController();
+  bool isDeleted;
 
   SeansModel(
     this.description, {
+    this.isDeleted = false,
     required this.seansCount,
     required this.id,
     required this.name,
     required this.startDate,
-    required this.endDate,
+    this.endDate,
   });
 }
