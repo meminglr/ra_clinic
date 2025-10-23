@@ -4,15 +4,19 @@ class CostumerModel {
   final String id;
   final String profileImage;
   final String name;
-  final String phone;
+  final String? phone;
   final String? notes;
   final DateTime startDate;
   final DateTime? endDate;
+  final String startDateString;
+  final String endDateString;
   final SeansModel? seans;
   final int? seansCount;
   final List<SeansModel>? seansList;
 
   CostumerModel({
+    this.startDateString = "",
+    this.endDateString = "",
     this.profileImage = "assets/avatar.png",
     this.seansCount,
     this.notes,
@@ -21,7 +25,7 @@ class CostumerModel {
     this.seansList,
     required this.id,
     required this.name,
-    required this.phone,
+    this.phone,
     required this.startDate,
   });
 }

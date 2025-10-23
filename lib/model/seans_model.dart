@@ -8,10 +8,12 @@ class SeansModel {
   final DateTime? endDate;
   final int seansCount;
   final TextEditingController noteController = TextEditingController();
+  String? seansNote;
   bool isDeleted;
 
   SeansModel(
     this.description, {
+    this.seansNote,
     this.isDeleted = false,
     required this.seansCount,
     required this.id,

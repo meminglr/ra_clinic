@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/screens/add_costumer_pagecopy.dart';
+import 'package:ra_clinic/screens/add_costumer_page.dart';
+import 'package:ra_clinic/screens/costumer_detail_page.dart';
 
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
@@ -44,22 +45,88 @@ class _CostumersState extends State<Costumers> {
         icon: const Icon(Icons.add),
       ),
       body: Center(
-        child: ListView.builder(
-          itemCount: costumersList.length,
-          itemBuilder: (itemBuilder, index) {
-            CostumerModel item = costumersList[index];
-            return Card(
-              child: Column(
-                children: [
-                  Text(item.name),
-                  Text(item.phone),
-                  Text("Kayıt Tarihi: ${item.startDate}"),
-                  Text("Not: ${item.notes ?? "Yok"}"),
-                  Text("Seans Sayısı: ${item.seansList?.length ?? 0}"),
-                ],
-              ),
-            );
-          },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: ListView.builder(
+            itemCount: costumersList.length,
+            itemBuilder: (itemBuilder, index) {
+              CostumerModel item = costumersList[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (builder) => CostumerDetail(costumer: item),
+                    ),
+                  );
+                },
+                child: Card.filled(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  color: Colors.green.shade100,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 8,
+                      bottom: 16,
+                    ),
+                    child: Row(
+                      spacing: 10,
+                      children: [
+                        /*  CircleAvatar(
+                          backgroundColor: Colors.indigo.shade600,
+                          radius: 30,
+                          backgroundImage: AssetImage(item.profileImage),
+                        ),*/
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${item.name}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Text("${item.startDateString}"),
+                              Text(
+                                "Seans Sayısı: ${item.seansList?.length ?? 0}",
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              FilledButton.icon(
+                                onPressed: () {},
+                                label: Text("Ara"),
+                                icon: Icon(Icons.phone_outlined),
+                              ),
+                              FilledButton.icon(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStatePropertyAll(
+                                    Colors.green.shade600,
+                                  ),
+                                ),
+                                onPressed: () {},
+                                label: Text("Düzenle"),
+                                icon: Icon(Icons.edit_outlined),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

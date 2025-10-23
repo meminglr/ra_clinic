@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 
@@ -42,7 +44,8 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   }
 
   void tarihVeSaatAl() {
-    kayitTarihi = DateFormat('dd/MM/yyyy HH:mm').format(now);
+    kayitTarihi =
+        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}";
     setState(() {});
   }
 
@@ -55,6 +58,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
         startDate: now,
         notes: _noteController.text,
         seansList: _seansList,
+        startDateString: kayitTarihi,
       );
       Navigator.pop(context, newCostumer);
     } else {
@@ -139,7 +143,12 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                     ),
                     TextFormField(
                       controller: _telNoController,
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.none,
+                      inputFormatters: [
+                        AdaptiveTurkishPhoneFormatter(),
+                        // Ek güvenlik için: + veya diğer karakterlere izin vermek isterseniz buraya ekleyebilirsiniz.
+                        // FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                      ],
                       decoration: InputDecoration(
                         hintText: "Telefon No",
                         border: OutlineInputBorder(),
@@ -148,6 +157,8 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                     ),
                     TextFormField(
                       controller: _noteController,
+                      minLines: 1,
+                      maxLines: null,
                       decoration: InputDecoration(
                         hintText: "Not",
                         border: OutlineInputBorder(),
@@ -159,9 +170,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                         _tarihSec(context);
                         tarihVeSaatAl();
                       },
-                      child: Text(
-                        "Kayıt Tarihi: ${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}",
-                      ),
+                      child: Text("Kayıt Tarihi: $kayitTarihi"),
                     ),
                   ],
                 ),
@@ -174,11 +183,16 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                 return Column(
                   children: [
                     seans.isDeleted
-                        ? GestureDetector(
-                            onTap: () => removeSeans(index),
+                        ? FilledButton.tonal(
+                            onPressed: () {
+                              removeSeans(index);
+                            },
                             child: Text("${seans.seansCount}. Seansı Ekle"),
                           )
                         : Card.filled(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                             color: Colors.green.shade100,
                             child: Padding(
                               padding: const EdgeInsets.only(
@@ -202,20 +216,27 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                                           fontSize: 16,
                                         ),
                                       ),
-                                      IconButton(
+                                      FilledButton.icon(
                                         onPressed: () {
                                           removeSeans(index);
                                         },
+                                        label: Text("Sil"),
                                         icon: Icon(Icons.delete_outline),
                                       ),
                                     ],
                                   ),
                                   TextFormField(
                                     controller: seans.noteController,
+                                    minLines: 1,
+                                    maxLines: null,
+                                    onChanged: (value) {
+                                      seans.seansNote = value;
+                                    },
                                     decoration: InputDecoration(
                                       hintText: "Seans Notu Ekle",
-                                      border: OutlineInputBorder(),
-                                      prefixIcon: Icon(Icons.note_outlined),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -228,7 +249,12 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 100),
+                padding: const EdgeInsets.only(
+                  top: 5,
+                  bottom: 100,
+                  left: 100,
+                  right: 100,
+                ),
                 child: FilledButton(
                   onPressed: () {
                     seansEkle();
