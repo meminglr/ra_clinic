@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:intl/intl.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
@@ -16,54 +18,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
   DateTime now = DateTime.now();
 
-  String kayitTarihi = "";
-
-  void removeSeans(int index) {
-    if (_seansList.isNotEmpty) {
-      _seansList[index].isDeleted = !_seansList[index].isDeleted;
-      setState(() {});
-    }
-  }
-
-  void seansEkle() {
-    _seansList.add(
-      SeansModel(
-        "description",
-        id: 1,
-        name: "name",
-        startDate: now,
-        seansCount: _seansList.length + 1,
-      ),
-    );
-    setState(() {});
-  }
-
-  void tarihVeSaatAl() {
-    kayitTarihi =
-        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}";
-    setState(() {});
-  }
-
-  Future<void> _tarihSec(BuildContext context) async {
-    final DateTime? secilenTarih = await showDatePicker(
-      context: context,
-      initialDate: now, // İlk gösterilecek tarih
-      firstDate: DateTime(2000), // Seçilebilecek en erken tarih
-      lastDate: DateTime(2030), // Seçilebilecek en geç tarih
-    );
-
-    if (secilenTarih != null && secilenTarih != now) {
-      setState(() {
-        now = secilenTarih; // State'i güncelle
-      });
-    }
+  _makePhoneCall(String phoneNumber) async {
+    bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
   }
 
   @override
   void initState() {
     super.initState();
     _seansList = widget.costumer.seansList ?? [];
-    tarihVeSaatAl();
   }
 
   @override
@@ -91,10 +53,46 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   if (widget.costumer.phone!.isNotEmpty)
-                    Text(
-                      "No: ${widget.costumer.phone}",
-                      style: TextStyle(fontSize: 18),
+                    GestureDetector(
+                      onLongPress: () {
+                        Clipboard.setData(
+                          ClipboardData(text: widget.costumer.phone.toString()),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("No kopyalandı")),
+                        );
+                      },
+                      child: Text(
+                        "No: ${widget.costumer.phone}",
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
+                  Row(
+                    spacing: 5,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (widget.costumer.phone!.isNotEmpty)
+                        FilledButton.tonalIcon(
+                          onPressed: () {
+                            _makePhoneCall(widget.costumer.phone!);
+                          },
+                          icon: Icon(Icons.phone_outlined),
+                          label: Text("Ara"),
+                        ),
+                      if (widget.costumer.phone!.isNotEmpty)
+                        FilledButton.tonalIcon(
+                          onPressed: () {},
+                          icon: Icon(Icons.message_outlined),
+                          label: Text("Mesaj"),
+                        ),
+                      if (widget.costumer.phone!.isNotEmpty)
+                        FilledButton.tonalIcon(
+                          onPressed: () {},
+                          icon: Icon(Icons.person_add_alt),
+                          label: Text("Ekle"),
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -103,71 +101,103 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadiusGeometry.circular(16),
                 ),
-                child: Column(
-                  children: [
-                    Text(" ${widget.costumer.startDateString} "),
-                    if (widget.costumer.notes!.isNotEmpty)
-                      Text(
-                        "Not: ${widget.costumer.notes} ",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Text(" ${widget.costumer.startDateString} "),
+                      if (widget.costumer.notes!.isNotEmpty)
+                        Text(
+                          "Not: ${widget.costumer.notes} ",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            SliverList.builder(
-              itemCount: _seansList.length,
-              itemBuilder: (context, index) {
-                SeansModel seans = _seansList[index];
-                return Column(
-                  children: [
-                    seans.isDeleted
-                        ? FilledButton.tonal(
-                            onPressed: () {},
-                            child: Text("${seans.seansCount}. seans yok"),
-                          )
-                        : Card.filled(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            color: Colors.green.shade100,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 16,
-                                right: 16,
-                                top: 16,
-                                bottom: 16,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+            if (_seansList.isEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 400,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.event_busy_outlined,
+                        size: 50,
+                        color: Colors.green.shade200,
+                      ),
+                      Text(
+                        "Seans yok",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade200,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
-                                    children: [
-                                      Text(
-                                        "${seans.seansCount}. Seans",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+            if (_seansList.isNotEmpty)
+              SliverList.builder(
+                itemCount: _seansList.length,
+                itemBuilder: (context, index) {
+                  SeansModel seans = _seansList[index];
+
+                  return Column(
+                    children: [
+                      seans.isDeleted
+                          ? FilledButton.tonal(
+                              onPressed: () {},
+                              child: Text("${seans.seansCount}. seans yok"),
+                            )
+                          : Card.filled(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              color: Colors.green.shade100,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  top: 16,
+                                  bottom: 16,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "${seans.seansCount}. Seans·",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        Text(
+                                          seans.startDateString,
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                      ],
+                                    ),
 
-                                  _seansList[index].seansNote != null
-                                      ? Text("${_seansList[index].seansNote}")
-                                      : SizedBox(),
-                                ],
+                                    _seansList[index].seansNote != null
+                                        ? Text("${_seansList[index].seansNote}")
+                                        : SizedBox(),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                  ],
-                );
-              },
-            ),
+                    ],
+                  );
+                },
+              ),
           ],
         ),
       ),

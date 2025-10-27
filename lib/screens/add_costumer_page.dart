@@ -22,6 +22,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
 
   final _formKey = GlobalKey<FormState>();
   String kayitTarihi = "";
+  String seansTarihi = "";
 
   void removeSeans(int index) {
     if (_seansList.isNotEmpty) {
@@ -31,21 +32,29 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   }
 
   void seansEkle() {
+    seansTarihSaatAl();
     _seansList.add(
       SeansModel(
-        "description",
         id: 1,
         name: "name",
         startDate: now,
+        startDateString: seansTarihi,
         seansCount: _seansList.length + 1,
       ),
     );
     setState(() {});
   }
 
-  void tarihVeSaatAl() {
-    kayitTarihi =
-        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}";
+  void musteriTarihVeSaatAl() {
+    /*  kayitTarihi =
+        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}"; */
+
+    kayitTarihi = DateFormat('d MMMM y HH:mm', 'tr_TR').format(now);
+    setState(() {});
+  }
+
+  void seansTarihSaatAl() {
+    seansTarihi = DateFormat('d MMMM y', 'tr_TR').format(now);
     setState(() {});
   }
 
@@ -74,11 +83,16 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
       initialDate: now, // İlk gösterilecek tarih
       firstDate: DateTime(2000), // Seçilebilecek en erken tarih
       lastDate: DateTime(2030), // Seçilebilecek en geç tarih
+
+      helpText: "Kayıt Tarihi",
+      cancelText: "Vazgeç",
+      confirmText: "Kaydet",
     );
 
     if (secilenTarih != null && secilenTarih != now) {
       setState(() {
         now = secilenTarih; // State'i güncelle
+        musteriTarihVeSaatAl();
       });
     }
   }
@@ -87,7 +101,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    tarihVeSaatAl();
+    musteriTarihVeSaatAl();
   }
 
   @override
@@ -135,6 +149,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                         return null;
                       },
                       controller: _nameController,
+                      textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         hintText: "Müşteri ismini giriniz",
                         border: OutlineInputBorder(),
@@ -143,7 +158,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                     ),
                     TextFormField(
                       controller: _telNoController,
-                      keyboardType: TextInputType.none,
+                      keyboardType: TextInputType.phone,
                       inputFormatters: [
                         AdaptiveTurkishPhoneFormatter(),
                         // Ek güvenlik için: + veya diğer karakterlere izin vermek isterseniz buraya ekleyebilirsiniz.
@@ -168,7 +183,6 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                     GestureDetector(
                       onTap: () {
                         _tarihSec(context);
-                        tarihVeSaatAl();
                       },
                       child: Text("Kayıt Tarihi: $kayitTarihi"),
                     ),
@@ -209,12 +223,20 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                                         MainAxisAlignment.spaceBetween,
 
                                     children: [
-                                      Text(
-                                        "${seans.seansCount}. Seans",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "${seans.seansCount}. Seans·",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                            seans.startDateString,
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                        ],
                                       ),
                                       FilledButton.icon(
                                         onPressed: () {
