@@ -12,7 +12,7 @@ class SeansModel {
   bool isDeleted;
 
   SeansModel({
-          this.startDateString = "",
+    this.startDateString = "",
     this.seansNote,
     this.isDeleted = false,
     required this.seansCount,

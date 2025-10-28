@@ -174,6 +174,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                       controller: _noteController,
                       minLines: 1,
                       maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
                         hintText: "Not",
                         border: OutlineInputBorder(),
@@ -251,6 +252,8 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                                     controller: seans.noteController,
                                     minLines: 1,
                                     maxLines: null,
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
                                     onChanged: (value) {
                                       seans.seansNote = value;
                                     },

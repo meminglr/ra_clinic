@@ -25,6 +25,10 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        snackBarTheme: SnackBarThemeData(
+          
+
+        )
       ),
       debugShowCheckedModeBanner: false,
       home: const Home(),

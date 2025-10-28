@@ -15,7 +15,7 @@ class CostumerDetail extends StatefulWidget {
 
 class _CostumerDetailState extends State<CostumerDetail> {
   List<SeansModel> _seansList = [];
-
+  bool _messageExpanded = false;
   DateTime now = DateTime.now();
 
   _makePhoneCall(String phoneNumber) async {
@@ -30,6 +30,10 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
   @override
   Widget build(BuildContext context) {
+    var phoneIsNotEmpty = widget.costumer.phone!.isNotEmpty;
+    var noteIsNotEmpty = widget.costumer.notes!.isNotEmpty;
+    final messenger = ScaffoldMessenger.of(context);
+
     return Scaffold(
       appBar: AppBar(),
       floatingActionButton: FloatingActionButton.extended(
@@ -52,13 +56,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     " ${widget.costumer.name} ",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  if (widget.costumer.phone!.isNotEmpty)
+                  if (phoneIsNotEmpty)
                     GestureDetector(
                       onLongPress: () {
                         Clipboard.setData(
                           ClipboardData(text: widget.costumer.phone.toString()),
                         );
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.hideCurrentSnackBar();
+                        messenger.showSnackBar(
                           SnackBar(content: Text("No kopyalandı")),
                         );
                       },
@@ -71,27 +76,106 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     spacing: 5,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (widget.costumer.phone!.isNotEmpty)
-                        FilledButton.tonalIcon(
-                          onPressed: () {
+                      FilledButton.tonalIcon(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(
+                            phoneIsNotEmpty ? null : Colors.grey.shade300,
+                          ),
+                        ),
+                        onPressed: () {
+                          if (phoneIsNotEmpty) {
                             _makePhoneCall(widget.costumer.phone!);
-                          },
-                          icon: Icon(Icons.phone_outlined),
-                          label: Text("Ara"),
+                          } else {
+                            messenger.hideCurrentSnackBar();
+                            messenger.showSnackBar(
+                              SnackBar(content: Text("Numara yok")),
+                            );
+                          }
+                        },
+                        icon: Icon(Icons.phone_outlined),
+                        label: Text("Ara"),
+                      ),
+                      FilledButton.tonalIcon(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(
+                            phoneIsNotEmpty ? null : Colors.grey.shade300,
+                          ),
                         ),
-                      if (widget.costumer.phone!.isNotEmpty)
-                        FilledButton.tonalIcon(
-                          onPressed: () {},
-                          icon: Icon(Icons.message_outlined),
-                          label: Text("Mesaj"),
+                        onPressed: () {
+                          setState(() {
+                            if (phoneIsNotEmpty) {
+                              _messageExpanded = !_messageExpanded;
+                            } else {
+                              messenger.hideCurrentSnackBar();
+                              messenger.showSnackBar(
+                                SnackBar(content: Text("Numara yok")),
+                              );
+                            }
+                          });
+                        },
+                        icon: Icon(Icons.message_outlined),
+                        label: Text("Mesaj"),
+                      ),
+
+                      FilledButton.tonalIcon(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(
+                            phoneIsNotEmpty ? null : Colors.grey.shade300,
+                          ),
                         ),
-                      if (widget.costumer.phone!.isNotEmpty)
-                        FilledButton.tonalIcon(
-                          onPressed: () {},
-                          icon: Icon(Icons.person_add_alt),
-                          label: Text("Ekle"),
-                        ),
+                        onPressed: () {
+                          if (phoneIsNotEmpty) {
+                          } else {
+                            messenger.hideCurrentSnackBar();
+                            messenger.showSnackBar(
+                              SnackBar(content: Text("Numara yok")),
+                            );
+                          }
+                        },
+                        icon: Icon(Icons.person_add_alt),
+                        label: Text("Ekle"),
+                      ),
                     ],
+                  ),
+
+                  AnimatedSize(
+                    duration: Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: _messageExpanded
+                        ? Row(
+                            spacing: 5,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FilledButton.tonalIcon(
+                                onPressed: () {},
+                                icon: Icon(Icons.message_outlined),
+                                label: Text("Kısa Mesaj"),
+                                style: ButtonStyle(
+                                  foregroundColor: WidgetStatePropertyAll(
+                                    Colors.white,
+                                  ),
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    Colors.orange,
+                                  ),
+                                ),
+                              ),
+
+                              FilledButton.tonalIcon(
+                                onPressed: () {},
+                                icon: Icon(Icons.message_outlined),
+                                label: Text("Whastapp"),
+                                style: ButtonStyle(
+                                  foregroundColor: WidgetStatePropertyAll(
+                                    Colors.white,
+                                  ),
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
                   ),
                 ],
               ),
@@ -106,7 +190,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
                   child: Column(
                     children: [
                       Text(" ${widget.costumer.startDateString} "),
-                      if (widget.costumer.notes!.isNotEmpty)
+                      if (noteIsNotEmpty)
                         Text(
                           "Not: ${widget.costumer.notes} ",
                           style: TextStyle(fontSize: 16),
@@ -127,14 +211,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
                       Icon(
                         Icons.event_busy_outlined,
                         size: 50,
-                        color: Colors.green.shade200,
+                        color: Colors.grey.shade400,
                       ),
                       Text(
                         "Seans yok",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green.shade200,
+                          color: Colors.grey.shade400,
                         ),
                       ),
                     ],

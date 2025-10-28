@@ -35,10 +35,6 @@ class _CostumersState extends State<Costumers> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          /*   Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (builder) => const AddCostumerPage()),
-          );*/
           navigateToAddCostumerPage();
         },
         label: const Text("Müşteri Ekle"),
@@ -48,6 +44,7 @@ class _CostumersState extends State<Costumers> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: ListView.builder(
+            physics: BouncingScrollPhysics(),
             itemCount: costumersList.length,
             itemBuilder: (itemBuilder, index) {
               CostumerModel item = costumersList[index];
