@@ -99,7 +99,6 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     musteriTarihVeSaatAl();
   }

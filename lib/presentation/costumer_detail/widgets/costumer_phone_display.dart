@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 
 class CostumerPhoneDisplay extends StatelessWidget {
-  ScaffoldMessengerState messenger;
-  CostumerModel costumer;
-  CostumerPhoneDisplay({
+  final ScaffoldMessengerState messenger;
+  final CostumerModel costumer;
+  const CostumerPhoneDisplay({
     required this.costumer,
     required this.messenger,
     super.key,
