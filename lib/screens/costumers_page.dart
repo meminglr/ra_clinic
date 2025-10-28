@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/screens/add_costumer_page.dart';
-import 'package:ra_clinic/screens/costumer_detail_page.dart';
+import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
@@ -82,13 +82,13 @@ class _CostumersState extends State<Costumers> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "${item.name}",
+                                item.name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
                                 ),
                               ),
-                              Text("${item.startDateString}"),
+                              Text(item.startDateString),
                               Text(
                                 "Seans Sayısı: ${item.seansList?.length ?? 0}",
                               ),
@@ -106,7 +106,7 @@ class _CostumersState extends State<Costumers> {
                               ),
                               FilledButton.icon(
                                 style: ButtonStyle(
-                                  backgroundColor: MaterialStatePropertyAll(
+                                  backgroundColor: WidgetStatePropertyAll(
                                     Colors.green.shade600,
                                   ),
                                 ),

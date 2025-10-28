@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
@@ -71,6 +70,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
       );
       Navigator.pop(context, newCostumer);
     } else {
+      
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gerekli alanları doldurunuz")));

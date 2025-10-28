@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
 /// Türk telefon numarası formatını uygular:
 /// "0 (AAA) BBB CC DD" (11 hane) veya "(AAA) BBB CC DD" (10 hane)
@@ -60,7 +59,7 @@ class AdaptiveTurkishPhoneFormatter extends TextInputFormatter {
       if (rest.isEmpty) {
         formatted = '0';
       } else if (rest.length < 3) {
-        formatted = '0 (' + rest;
+        formatted = '0 ($rest';
       } else {
         final area = rest.substring(0, 3);
         final after = rest.length > 3 ? rest.substring(3) : '';
@@ -72,7 +71,7 @@ class AdaptiveTurkishPhoneFormatter extends TextInputFormatter {
     } else {
       // 0 ile başlamıyorsa: (AAA) BBB CC DD
       if (newDigits.length < 3) {
-        formatted = '(' + newDigits;
+        formatted = '($newDigits';
       } else {
         final area = newDigits.substring(0, 3);
         final after = newDigits.length > 3 ? newDigits.substring(3) : '';
