@@ -4,19 +4,25 @@ import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 
-class AddCostumerPage2 extends StatefulWidget {
-  const AddCostumerPage2({super.key});
+class EditCostumerPage extends StatefulWidget {
+  final CostumerModel costumer;
+  final List<SeansModel> seansList;
+  const EditCostumerPage({
+    super.key,
+    required this.costumer,
+    required this.seansList,
+  });
 
   @override
-  State<AddCostumerPage2> createState() => _AddCostumerPage2State();
+  State<EditCostumerPage> createState() => _EditCostumerPageState();
 }
 
-class _AddCostumerPage2State extends State<AddCostumerPage2> {
+class _EditCostumerPageState extends State<EditCostumerPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _telNoController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
-  final List<SeansModel> _seansList = [];
-  final Map<SeansModel, TextEditingController> _seansControllers = {};
+  List<SeansModel> _seansList = [];
+  final Map<SeansModel, TextEditingController> _controllers = {};
 
   DateTime now = DateTime.now();
 
@@ -27,9 +33,14 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   @override
   void initState() {
     super.initState();
-    for (var seans in _seansList) {
-      _seansControllers[seans] = TextEditingController(text: seans.seansNote);
+    _nameController.text = widget.costumer.name;
+    _telNoController.text = widget.costumer.phone ?? "";
+    _noteController.text = widget.costumer.notes ?? "";
+    _seansList = widget.seansList;
+    for (var seans in widget.costumer.seansList!) {
+      _controllers[seans] = TextEditingController(text: seans.seansNote);
     }
+
     musteriTarihVeSaatAl();
   }
 
@@ -42,23 +53,19 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
 
   void seansEkle() {
     seansTarihSaatAl();
-    final newSeans = SeansModel(
-      id: _seansList.length,
-      name: "name",
-      startDate: now,
-      startDateString: seansTarihi,
-      seansCount: _seansList.length + 1,
+    _seansList.add(
+      SeansModel(
+        id: 1,
+        name: "name",
+        startDate: now,
+        startDateString: seansTarihi,
+        seansCount: _seansList.length + 1,
+      ),
     );
-    _seansList.add(newSeans);
-
-    _seansControllers[newSeans] = TextEditingController();
     setState(() {});
   }
 
   void musteriTarihVeSaatAl() {
-    /*  kayitTarihi =
-        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}"; */
-
     kayitTarihi = DateFormat('d MMMM y HH:mm', 'tr_TR').format(now);
     setState(() {});
   }
@@ -70,7 +77,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
 
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
-      final CostumerModel newCostumer = CostumerModel(
+      final CostumerModel modifiedCostumer = CostumerModel(
         id: "1",
         name: _nameController.text,
         phone: _telNoController.text,
@@ -79,7 +86,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
         seansList: _seansList,
         startDateString: kayitTarihi,
       );
-      Navigator.pop(context, newCostumer);
+      Navigator.pop(context, modifiedCostumer);
     } else {
       ScaffoldMessenger.of(
         context,
@@ -112,9 +119,6 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
     _nameController.dispose();
     _telNoController.dispose();
     _noteController.dispose();
-    for (var controller in _seansControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
@@ -252,7 +256,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                                     ],
                                   ),
                                   TextFormField(
-                                    controller: _seansControllers[seans],
+                                    controller: _controllers[seans],
                                     minLines: 1,
                                     maxLines: null,
                                     textCapitalization:

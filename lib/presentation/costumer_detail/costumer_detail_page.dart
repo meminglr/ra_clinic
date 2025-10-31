@@ -1,12 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_buttons.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_notes_cards.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_detail_header.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_display.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
+
+import '../../screens/edit_costumer_page.dart';
 
 class CostumerDetail extends StatefulWidget {
   final CostumerModel costumer;
@@ -17,7 +19,6 @@ class CostumerDetail extends StatefulWidget {
 }
 
 class _CostumerDetailState extends State<CostumerDetail> {
-  List<SeansModel> _seansList = [];
   bool isMessageExpanded = false;
   bool isCallExpanded = false;
   DateTime now = DateTime.now();
@@ -25,8 +26,20 @@ class _CostumerDetailState extends State<CostumerDetail> {
   @override
   void initState() {
     super.initState();
-    _seansList = widget.costumer.seansList ?? [];
   }
+
+  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
+    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
+      context,
+      CupertinoPageRoute(
+        builder: (builder) {
+          return EditCostumerPage(
+            costumer: costumer,
+            seansList: costumer.seansList ?? [],
+          );
+        },
+      ),
+    );}
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +48,9 @@ class _CostumerDetailState extends State<CostumerDetail> {
     final messenger = ScaffoldMessenger.of(context);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(actions: [
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
         label: const Text("Düzenle"),
@@ -70,9 +85,10 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 noteIsNotEmpty: noteIsNotEmpty,
               ),
             ),
-            if (_seansList.isEmpty) NoSeansWarning(),
+            if (widget.costumer.seansList!.isEmpty) NoSeansWarning(),
 
-            if (_seansList.isNotEmpty) SeansListView(seansList: _seansList),
+            if (widget.costumer.seansList!.isNotEmpty)
+              SeansListView(seansList: widget.costumer.seansList!),
           ],
         ),
       ),

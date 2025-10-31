@@ -12,9 +12,13 @@ class CostumerModel {
   final String endDateString;
   final SeansModel? seans;
   final int? seansCount;
+  bool isOptionsActive;
+  final DateTime? modifiedDate;
   final List<SeansModel>? seansList;
 
   CostumerModel({
+    this.modifiedDate,
+    this.isOptionsActive = false,
     this.startDateString = "",
     this.endDateString = "",
     this.profileImage = "assets/avatar.png",

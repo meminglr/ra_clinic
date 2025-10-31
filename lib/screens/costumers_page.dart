@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
+import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/screens/add_costumer_page.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
+import 'package:ra_clinic/screens/edit_costumer_page.dart';
 
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
@@ -27,6 +29,30 @@ class _CostumersState extends State<Costumers> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Yeni müşteri eklendi")));
+    }
+  }
+
+  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
+    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
+      context,
+      CupertinoPageRoute(
+        builder: (builder) {
+          return EditCostumerPage(
+            costumer: costumer,
+            seansList: costumer.seansList ?? [],
+          );
+        },
+      ),
+    );
+
+    if (modifiedCostumer != null) {
+      setState(() {
+        costumersList[index] = modifiedCostumer;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Değişiklikler kaydedildi")));
     }
   }
 
@@ -72,11 +98,6 @@ class _CostumersState extends State<Costumers> {
                     child: Row(
                       spacing: 10,
                       children: [
-                        /*  CircleAvatar(
-                          backgroundColor: Colors.indigo.shade600,
-                          radius: 30,
-                          backgroundImage: AssetImage(item.profileImage),
-                        ),*/
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,23 +117,25 @@ class _CostumersState extends State<Costumers> {
                           ),
                         ),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          child: Row(
+                            spacing: 2,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              FilledButton.icon(
+                              FilledButton(
+                                style: ButtonStyle(),
                                 onPressed: () {},
-                                label: Text("Ara"),
-                                icon: Icon(Icons.phone_outlined),
+                                child: Icon(Icons.phone_outlined),
                               ),
-                              FilledButton.icon(
+                              FilledButton(
                                 style: ButtonStyle(
                                   backgroundColor: WidgetStatePropertyAll(
                                     Colors.green.shade600,
                                   ),
                                 ),
-                                onPressed: () {},
-                                label: Text("Düzenle"),
-                                icon: Icon(Icons.edit_outlined),
+                                onPressed: () {
+                                  navigateToEditCostumerPage(index, item);
+                                },
+                                child: Icon(Icons.edit_outlined),
                               ),
                             ],
                           ),
