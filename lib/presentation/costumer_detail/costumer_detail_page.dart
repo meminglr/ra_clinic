@@ -28,18 +28,6 @@ class _CostumerDetailState extends State<CostumerDetail> {
     super.initState();
   }
 
-  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
-    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
-      context,
-      CupertinoPageRoute(
-        builder: (builder) {
-          return EditCostumerPage(
-            costumer: costumer,
-            seansList: costumer.seansList ?? [],
-          );
-        },
-      ),
-    );}
 
   @override
   Widget build(BuildContext context) {

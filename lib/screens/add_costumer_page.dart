@@ -5,7 +5,8 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 
 class AddCostumerPage2 extends StatefulWidget {
-  const AddCostumerPage2({super.key});
+   AddCostumerPage2({ required this.costumerId , super.key});
+  int costumerId;
 
   @override
   State<AddCostumerPage2> createState() => _AddCostumerPage2State();
@@ -71,7 +72,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel newCostumer = CostumerModel(
-        id: "1",
+        id: widget.costumerId,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,

@@ -19,7 +19,10 @@ class _CostumersState extends State<Costumers> {
   void navigateToAddCostumerPage() async {
     final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
       context,
-      CupertinoPageRoute(builder: (builder) => const AddCostumerPage2()),
+      CupertinoPageRoute(
+        builder: (builder) =>
+            AddCostumerPage2(costumerId: costumersList.length),
+      ),
     );
 
     if (newCostumer != null) {

@@ -78,7 +78,7 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel modifiedCostumer = CostumerModel(
-        id: "1",
+        id: widget.costumer.id,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,
