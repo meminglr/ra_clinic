@@ -1,7 +1,6 @@
 import 'package:ra_clinic/model/seans_model.dart';
 
 class CostumerModel {
-  final int id;
   final String profileImage;
   final String name;
   final String? phone;
@@ -27,7 +26,6 @@ class CostumerModel {
     this.seans,
     this.endDate,
     this.seansList,
-    required this.id,
     required this.name,
     this.phone,
     required this.startDate,

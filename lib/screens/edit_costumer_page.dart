@@ -55,8 +55,7 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
     seansTarihSaatAl();
     _seansList.add(
       SeansModel(
-        id: 1,
-        name: "name",
+        id: _seansList.length,
         startDate: now,
         startDateString: seansTarihi,
         seansCount: _seansList.length + 1,
@@ -78,7 +77,6 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel modifiedCostumer = CostumerModel(
-        id: widget.costumer.id,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,
@@ -125,7 +123,7 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Müşteri Ekle")),
+      appBar: AppBar(title: const Text("Müşteri Düzenle")),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           saveAndReturn();

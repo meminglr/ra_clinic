@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/model/seans_model.dart';
+import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/screens/add_costumer_page.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/screens/edit_costumer_page.dart';
@@ -14,24 +16,14 @@ class Costumers extends StatefulWidget {
 }
 
 class _CostumersState extends State<Costumers> {
-  List<CostumerModel> costumersList = [];
-
   void navigateToAddCostumerPage() async {
     final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
       context,
-      CupertinoPageRoute(
-        builder: (builder) =>
-            AddCostumerPage2(costumerId: costumersList.length),
-      ),
+      CupertinoPageRoute(builder: (builder) => AddCostumerPage()),
     );
 
     if (newCostumer != null) {
-      setState(() {
-        costumersList.add(newCostumer);
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Yeni müşteri eklendi")));
+      context.read<CostumerProvider>().addCostumer(newCostumer);
     }
   }
 
@@ -49,9 +41,7 @@ class _CostumersState extends State<Costumers> {
     );
 
     if (modifiedCostumer != null) {
-      setState(() {
-        costumersList[index] = modifiedCostumer;
-      });
+      context.read<CostumerProvider>().editCostumer(index, modifiedCostumer);
 
       ScaffoldMessenger.of(
         context,
@@ -61,6 +51,9 @@ class _CostumersState extends State<Costumers> {
 
   @override
   Widget build(BuildContext context) {
+    List<CostumerModel> costumersList = context
+        .watch<CostumerProvider>()
+        .costumersList;
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -82,68 +75,105 @@ class _CostumersState extends State<Costumers> {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (builder) => CostumerDetail(costumer: item),
+                      builder: (builder) => CostumerDetail(index: index),
                     ),
                   );
                 },
-                child: Card.filled(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                child: Slidable(
+                  key: ValueKey(index),
+
+                  endActionPane: ActionPane(
+                    motion: const DrawerMotion(), // Kayma animasyonu
+                    children: [
+                      SlidableAction(
+                        borderRadius: BorderRadius.circular(20),
+                        onPressed: (_) {
+                          print("Sil");
+                        },
+                        backgroundColor: Colors.red.shade100,
+                        foregroundColor: Colors.red,
+                        icon: Icons.delete_outlined,
+                        label: 'Sil',
+                      ),
+                      SlidableAction(
+                        borderRadius: BorderRadius.circular(20),
+                        onPressed: (_) {
+                          // Düzenleme işlemi
+                          print("Düzenle");
+                        },
+                        backgroundColor: Colors.blue.shade100,
+                        foregroundColor: Colors.blue,
+                        icon: Icons.edit,
+                        label: 'Düzenle',
+                      ),
+                    ],
                   ),
-                  color: Colors.green.shade100,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      top: 8,
-                      bottom: 16,
+                  child: Card.filled(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      spacing: 10,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Text(item.startDateString),
-                              Text(
-                                "Seans Sayısı: ${item.seansList?.length ?? 0}",
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            spacing: 2,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              FilledButton(
-                                style: ButtonStyle(),
-                                onPressed: () {},
-                                child: Icon(Icons.phone_outlined),
-                              ),
-                              FilledButton(
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStatePropertyAll(
-                                    Colors.green.shade600,
+                    color: Colors.green.shade100,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 8,
+                        bottom: 16,
+                      ),
+                      child: Row(
+                        spacing: 10,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
                                   ),
                                 ),
-                                onPressed: () {
-                                  navigateToEditCostumerPage(index, item);
-                                },
-                                child: Icon(Icons.edit_outlined),
+                                Text(item.startDateString),
+                                Text(
+                                  "Seans Sayısı: ${item.seansList?.length ?? 0}",
+                                ),
+                              ],
+                            ),
+                          ),
+                          Wrap(
+                            children: [
+                              Row(
+                                children: [
+                                  FilledButton(
+                                    style: ButtonStyle(
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
+                                    ),
+                                    onPressed: () {},
+                                    child: Icon(Icons.phone_outlined),
+                                  ),
+                                  FilledButton(
+                                    style: ButtonStyle(
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
+                                      backgroundColor: WidgetStatePropertyAll(
+                                        Colors.green.shade600,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      navigateToEditCostumerPage(index, item);
+                                    },
+                                    child: Icon(Icons.edit_outlined),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

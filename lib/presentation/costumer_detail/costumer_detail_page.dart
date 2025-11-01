@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_buttons.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_notes_cards.dart';
@@ -7,12 +8,13 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_detail_h
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_display.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
+import 'package:ra_clinic/providers/costumer_provider.dart';
 
 import '../../screens/edit_costumer_page.dart';
 
 class CostumerDetail extends StatefulWidget {
-  final CostumerModel costumer;
-  const CostumerDetail({required this.costumer, super.key});
+  final int index;
+  const CostumerDetail({required this.index, super.key});
 
   @override
   State<CostumerDetail> createState() => _CostumerDetailState();
@@ -28,11 +30,35 @@ class _CostumerDetailState extends State<CostumerDetail> {
     super.initState();
   }
 
+  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
+    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
+      context,
+      CupertinoPageRoute(
+        builder: (builder) {
+          return EditCostumerPage(
+            costumer: costumer,
+            seansList: costumer.seansList ?? [],
+          );
+        },
+      ),
+    );
+
+    if (modifiedCostumer != null) {
+      context.read<CostumerProvider>().editCostumer(index, modifiedCostumer);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Değişiklikler kaydedildi")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    var phoneIsNotEmpty = widget.costumer.phone!.isNotEmpty;
-    var noteIsNotEmpty = widget.costumer.notes!.isNotEmpty;
+    CostumerModel currentCostumer = context
+        .watch<CostumerProvider>()
+        .costumersList[widget.index];
+    var phoneIsNotEmpty = currentCostumer.phone!.isNotEmpty;
+    var noteIsNotEmpty = currentCostumer.notes!.isNotEmpty;
     final messenger = ScaffoldMessenger.of(context);
 
     return Scaffold(
@@ -40,7 +66,9 @@ class _CostumerDetailState extends State<CostumerDetail> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          navigateToEditCostumerPage(widget.index, currentCostumer);
+        },
         label: const Text("Düzenle"),
         icon: const Icon(Icons.edit_outlined),
       ),
@@ -51,14 +79,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  CostumerDetailHeader(costumer: widget.costumer),
+                  CostumerDetailHeader(costumer: currentCostumer),
                   if (phoneIsNotEmpty)
                     CostumerPhoneDisplay(
-                      costumer: widget.costumer,
+                      costumer: currentCostumer,
                       messenger: messenger,
                     ),
                   CommunicationButtons(
-                    costumer: widget.costumer,
+                    costumer: currentCostumer,
                     isMessageExpanded: isMessageExpanded,
                     isCallExpanded: isCallExpanded,
                     phoneIsNotEmpty: phoneIsNotEmpty,
@@ -69,14 +97,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
             ),
             SliverToBoxAdapter(
               child: CostumerNotesCard(
-                costumer: widget.costumer,
+                costumer: currentCostumer,
                 noteIsNotEmpty: noteIsNotEmpty,
               ),
             ),
-            if (widget.costumer.seansList!.isEmpty) NoSeansWarning(),
+            if (currentCostumer.seansList!.isEmpty) NoSeansWarning(),
 
-            if (widget.costumer.seansList!.isNotEmpty)
-              SeansListView(seansList: widget.costumer.seansList!),
+            if (currentCostumer.seansList!.isNotEmpty)
+              SeansListView(seansList: currentCostumer.seansList!),
           ],
         ),
       ),

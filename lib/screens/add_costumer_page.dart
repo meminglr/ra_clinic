@@ -1,18 +1,20 @@
+import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
+import 'package:ra_clinic/providers/costumer_provider.dart';
 
-class AddCostumerPage2 extends StatefulWidget {
-   AddCostumerPage2({ required this.costumerId , super.key});
-  int costumerId;
+class AddCostumerPage extends StatefulWidget {
+  const AddCostumerPage({super.key});
 
   @override
-  State<AddCostumerPage2> createState() => _AddCostumerPage2State();
+  State<AddCostumerPage> createState() => _AddCostumerPageState();
 }
 
-class _AddCostumerPage2State extends State<AddCostumerPage2> {
+class _AddCostumerPageState extends State<AddCostumerPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _telNoController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
@@ -34,32 +36,24 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
     musteriTarihVeSaatAl();
   }
 
-  void removeSeans(int index) {
-    if (_seansList.isNotEmpty) {
-      _seansList[index].isDeleted = !_seansList[index].isDeleted;
-      setState(() {});
-    }
+  void removeSeans(int index, List seansList) {
+    context.read<CostumerProvider>().removeSeans(index, seansList);
+    setState(() {});
   }
 
   void seansEkle() {
     seansTarihSaatAl();
     final newSeans = SeansModel(
       id: _seansList.length,
-      name: "name",
       startDate: now,
       startDateString: seansTarihi,
       seansCount: _seansList.length + 1,
     );
-    _seansList.add(newSeans);
-
     _seansControllers[newSeans] = TextEditingController();
-    setState(() {});
+    context.read<CostumerProvider>().seansEkle(newSeans, _seansList);
   }
 
   void musteriTarihVeSaatAl() {
-    /*  kayitTarihi =
-        "${now.day}/${now.month}/${now.year} - ${now.hour}:${now.minute}"; */
-
     kayitTarihi = DateFormat('d MMMM y HH:mm', 'tr_TR').format(now);
     setState(() {});
   }
@@ -72,7 +66,6 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel newCostumer = CostumerModel(
-        id: widget.costumerId,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,
@@ -185,12 +178,27 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),
-                    GestureDetector(
+                    CupertinoCalendarPickerButton(
+                      minimumDateTime: DateTime(2020, 1, 1),
+                      maximumDateTime: DateTime(2030, 12, 31),
+                      initialDateTime: now,
+                      barrierColor: Colors.transparent,
+                      containerDecoration: PickerContainerDecoration(
+                        backgroundType: PickerBackgroundType.plainColor,
+                      ),
+                      mode: CupertinoCalendarMode.date,
+                      timeLabel: 'Saat',
+                      onDateTimeChanged: (date) {
+                        now = date;
+                        musteriTarihVeSaatAl();
+                      },
+                    ),
+                    /* GestureDetector(
                       onTap: () {
                         _tarihSec(context);
                       },
                       child: Text("Kayıt Tarihi: $kayitTarihi"),
-                    ),
+                    ),*/
                   ],
                 ),
               ),
@@ -204,7 +212,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                     seans.isDeleted
                         ? FilledButton.tonal(
                             onPressed: () {
-                              removeSeans(index);
+                              removeSeans(index, _seansList);
                             },
                             child: Text("${seans.seansCount}. Seansı Ekle"),
                           )
@@ -245,7 +253,7 @@ class _AddCostumerPage2State extends State<AddCostumerPage2> {
                                       ),
                                       FilledButton.icon(
                                         onPressed: () {
-                                          removeSeans(index);
+                                          removeSeans(index, _seansList);
                                         },
                                         label: Text("Sil"),
                                         icon: Icon(Icons.delete_outline),
