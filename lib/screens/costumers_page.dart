@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/screens/add_costumer_page.dart';
@@ -121,54 +122,64 @@ class _CostumersState extends State<Costumers> {
                         bottom: 16,
                       ),
                       child: Row(
-                        spacing: 10,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                Text(item.startDateString),
-                                Text(
-                                  "Seans Sayısı: ${item.seansList?.length ?? 0}",
-                                ),
-                              ],
-                            ),
-                          ),
-                          Wrap(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  FilledButton(
-                                    style: ButtonStyle(
-                                      shape: WidgetStatePropertyAll(
-                                        CircleBorder(),
-                                      ),
-                                    ),
-                                    onPressed: () {},
-                                    child: Icon(Icons.phone_outlined),
+                              Text(
+                                item.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Text(item.startDateString),
+                              Text(
+                                "Seans Sayısı: ${item.seansList?.length ?? 0}",
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              FilledButton(
+                                style: ButtonStyle(
+                                  padding: WidgetStatePropertyAll(
+                                    EdgeInsets.zero,
                                   ),
-                                  FilledButton(
-                                    style: ButtonStyle(
-                                      shape: WidgetStatePropertyAll(
-                                        CircleBorder(),
-                                      ),
-                                      backgroundColor: WidgetStatePropertyAll(
-                                        Colors.green.shade600,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      navigateToEditCostumerPage(index, item);
-                                    },
-                                    child: Icon(Icons.edit_outlined),
+                                  minimumSize: WidgetStatePropertyAll(
+                                    Size(40, 40),
                                   ),
-                                ],
+                                  shape: WidgetStatePropertyAll(CircleBorder()),
+                                ),
+                                onPressed: () {
+                                  CommunicationHelper.makePhoneCall(
+                                    context,
+                                    item.phone!,
+                                  );
+                                },
+                                child: Icon(Icons.phone_outlined),
+                              ),
+                              FilledButton(
+                                style: ButtonStyle(
+                                  padding: WidgetStatePropertyAll(
+                                    EdgeInsets.zero,
+                                  ),
+                                  minimumSize: WidgetStatePropertyAll(
+                                    Size(40, 40),
+                                  ),
+                                  shape: WidgetStatePropertyAll(CircleBorder()),
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    Colors.green.shade600,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  CommunicationHelper.openSmsApp(
+                                    context,
+                                    item.phone!,
+                                  );
+                                },
+                                child: Icon(Icons.message_outlined),
                               ),
                             ],
                           ),

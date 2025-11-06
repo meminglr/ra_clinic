@@ -1,11 +1,13 @@
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class AddCostumerPage extends StatefulWidget {
   const AddCostumerPage({super.key});
@@ -65,7 +67,9 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
 
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
+      final id = Uuid().v4();
       final CostumerModel newCostumer = CostumerModel(
+        id: id,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,
@@ -78,26 +82,6 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gerekli alanları doldurunuz")));
-    }
-  }
-
-  Future<void> _tarihSec(BuildContext context) async {
-    final DateTime? secilenTarih = await showDatePicker(
-      context: context,
-      initialDate: now, // İlk gösterilecek tarih
-      firstDate: DateTime(2000), // Seçilebilecek en erken tarih
-      lastDate: DateTime(2030), // Seçilebilecek en geç tarih
-
-      helpText: "Kayıt Tarihi",
-      cancelText: "Vazgeç",
-      confirmText: "Kaydet",
-    );
-
-    if (secilenTarih != null && secilenTarih != now) {
-      setState(() {
-        now = secilenTarih; // State'i güncelle
-        musteriTarihVeSaatAl();
-      });
     }
   }
 

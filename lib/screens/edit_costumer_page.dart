@@ -1,3 +1,4 @@
+import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
@@ -77,6 +78,7 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel modifiedCostumer = CostumerModel(
+        id: widget.costumer.id,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: now,
@@ -186,11 +188,21 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        _tarihSec(context);
+
+                    CupertinoCalendarPickerButton(
+                      minimumDateTime: DateTime(2020, 1, 1),
+                      maximumDateTime: DateTime(2030, 12, 31),
+                      initialDateTime: now,
+                      barrierColor: Colors.transparent,
+                      containerDecoration: PickerContainerDecoration(
+                        backgroundType: PickerBackgroundType.plainColor,
+                      ),
+                      mode: CupertinoCalendarMode.date,
+                      timeLabel: 'Saat',
+                      onDateTimeChanged: (date) {
+                        now = date;
+                        musteriTarihVeSaatAl();
                       },
-                      child: Text("Kayıt Tarihi: $kayitTarihi"),
                     ),
                   ],
                 ),
