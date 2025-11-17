@@ -226,7 +226,7 @@ class _CostumersState extends State<Costumers> {
                                           title: 'Sil',
                                           isDestructive: true,
                                           iconColor: Colors.red,
-                                          icon: CupertinoIcons.delete,
+                                          icon: Icons.delete_outline,
                                         ),
                                         PullDownMenuItem(
                                           onTap: () {
@@ -236,7 +236,7 @@ class _CostumersState extends State<Costumers> {
                                             );
                                           },
                                           title: 'Düzenle',
-                                          icon: CupertinoIcons.pencil,
+                                          icon: Icons.edit_outlined,
                                         ),
                                         PullDownMenuItem(
                                           onTap: () {
@@ -245,7 +245,7 @@ class _CostumersState extends State<Costumers> {
                                             );
                                           },
                                           title: 'Paylaş',
-                                          icon: CupertinoIcons.share,
+                                          icon: Icons.share_outlined,
                                         ),
                                       ],
                                       position: PullDownMenuPosition.automatic,
