@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:contact_add/contact.dart';
 import 'package:contact_add/contact_add.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 
@@ -72,10 +73,10 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
               ),
               onPressed: () {
                 if (_phoneIsNotEmpty) {
-                  setState(() {
-                    _isCallExpanded = !_isCallExpanded;
-                    _isMessageExpanded = false;
-                  });
+                  CommunicationHelper.makePhoneCall(
+                    context,
+                    widget.costumer.phone!,
+                  );
                 } else {
                   widget.messenger.hideCurrentSnackBar();
                   widget.messenger.showSnackBar(
@@ -177,41 +178,6 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
                       },
                       icon: Icon(Icons.message_outlined),
                       label: Text("Whastapp"),
-                      style: ButtonStyle(
-                        foregroundColor: WidgetStatePropertyAll(Colors.white),
-                        backgroundColor: WidgetStatePropertyAll(Colors.green),
-                      ),
-                    ),
-                  ],
-                )
-              : _isCallExpanded
-              ? Row(
-                  spacing: 5,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FilledButton.tonalIcon(
-                      onPressed: () {
-                        CommunicationHelper.makePhoneCall(
-                          context,
-                          widget.costumer.phone!,
-                        );
-                      },
-                      icon: Icon(Icons.phone_outlined),
-                      label: Text("Normal Arama"),
-                      style: ButtonStyle(
-                        foregroundColor: WidgetStatePropertyAll(Colors.white),
-                        backgroundColor: WidgetStatePropertyAll(Colors.orange),
-                      ),
-                    ),
-                    FilledButton.tonalIcon(
-                      onPressed: () {
-                        CommunicationHelper.makeWhatsAppCall(
-                          context,
-                          widget.costumer.phone!,
-                        );
-                      },
-                      icon: Icon(Icons.phone_outlined),
-                      label: Text("WhatsApp Arama"),
                       style: ButtonStyle(
                         foregroundColor: WidgetStatePropertyAll(Colors.white),
                         backgroundColor: WidgetStatePropertyAll(Colors.green),

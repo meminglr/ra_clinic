@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CommunicationHelper {
@@ -17,6 +18,14 @@ class CommunicationHelper {
         duration: Duration(seconds: 2),
         backgroundColor: isError ? Colors.red : Colors.blueGrey,
       ),
+    );
+  }
+
+  /// Paylaşma
+
+  static void shareCostumer(item) {
+    SharePlus.instance.share(
+      ShareParams(text: 'İsim: ${item.name}\nTelefon: ${item.phone}'),
     );
   }
 

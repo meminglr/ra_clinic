@@ -53,11 +53,11 @@ class CostumerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteCostumer(int index) {
-    if (index >= 0 && index < _costumersList.length) {
-      _costumersList.removeAt(index);
+  void deleteCostumer(int index) async{
+    await _box.deleteAt(index);
+     _costumersList.removeAt(index);
       _saveToHive();
       notifyListeners();
-    }
+    
   }
 }

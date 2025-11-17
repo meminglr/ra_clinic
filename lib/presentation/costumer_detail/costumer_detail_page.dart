@@ -59,7 +59,20 @@ class _CostumerDetailState extends State<CostumerDetail> {
     final messenger = ScaffoldMessenger.of(context);
 
     return Scaffold(
-      appBar: AppBar(actions: [
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () async {
+               context.read<CostumerProvider>().deleteCostumer(
+                widget.index,
+              );
+              Navigator.pop(context);
+              messenger.showSnackBar(
+                const SnackBar(content: Text("Müşteri silindi")),
+              );
+            },
+            icon: const Icon(CupertinoIcons.delete),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
