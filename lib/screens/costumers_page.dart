@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
@@ -93,43 +94,35 @@ class _CostumersState extends State<Costumers> {
                           ),
                         );
                       },
-                      child: Dismissible(
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: EdgeInsets.only(right: 20),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: Colors.white,
-                          ),
-                        ),
-                        direction: DismissDirection.endToStart,
-                        key: Key(item.hashCode.toString()),
-                        onDismissed: (direction) {
-                          context.read<CostumerProvider>().deleteCostumer(
-                            index,
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  Text("${item.name} silindi"),
-                                  TextButton(
-                                    onPressed: () {
-                                      // Undo the deletion
-                                      // Note: You would need to implement a way to restore the deleted customer
-                                    },
-                                    child: Text("Geri Al"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                      child: Slidable(
+                        key: Key(item.id),
 
+                        endActionPane: ActionPane(
+                          dismissible: DismissiblePane(
+                            onDismissed: () {
+                              context.read<CostumerProvider>().deleteCostumer(
+                                index,
+                              );
+                            },
+                          ),
+                          motion: StretchMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (context) {
+                                context.read<CostumerProvider>().deleteCostumer(
+                                  index,
+                                );
+                              },
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.red.shade100,
+                              icon: Icons.delete_outline,
+
+                              label: 'Sil',
+
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ],
+                        ),
                         child: Card.filled(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
@@ -214,9 +207,21 @@ class _CostumersState extends State<Costumers> {
                                       itemBuilder: (context) => [
                                         PullDownMenuItem(
                                           onTap: () {
-                                            context
-                                                .read<CostumerProvider>()
-                                                .deleteCostumer(index);
+                                            Slidable.of(
+                                              context,
+                                            )?.openEndActionPane(
+                                              duration: Durations.long1,
+                                            );
+                                            Slidable.of(context)?.dismiss(
+                                              ResizeRequest(
+                                                Durations.medium3,
+                                                () {
+                                                  context
+                                                      .read<CostumerProvider>()
+                                                      .deleteCostumer(index);
+                                                },
+                                              ),
+                                            );
                                           },
                                           title: 'Sil',
                                           isDestructive: true,
@@ -267,14 +272,14 @@ class _CostumersState extends State<Costumers> {
                                 behavior: HitTestBehavior.translucent,
                                 onTapDown: (TapDownDetails details) async {
                                   final tapPosition = details.globalPosition;
-
+                        
                                   final position = Rect.fromLTWH(
                                     tapPosition.dx,
                                     tapPosition.dy,
                                     -5,
                                     10,
                                   );
-
+                        
                                   await showPullDownMenu(
                                     context: context,
                                     items: [
@@ -286,7 +291,7 @@ class _CostumersState extends State<Costumers> {
                                         },
                                         title: 'Sil',
                                         isDestructive: true,
-
+                        
                                         iconColor: Colors.red,
                                         icon: CupertinoIcons.delete,
                                       ),

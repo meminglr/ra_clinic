@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:ra_clinic/model/costumer_model.dart';
+import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/screens/calendar_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
 
@@ -15,7 +18,30 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Clinic"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("Clinic"),
+        centerTitle: true,
+        actions: [
+          IconButton.filled(
+            icon: Icon(Icons.add, color: Colors.white),
+
+            onPressed: () {
+              context.read<CostumerProvider>().addCostumer(
+                CostumerModel(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: "Test Müşteri",
+                  phone: "05536834049",
+                  startDate: DateTime.now(),
+                  startDateString: DateTime.now().toString(),
+                  seansList: [],
+                  notes: "Yeni Gelen Müşteri",
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (value) => {

@@ -63,9 +63,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
         actions: [
           IconButton(
             onPressed: () async {
-               context.read<CostumerProvider>().deleteCostumer(
-                widget.index,
-              );
+              context.read<CostumerProvider>().deleteCostumer(widget.index);
               Navigator.pop(context);
               messenger.showSnackBar(
                 const SnackBar(content: Text("Müşteri silindi")),
