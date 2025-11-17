@@ -7,12 +7,7 @@ import 'package:ra_clinic/model/seans_model.dart';
 
 class EditCostumerPage extends StatefulWidget {
   final CostumerModel costumer;
-  final List<SeansModel> seansList;
-  const EditCostumerPage({
-    super.key,
-    required this.costumer,
-    required this.seansList,
-  });
+  const EditCostumerPage({super.key, required this.costumer});
 
   @override
   State<EditCostumerPage> createState() => _EditCostumerPageState();
@@ -37,8 +32,8 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
     _nameController.text = widget.costumer.name;
     _telNoController.text = widget.costumer.phone ?? "";
     _noteController.text = widget.costumer.notes ?? "";
-    _seansList = widget.seansList;
-    for (var seans in widget.costumer.seansList!) {
+    _seansList = widget.costumer.seansList;
+    for (var seans in widget.costumer.seansList) {
       _controllers[seans] = TextEditingController(text: seans.seansNote);
     }
 
@@ -91,26 +86,6 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gerekli alanları doldurunuz")));
-    }
-  }
-
-  Future<void> _tarihSec(BuildContext context) async {
-    final DateTime? secilenTarih = await showDatePicker(
-      context: context,
-      initialDate: now, // İlk gösterilecek tarih
-      firstDate: DateTime(2000), // Seçilebilecek en erken tarih
-      lastDate: DateTime(2030), // Seçilebilecek en geç tarih
-
-      helpText: "Kayıt Tarihi",
-      cancelText: "Vazgeç",
-      confirmText: "Kaydet",
-    );
-
-    if (secilenTarih != null && secilenTarih != now) {
-      setState(() {
-        now = secilenTarih; // State'i güncelle
-        musteriTarihVeSaatAl();
-      });
     }
   }
 

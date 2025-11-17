@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:ra_clinic/home.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:ra_clinic/screens/menu.dart';
 
 import 'model/seans_model.dart';
 

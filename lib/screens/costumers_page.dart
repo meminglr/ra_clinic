@@ -1,13 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/screens/add_costumer_page.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/screens/edit_costumer_page.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
@@ -33,10 +34,7 @@ class _CostumersState extends State<Costumers> {
       context,
       CupertinoPageRoute(
         builder: (builder) {
-          return EditCostumerPage(
-            costumer: costumer,
-            seansList: costumer.seansList ?? [],
-          );
+          return EditCostumerPage(costumer: costumer);
         },
       ),
     );
@@ -80,35 +78,38 @@ class _CostumersState extends State<Costumers> {
                     ),
                   );
                 },
-                child: Slidable(
-                  key: ValueKey(index),
-
-                  endActionPane: ActionPane(
-                    motion: const DrawerMotion(), // Kayma animasyonu
-                    children: [
-                      SlidableAction(
-                        borderRadius: BorderRadius.circular(20),
-                        onPressed: (_) {
-                          print("Sil");
-                        },
-                        backgroundColor: Colors.red.shade100,
-                        foregroundColor: Colors.red,
-                        icon: Icons.delete_outlined,
-                        label: 'Sil',
-                      ),
-                      SlidableAction(
-                        borderRadius: BorderRadius.circular(20),
-                        onPressed: (_) {
-                          // Düzenleme işlemi
-                          print("Düzenle");
-                        },
-                        backgroundColor: Colors.blue.shade100,
-                        foregroundColor: Colors.blue,
-                        icon: Icons.edit,
-                        label: 'Düzenle',
-                      ),
-                    ],
+                child: Dismissible(
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: EdgeInsets.only(right: 20),
+                    child: Icon(Icons.delete_outline, color: Colors.white),
                   ),
+                  direction: DismissDirection.endToStart,
+                  key: Key(item.hashCode.toString()),
+                  onDismissed: (direction) {
+                    context.read<CostumerProvider>().deleteCostumer(index);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Text("${item.name} silindi"),
+                            TextButton(
+                              onPressed: () {
+                                // Undo the deletion
+                                // Note: You would need to implement a way to restore the deleted customer
+                              },
+                              child: Text("Geri Al"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+
                   child: Card.filled(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -135,9 +136,7 @@ class _CostumersState extends State<Costumers> {
                                 ),
                               ),
                               Text(item.startDateString),
-                              Text(
-                                "Seans Sayısı: ${item.seansList?.length ?? 0}",
-                              ),
+                              Text("Seans Sayısı: ${item.seansList.length}"),
                             ],
                           ),
                           Row(
@@ -181,6 +180,100 @@ class _CostumersState extends State<Costumers> {
                                 },
                                 child: Icon(Icons.message_outlined),
                               ),
+                              PullDownButton(
+                                itemBuilder: (context) => [
+                                  PullDownMenuItem(
+                                    onTap: () {
+                                      context
+                                          .read<CostumerProvider>()
+                                          .deleteCostumer(index);
+                                    },
+                                    title: 'Sil',
+                                    isDestructive: true,
+                                    iconColor: Colors.red,
+                                    icon: CupertinoIcons.delete,
+                                  ),
+                                  PullDownMenuItem(
+                                    onTap: () {
+                                      navigateToEditCostumerPage(index, item);
+                                    },
+                                    title: 'Düzenle',
+                                    icon: CupertinoIcons.pencil,
+                                  ),
+                                  PullDownMenuItem(
+                                    onTap: () {
+                                      Share.share(
+                                        'İsim: ${item.name}\nTelefon: ${item.phone}',
+                                      );
+                                    },
+                                    title: 'Paylaş',
+                                    icon: CupertinoIcons.share,
+                                  ),
+                                ],
+                                position: PullDownMenuPosition.automatic,
+                                buttonBuilder: (context, showMenu) =>
+                                    IconButton(
+                                      icon: Icon(Icons.more_vert),
+                                      onPressed: showMenu,
+                                    ),
+                              ),
+                              /*     GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTapDown: (TapDownDetails details) async {
+                                  final tapPosition = details.globalPosition;
+
+                                  final position = Rect.fromLTWH(
+                                    tapPosition.dx,
+                                    tapPosition.dy,
+                                    -5,
+                                    10,
+                                  );
+
+                                  await showPullDownMenu(
+                                    context: context,
+                                    items: [
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          context
+                                              .read<CostumerProvider>()
+                                              .deleteCostumer(index);
+                                        },
+                                        title: 'Sil',
+                                        isDestructive: true,
+
+                                        iconColor: Colors.red,
+                                        icon: CupertinoIcons.delete,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          navigateToEditCostumerPage(
+                                            index,
+                                            item,
+                                          );
+                                        },
+                                        title: 'Düzenle',
+                                        icon: CupertinoIcons.pencil,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {},
+                                        title: 'Paylaş',
+                                        icon: CupertinoIcons.share,
+                                      ),
+                                    ],
+                                    position: position,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 5,
+                                    top: 20,
+                                    bottom: 20,
+                                    right: 5,
+                                  ),
+                                  child: Icon(Icons.more_vert),
+                                ),
+                              ),
+                           */
                             ],
                           ),
                         ],

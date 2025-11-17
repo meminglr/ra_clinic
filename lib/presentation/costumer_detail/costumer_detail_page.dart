@@ -35,10 +35,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
       context,
       CupertinoPageRoute(
         builder: (builder) {
-          return EditCostumerPage(
-            costumer: costumer,
-            seansList: costumer.seansList ?? [],
-          );
+          return EditCostumerPage(costumer: costumer);
         },
       ),
     );
@@ -101,10 +98,10 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 noteIsNotEmpty: noteIsNotEmpty,
               ),
             ),
-            if (currentCostumer.seansList!.isEmpty) NoSeansWarning(),
+            if (currentCostumer.seansList.isEmpty) NoSeansWarning(),
 
-            if (currentCostumer.seansList!.isNotEmpty)
-              SeansListView(seansList: currentCostumer.seansList!),
+            if (currentCostumer.seansList.isNotEmpty)
+              SeansListView(seansList: currentCostumer.seansList),
           ],
         ),
       ),
