@@ -6,6 +6,7 @@ import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:ra_clinic/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class AddCostumerPage extends StatefulWidget {
@@ -55,12 +56,12 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
   }
 
   void musteriTarihVeSaatAl() {
-    kayitTarihi = DateFormat('d MMMM y HH:mm', 'tr_TR').format(now);
+    kayitTarihi = Utils.toDate(now);
     setState(() {});
   }
 
   void seansTarihSaatAl() {
-    seansTarihi = DateFormat('d MMMM y', 'tr_TR').format(now);
+    seansTarihi = Utils.toDate(now);
     setState(() {});
   }
 

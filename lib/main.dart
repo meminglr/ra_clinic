@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:ra_clinic/home.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
-import 'package:ra_clinic/screens/menu.dart';
+import 'package:ra_clinic/providers/event_provider.dart';
 
 import 'model/seans_model.dart';
 
@@ -19,7 +19,10 @@ void main() async {
   await initializeDateFormatting('tr_TR', null);
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => CostumerProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => CostumerProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
+      ],
       child: const MainApp(),
     ),
   );
@@ -39,6 +42,14 @@ class MainApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: ThemeData(
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+        ),
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),

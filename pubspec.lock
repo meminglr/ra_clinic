@@ -333,6 +333,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+  http:
+    dependency: transitive
+    description:
+      name: http
+      sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -350,7 +358,7 @@ packages:
     source: hosted
     version: "4.1.2"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
@@ -730,6 +738,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  syncfusion_flutter_calendar:
+    dependency: "direct main"
+    description:
+      name: syncfusion_flutter_calendar
+      sha256: "29c271e3b67333a44aed1e7c2715727883acc93bf56bf9deb37bc3b68b25ff02"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.2.10"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      sha256: "8118f13264d1401a7085d12a0aaeac1ebd5cd939046b8c565d195879646daad6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.2.10"
+  syncfusion_flutter_datepicker:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_datepicker
+      sha256: ba47e2ea3af60158a0e07eab3ac9308463708c1ed0b02ca96a0aed36241e51f6
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.2.10"
+  syncfusion_localizations:
+    dependency: transitive
+    description:
+      name: syncfusion_localizations
+      sha256: "5e4aeeb8873dfb731e37f9c641d02de4a67841f7b08ac89e50f273ed9ff049f9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.2.10"
   term_glyph:
     dependency: transitive
     description:
@@ -746,6 +786,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.6"
+  time_picker_spinner_pop_up:
+    dependency: "direct main"
+    description:
+      name: time_picker_spinner_pop_up
+      sha256: "245fd1ad9eb2a6ec800e06b933a06829c2d91757f70591ea0dc6b5236a754013"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
+  timezone:
+    dependency: transitive
+    description:
+      name: timezone
+      sha256: dd14a3b83cfd7cb19e7888f1cbc20f258b8d71b54c06f79ac585f14093a287d1
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.10.1"
   timing:
     dependency: transitive
     description:
@@ -916,4 +972,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
+  flutter: ">=3.35.1"

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_buttons.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_notes_cards.dart';
@@ -10,6 +11,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 
+import '../../func/communication_helper.dart';
 import '../../screens/edit_costumer_page.dart';
 
 class CostumerDetail extends StatefulWidget {
@@ -61,15 +63,59 @@ class _CostumerDetailState extends State<CostumerDetail> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
-            onPressed: () async {
-              context.read<CostumerProvider>().deleteCostumer(widget.index);
-              Navigator.pop(context);
-              messenger.showSnackBar(
-                const SnackBar(content: Text("Müşteri silindi")),
-              );
-            },
-            icon: const Icon(CupertinoIcons.delete),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              spacing: 12,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    context.read<CostumerProvider>().deleteCostumer(
+                      widget.index,
+                    );
+                    Navigator.pop(context);
+                    messenger.showSnackBar(
+                      const SnackBar(content: Text("Müşteri silindi")),
+                    );
+                  },
+                  child: Icon(Icons.delete_outline, size: 30),
+                ),
+
+                PullDownButton(
+                  routeTheme: PullDownMenuRouteTheme(
+                    backgroundColor: Colors.white,
+                  ),
+                  itemBuilder: (context) => [
+                    PullDownMenuItem(
+                      onTap: () {
+                        navigateToEditCostumerPage(
+                          widget.index,
+                          currentCostumer,
+                        );
+                      },
+                      title: 'Düzenle',
+                      icon: Icons.edit_outlined,
+                    ),
+                    PullDownMenuItem(
+                      onTap: () {
+                        CommunicationHelper.shareCostumer(currentCostumer);
+                      },
+                      title: 'Paylaş',
+                      icon: Icons.share_outlined,
+                    ),
+                  ],
+                  position: PullDownMenuPosition.automatic,
+                  buttonBuilder: (context, showMenu) => GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+
+                    onTap: () {
+                      showMenu();
+                    },
+                    child: Icon(Icons.more_vert, size: 30),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

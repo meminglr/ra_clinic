@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
+import 'package:ra_clinic/utils.dart';
 
 class EditCostumerPage extends StatefulWidget {
   final CostumerModel costumer;
@@ -61,12 +62,12 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   }
 
   void musteriTarihVeSaatAl() {
-    kayitTarihi = DateFormat('d MMMM y HH:mm', 'tr_TR').format(now);
+    kayitTarihi = Utils.toDate(now);
     setState(() {});
   }
 
   void seansTarihSaatAl() {
-    seansTarihi = DateFormat('d MMMM y', 'tr_TR').format(now);
+    seansTarihi = Utils.toDate(now);
     setState(() {});
   }
 
@@ -167,12 +168,13 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                     CupertinoCalendarPickerButton(
                       minimumDateTime: DateTime(2020, 1, 1),
                       maximumDateTime: DateTime(2030, 12, 31),
-                      initialDateTime: now,
+                      initialDateTime: widget.costumer.startDate,
                       barrierColor: Colors.transparent,
+
                       containerDecoration: PickerContainerDecoration(
                         backgroundType: PickerBackgroundType.plainColor,
                       ),
-                      mode: CupertinoCalendarMode.date,
+                      mode: CupertinoCalendarMode.dateTime,
                       timeLabel: 'Saat',
                       onDateTimeChanged: (date) {
                         now = date;
