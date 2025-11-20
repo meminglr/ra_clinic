@@ -3,15 +3,17 @@ import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ra_clinic/providers/event_provider.dart';
-import 'package:time_picker_spinner_pop_up/time_picker_spinner_pop_up.dart';
 
-import '../utils.dart';
+import 'package:ra_clinic/providers/event_provider.dart';
+
 import 'model/event.dart';
 
 class EventEditinPage extends StatefulWidget {
   final Event? event;
-  const EventEditinPage({super.key, this.event});
+  final DateTime selectedDate;
+
+  const EventEditinPage({Key? key, this.event, required this.selectedDate})
+    : super(key: key);
 
   @override
   State<EventEditinPage> createState() => _EventEditinPageState();
@@ -31,8 +33,8 @@ class _EventEditinPageState extends State<EventEditinPage> {
   void initState() {
     super.initState();
     if (widget.event == null) {
-      fromDate = DateTime.now();
-      toDate = DateTime.now().add(Duration(hours: 2));
+      fromDate = widget.selectedDate;
+      toDate = fromDate.add(Duration(hours: 2));
     }
   }
 
@@ -46,13 +48,25 @@ class _EventEditinPageState extends State<EventEditinPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: CloseButton(), actions: buildEditingActions()),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: FilledButton.icon(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          label: Text("Vazgeç"),
+          icon: Icon(Icons.close),
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+        ),
+        actions: buildEditingActions(),
+        actionsPadding: EdgeInsets.only(right: 10),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(12),
         child: Form(
           key: _formKey,
           child: Column(
-            spacing: 30,
             children: [
               buildTitle(),
               buildDateTimePicker(),
@@ -66,17 +80,13 @@ class _EventEditinPageState extends State<EventEditinPage> {
   }
 
   List<Widget> buildEditingActions() => [
-    ElevatedButton.icon(
+    FilledButton.icon(
       onPressed: () {
         saveForm();
       },
       label: Text("Kaydet"),
-
       icon: Icon(Icons.check),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
+      style: FilledButton.styleFrom(backgroundColor: Colors.green),
     ),
   ];
 
@@ -84,29 +94,26 @@ class _EventEditinPageState extends State<EventEditinPage> {
     controller: titleController,
     validator: (title) => title!.isEmpty ? "Başlık Giriniz" : null,
     onFieldSubmitted: (_) {},
-    style: TextStyle(fontSize: 24),
-    decoration: InputDecoration(
-      border: UnderlineInputBorder(),
-      labelText: "Başlık",
+
+    style: TextStyle(fontSize: 50),
+    decoration: InputDecoration(hintText: "Başlık", border: InputBorder.none),
+  );
+
+  Widget buildDateTimePicker() => Card(
+    elevation: 0,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      child: Column(children: [buildFrom(), buildTo()]),
     ),
   );
 
-  Widget buildDateTimePicker() =>
-      Column(spacing: 5, children: [buildFrom(), buildTo()]);
-
-  Widget buildFrom() => Column(
-    spacing: 5,
-    crossAxisAlignment: CrossAxisAlignment.start,
+  Widget buildFrom() => Row(
+    spacing: 10,
+    mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      Text("Başlangıç"),
-      Row(
-        spacing: 10,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Expanded(flex: 2, child: buildFromDate()),
-          Expanded(child: buildFromTime()),
-        ],
-      ),
+      Icon(Icons.alarm_on_outlined, size: 30, color: Colors.green),
+      Expanded(flex: 2, child: buildFromDate()),
+      Expanded(child: buildFromTime()),
     ],
   );
 
@@ -148,20 +155,27 @@ class _EventEditinPageState extends State<EventEditinPage> {
     ),
   );
 
-  Widget buildTo() => Column(
-    spacing: 5,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text("Bitiş"),
-      Row(
-        spacing: 10,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Expanded(flex: 2, child: buildToDate()),
-          Expanded(child: buildToTime()),
-        ],
-      ),
-    ],
+  Widget buildTo() => AnimatedSize(
+    duration: Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+    child: isAllDay
+        ? SizedBox()
+        : Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              spacing: 10,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.alarm_off_outlined,
+                  size: 30,
+                  color: Colors.redAccent,
+                ),
+                Expanded(flex: 2, child: buildToDate()),
+                Expanded(child: buildToTime()),
+              ],
+            ),
+          ),
   );
 
   Widget buildToDate() => CupertinoCalendarPickerButton(
@@ -196,24 +210,54 @@ class _EventEditinPageState extends State<EventEditinPage> {
     ),
   );
 
-  Widget buildAllDayCheck() => CheckboxListTile(
-    title: Text("Tüm Gün"),
-    controlAffinity: ListTileControlAffinity.leading,
-
-    value: isAllDay,
-    onChanged: (value) {
-      isAllDay = value!;
-      setState(() {});
-    },
+  Widget buildAllDayCheck() => Padding(
+    padding: const EdgeInsets.only(top: 5),
+    child: GestureDetector(
+      onTap: () {
+        isAllDay = !isAllDay;
+        if (isAllDay) {
+          toDate = fromDate;
+        }
+        setState(() {});
+      },
+      child: Card(
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 5,
+            children: [
+              Text("Tüm Gün", style: TextStyle(fontSize: 16)),
+              Switch(
+                value: isAllDay,
+                onChanged: (value) {
+                  isAllDay = value;
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
   );
 
-  Widget buildDescription() => TextFormField(
-    controller: descriptionController,
-    maxLines: null,
-    style: TextStyle(fontSize: 24),
-    decoration: InputDecoration(
-      border: UnderlineInputBorder(),
-      labelText: "Açıklama",
+  Widget buildDescription() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Card(
+      elevation: 0,
+      child: TextFormField(
+        controller: descriptionController,
+        onFieldSubmitted: (_) {},
+        maxLines: 8,
+        style: TextStyle(fontSize: 24),
+        decoration: InputDecoration(
+          hintText: "Açıklama",
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.all(10),
+        ),
+      ),
     ),
   );
 
