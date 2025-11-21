@@ -18,7 +18,7 @@ class EventDialogsWidgets {
     Color selectedColor = Colors.blue;
     bool isColorsExpand = false;
 
-    showDialog(
+    showCupertinoDialog(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
@@ -322,7 +322,7 @@ class EventDialogsWidgets {
 
   // Etkinlik Detaylarını Gösterme Dialog'u
   static void showEventDetailsDialog(BuildContext context, Schedule event) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
