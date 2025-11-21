@@ -2,82 +2,156 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:ra_clinic/calendar/calendar_widgets/event_dialogsa.dart';
 import 'package:ra_clinic/calendar/event_editin_page.dart';
-import 'package:ra_clinic/calendar/model/event.dart';
+import 'package:ra_clinic/calendar/model/event_data_source.dart';
+import 'package:ra_clinic/calendar/model/schedule.dart';
+import 'package:ra_clinic/calendar/model/schedule_data_source.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import 'model/event_data_source.dart';
-
 class CalendarPage extends StatefulWidget {
+  const CalendarPage({super.key});
+
   @override
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
+  final CalendarController _calendarController = CalendarController();
   DateTime? selectedDate;
 
-  CalendarController controller = CalendarController();
-  CalendarView calendarView = CalendarView.month;
+  @override
+  void dispose() {
+    super.dispose();
+    _calendarController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final events = Provider.of<EventProvider>(context).events;
-
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
+          EventDialogsWidgets.showAddEventDialog(
             context,
-            CupertinoPageRoute(
-              builder: (builder) =>
-                  EventEditinPage(selectedDate: selectedDate!),
-            ),
+            selectedDate ?? DateTime.now(),
           );
         },
         icon: Icon(Icons.add),
         label: Text("Etkinlik Ekle"),
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [buildCalendarViewOptions(controller)],
-          ),
-          Expanded(child: buildCalendar(events)),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Wrap(
+              spacing: 10,
+              children: [buildCalendarViewOptions(_calendarController)],
+            ),
+            Expanded(
+              child: SfCalendar(
+                controller: _calendarController,
+                view: CalendarView.month,
+                dataSource: ScheduleDataSource(events),
+                initialSelectedDate: DateTime.now(),
+                firstDayOfWeek: 1,
+                showDatePickerButton: true,
+                showCurrentTimeIndicator: true,
+                showTodayButton: true,
+                onSelectionChanged: (calendarSelectionDetails) {
+                  if (calendarSelectionDetails.date != null) {
+                    selectedDate = calendarSelectionDetails.date!;
+                  }
+                },
+                monthViewSettings: const MonthViewSettings(
+                  showAgenda: true,
+                  appointmentDisplayCount: 3,
+                  appointmentDisplayMode: MonthAppointmentDisplayMode.indicator,
+                ),
+                allowDragAndDrop: true,
+                onDragEnd: _onDragEnd,
+                allowAppointmentResize: true,
+                onAppointmentResizeStart: resizeStart,
+                onAppointmentResizeUpdate: resizeUpdate,
+                onAppointmentResizeEnd: resizeEnd,
+                onTap: (calendarTapDetails) {
+                  // Etkinliğe tıklandıysa detayları göster
+                  if (calendarTapDetails.targetElement ==
+                      CalendarElement.appointment) {
+                    final Schedule tappedEvent =
+                        calendarTapDetails.appointments![0];
+                    EventDialogsWidgets.showEventDetailsDialog(
+                      context,
+                      tappedEvent,
+                    );
+                  }
+                  // Boş tarihe tıklandıysa yeni etkinlik ekle
+                  else if (calendarTapDetails.targetElement ==
+                          CalendarElement.calendarCell &&
+                      _calendarController.view != CalendarView.month) {
+                    EventDialogsWidgets.showAddEventDialog(
+                      context,
+                      calendarTapDetails.date!,
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  SfCalendar buildCalendar(List<Event> events) {
-    return SfCalendar(
-      view: calendarView,
-      dataSource: EventDataSource(events),
-      controller: controller,
-      onSelectionChanged: (calendarSelectionDetails) {
-        if (calendarSelectionDetails.date != null) {
-          selectedDate = calendarSelectionDetails.date!;
-        }
-      },
+  void _onDragEnd(appointmentDragEndDetails) {
+    final events = Provider.of<EventProvider>(context, listen: false).events;
+    final dragedItem = appointmentDragEndDetails.appointment as Schedule;
+    final originItem = events.firstWhere(
+      (element) => element.id == dragedItem.id,
+    );
+    Duration diff = originItem.endDate.difference(originItem.startDate);
+    dragedItem.startDate = appointmentDragEndDetails.droppingTime!;
+    dragedItem.endDate = appointmentDragEndDetails.droppingTime!.add(diff);
 
-      initialSelectedDate: DateTime.now(),
-      firstDayOfWeek: 1,
+    Provider.of<EventProvider>(context, listen: false).updateEvent(dragedItem);
+    setState(() {});
+  }
 
-      monthViewSettings: MonthViewSettings(
-        appointmentDisplayMode: MonthAppointmentDisplayMode.indicator,
-        agendaViewHeight: 300,
+  void resizeStart(
+    AppointmentResizeStartDetails appointmentResizeStartDetails,
+  ) {
+    print('Resize başladı');
+  }
 
-        monthCellStyle: MonthCellStyle(
-          textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-        ),
-        showAgenda: true,
+  void resizeUpdate(
+    AppointmentResizeUpdateDetails appointmentResizeUpdateDetails,
+  ) {
+    // Resize sırasında yapılacak işlemler
+  }
+
+  void resizeEnd(AppointmentResizeEndDetails appointmentResizeEndDetails) {
+    final resizedEvent = appointmentResizeEndDetails.appointment as Schedule;
+
+    if (appointmentResizeEndDetails.startTime != null) {
+      resizedEvent.startDate = appointmentResizeEndDetails.startTime!;
+    }
+
+    if (appointmentResizeEndDetails.endTime != null) {
+      resizedEvent.endDate = appointmentResizeEndDetails.endTime!;
+    }
+
+    Provider.of<EventProvider>(
+      context,
+      listen: false,
+    ).updateEvent(resizedEvent);
+
+    setState(() {});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Etkinlik güncellendi'),
+        duration: Duration(seconds: 1),
       ),
-      showDatePickerButton: true,
-      showCurrentTimeIndicator: true,
-      showTodayButton: true,
-
-      headerStyle: CalendarHeaderStyle(backgroundColor: Colors.white),
     );
   }
 
@@ -94,7 +168,6 @@ class _CalendarPageState extends State<CalendarPage> {
             },
             title: "Ay Görünüm",
           ),
-
           PullDownMenuItem.selectable(
             selected: controller.view == CalendarView.day,
             onTap: () {
@@ -162,7 +235,6 @@ class _CalendarPageState extends State<CalendarPage> {
         position: PullDownMenuPosition.automatic,
         buttonBuilder: (context, showMenu) => GestureDetector(
           behavior: HitTestBehavior.translucent,
-
           onTap: () {
             showMenu();
           },
@@ -177,6 +249,4 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         ),
       );
-
-  Widget builda(params) => Container();
 }

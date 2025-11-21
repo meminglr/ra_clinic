@@ -3,13 +3,14 @@ import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ra_clinic/calendar/model/schedule.dart';
 
 import 'package:ra_clinic/providers/event_provider.dart';
 
 import 'model/event.dart';
 
 class EventEditinPage extends StatefulWidget {
-  final Event? event;
+  final Schedule? event;
   final DateTime selectedDate;
 
   const EventEditinPage({Key? key, this.event, required this.selectedDate})
@@ -265,11 +266,13 @@ class _EventEditinPageState extends State<EventEditinPage> {
     final isValid = _formKey.currentState!.validate();
 
     if (isValid) {
-      final event = Event(
-        title: titleController.text,
-        description: descriptionController.text,
-        from: fromDate,
-        to: toDate,
+      final event = Schedule(
+        id: DateTime.now().millisecondsSinceEpoch,
+        name: titleController.text,
+        color: Colors.green,
+        startDate: fromDate,
+        endDate: toDate,
+        isAllDay: isAllDay,
       );
 
       final provider = Provider.of<EventProvider>(context, listen: false);
