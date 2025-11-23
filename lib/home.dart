@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
+
+import 'custom_app_bars.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,33 +14,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final List pages = [Costumers(), CalendarPage()];
   int selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        elevation: 0,
-        backgroundColor: Colors.white,
-
-        title: InkWell(
-          onTap: () {
-            context.read<CostumerProvider>().addCostumer(
-              CostumerModel(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: "Test Müşteri",
-                phone: "05536834049",
-                startDate: DateTime.now(),
-                startDateString: DateTime.now().toString(),
-                seansList: [],
-                notes: "Yeni Gelen Müşteri",
-              ),
-            );
-          },
-          child: const Text("Clinic"),
-        ),
-        centerTitle: true,
-      ),
-
+      appBar: CustomAppbars.buildAppBar(selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (value) => {

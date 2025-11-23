@@ -45,6 +45,8 @@ class MainApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
+          actionsPadding: EdgeInsets.symmetric(horizontal: 10),
+          scrolledUnderElevation: 0,
         ),
         scaffoldBackgroundColor: Colors.white,
         bottomNavigationBarTheme: BottomNavigationBarThemeData(

@@ -3,11 +3,10 @@ import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/calendar/model/schedule.dart';
 
 import 'package:ra_clinic/providers/event_provider.dart';
-
-import 'model/event.dart';
 
 class EventEditinPage extends StatefulWidget {
   final Schedule? event;
@@ -29,6 +28,9 @@ class _EventEditinPageState extends State<EventEditinPage> {
 
   late DateTime fromDate;
   late DateTime toDate;
+
+  Color selectedColor = Colors.blue;
+  bool isColorsExpand = false;
 
   @override
   void initState() {
@@ -73,6 +75,8 @@ class _EventEditinPageState extends State<EventEditinPage> {
               buildDateTimePicker(),
               buildAllDayCheck(),
               buildDescription(),
+
+              buildPullDownColorPicker(),
             ],
           ),
         ),
@@ -211,15 +215,126 @@ class _EventEditinPageState extends State<EventEditinPage> {
     ),
   );
 
+  Widget buildColorPicker() {
+    return // Renk Seçimi
+    AnimatedSize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: Card(
+        child: !isColorsExpand
+            ? InkWell(
+                onTap: () => setState(() {
+                  isColorsExpand = !isColorsExpand;
+                }),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.palette,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        Text(
+                          'Renk Seçimi',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      onTap: () => setState(() {
+                        isColorsExpand = !isColorsExpand;
+                      }),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.palette,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Renk Seçimi',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          [
+                            Colors.blue,
+                            Colors.red,
+                            Colors.green,
+                            Colors.orange,
+                            Colors.purple,
+                            Colors.pink,
+                            Colors.teal,
+                            Colors.amber,
+                          ].map((color) {
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectedColor = color;
+                                });
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: selectedColor == color
+                                        ? Colors.black
+                                        : Colors.transparent,
+                                    width: 3,
+                                  ),
+                                ),
+                                child: selectedColor == color
+                                    ? Icon(Icons.check, color: Colors.white)
+                                    : null,
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
   Widget buildAllDayCheck() => Padding(
     padding: const EdgeInsets.only(top: 5),
     child: GestureDetector(
       onTap: () {
-        isAllDay = !isAllDay;
-        if (isAllDay) {
-          toDate = fromDate;
-        }
-        setState(() {});
+        setState(() {
+          isAllDay = !isAllDay;
+          if (isAllDay) {
+            toDate = DateTime(
+              fromDate.year,
+              fromDate.month,
+              fromDate.day,
+              23,
+              59,
+              59,
+              999,
+            );
+          }
+        });
       },
       child: Card(
         elevation: 0,
@@ -233,8 +348,20 @@ class _EventEditinPageState extends State<EventEditinPage> {
               Switch(
                 value: isAllDay,
                 onChanged: (value) {
-                  isAllDay = value;
-                  setState(() {});
+                  setState(() {
+                    isAllDay = value;
+                    if (isAllDay) {
+                      toDate = DateTime(
+                        fromDate.year,
+                        fromDate.month,
+                        fromDate.day,
+                        23,
+                        59,
+                        59,
+                        999,
+                      );
+                    }
+                  });
                 },
               ),
             ],
@@ -269,7 +396,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
       final event = Schedule(
         id: DateTime.now().millisecondsSinceEpoch,
         name: titleController.text,
-        color: Colors.green,
+        color: selectedColor,
         startDate: fromDate,
         endDate: toDate,
         isAllDay: isAllDay,
@@ -279,5 +406,109 @@ class _EventEditinPageState extends State<EventEditinPage> {
       provider.addEvent(event);
       Navigator.pop(context);
     }
+  }
+
+  Widget buildPullDownColorPicker() {
+    return PullDownButton(
+      routeTheme: PullDownMenuRouteTheme(backgroundColor: Colors.white),
+
+      itemBuilder: (_) => [
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.blue;
+            });
+          },
+          selected: selectedColor == Colors.blue,
+          title: 'Mavi',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.blue,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.red;
+            });
+          },
+          selected: selectedColor == Colors.red,
+          title: 'Kırmızı',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.red,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.orange;
+            });
+          },
+          selected: selectedColor == Colors.orange,
+
+          title: 'Turuncu',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.orange,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.green;
+            });
+          },
+          selected: selectedColor == Colors.green,
+
+          title: 'Yeşil',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.green,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.purple;
+            });
+          },
+          selected: selectedColor == Colors.purple,
+          title: 'Mor',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.purple,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.pink;
+            });
+          },
+          selected: selectedColor == Colors.pink,
+          title: 'Pembe',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.pink,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.teal;
+            });
+          },
+          selected: selectedColor == Colors.teal,
+          title: 'Teal',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.teal,
+        ),
+        PullDownMenuItem.selectable(
+          onTap: () {
+            setState(() {
+              selectedColor = Colors.amber;
+            });
+          },
+          selected: selectedColor == Colors.amber,
+          title: 'Amber',
+          icon: CupertinoIcons.circle_fill,
+          iconColor: Colors.amber,
+        ),
+      ],
+      buttonBuilder: (context, showMenu) => FilledButton.tonalIcon(
+        onPressed: showMenu,
+        label: Text("Renk Seçimi"),
+        icon: const Icon(Icons.color_lens_outlined),
+      ),
+    );
   }
 }
