@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 
 part 'costumer_model.g.dart';

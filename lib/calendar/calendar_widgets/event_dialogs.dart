@@ -6,6 +6,7 @@ import 'package:ra_clinic/calendar/model/schedule.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 
 class EventDialogsWidgets {
+  static void showPullDownForEvent() {}
   static void showAddEventDialog(BuildContext context, DateTime selectedDate) {
     final TextEditingController titleController = TextEditingController();
     TimeOfDay startTime = TimeOfDay.now();
@@ -490,6 +491,16 @@ class EventDialogsWidgets {
     );
   }
 
+  static void showEditingPage(Schedule event, BuildContext context) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (builder) =>
+            EventEditinPage(selectedDate: event.startDate, event: event),
+      ),
+    );
+  }
+
   // Silme Onay Dialog'u
   static void showDeleteConfirmDialog(BuildContext context, Schedule event) {
     showDialog(
@@ -544,7 +555,7 @@ class EventDialogsWidgets {
                 Provider.of<EventProvider>(
                   context,
                   listen: false,
-                ).deleteEvent(event.id.toString());
+                ).deleteEvent(event.id);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

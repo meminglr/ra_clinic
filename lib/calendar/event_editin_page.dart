@@ -39,6 +39,15 @@ class _EventEditinPageState extends State<EventEditinPage> {
       fromDate = widget.selectedDate;
       toDate = fromDate.add(Duration(hours: 2));
     }
+    if (widget.event != null) {
+      final event = widget.event!;
+      titleController.text = event.name;
+      descriptionController.text = event.description!;
+      fromDate = event.startDate;
+      toDate = event.endDate;
+      selectedColor = event.color;
+      isAllDay = event.isAllDay;
+    }
   }
 
   @override
@@ -52,16 +61,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         centerTitle: false,
-        title: FilledButton.icon(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          label: Text("Vazgeç"),
-          icon: Icon(Icons.close),
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-        ),
         actions: buildEditingActions(),
         actionsPadding: EdgeInsets.only(right: 10),
       ),
@@ -73,10 +73,21 @@ class _EventEditinPageState extends State<EventEditinPage> {
             children: [
               buildTitle(),
               buildDateTimePicker(),
-              buildAllDayCheck(),
-              buildDescription(),
 
-              buildPullDownColorPicker(),
+              //buildAllDayCheck(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  spacing: 5,
+
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 2, child: buildPullDownColorPicker()),
+                    Expanded(flex: 3, child: buildAllDay2()),
+                  ],
+                ),
+              ),
+              buildDescription(),
             ],
           ),
         ),
@@ -85,14 +96,32 @@ class _EventEditinPageState extends State<EventEditinPage> {
   }
 
   List<Widget> buildEditingActions() => [
-    FilledButton.icon(
-      onPressed: () {
-        saveForm();
-      },
-      label: Text("Kaydet"),
-      icon: Icon(Icons.check),
-      style: FilledButton.styleFrom(backgroundColor: Colors.green),
-    ),
+    if (widget.event != null)
+      FilledButton(
+        onPressed: () {
+          deleteEvent();
+        },
+        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+        child: Icon(Icons.delete_outline),
+      ),
+    SizedBox(width: 3),
+    widget.event == null
+        ? FilledButton.icon(
+            onPressed: () {
+              saveForm();
+            },
+            label: Text("Kaydet"),
+            icon: Icon(Icons.check),
+            style: FilledButton.styleFrom(backgroundColor: Colors.green),
+          )
+        : FilledButton.icon(
+            onPressed: () {
+              updateForm();
+            },
+            label: Text("Güncelle"),
+            icon: Icon(Icons.check),
+            style: FilledButton.styleFrom(backgroundColor: Colors.green),
+          ),
   ];
 
   Widget buildTitle() => TextFormField(
@@ -317,6 +346,57 @@ class _EventEditinPageState extends State<EventEditinPage> {
     );
   }
 
+  Widget buildAllDay2() {
+    return FilledButton.tonal(
+      style: FilledButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+      ),
+      onPressed: () {
+        setState(() {
+          isAllDay = !isAllDay;
+          if (isAllDay) {
+            toDate = DateTime(
+              fromDate.year,
+              fromDate.month,
+              fromDate.day,
+              23,
+              59,
+              59,
+              999,
+            );
+          }
+        });
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 5,
+        children: [
+          Text("Tüm Gün"),
+          Switch(
+            padding: EdgeInsets.zero,
+            value: isAllDay,
+            onChanged: (value) {
+              setState(() {
+                isAllDay = value;
+                if (isAllDay) {
+                  toDate = DateTime(
+                    fromDate.year,
+                    fromDate.month,
+                    fromDate.day,
+                    23,
+                    59,
+                    59,
+                    999,
+                  );
+                }
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildAllDayCheck() => Padding(
     padding: const EdgeInsets.only(top: 5),
     child: GestureDetector(
@@ -394,18 +474,47 @@ class _EventEditinPageState extends State<EventEditinPage> {
 
     if (isValid) {
       final event = Schedule(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: 0,
         name: titleController.text,
         color: selectedColor,
         startDate: fromDate,
         endDate: toDate,
         isAllDay: isAllDay,
+        description: descriptionController.text,
       );
 
       final provider = Provider.of<EventProvider>(context, listen: false);
       provider.addEvent(event);
       Navigator.pop(context);
     }
+  }
+
+  Future updateForm() async {
+    final isValid = _formKey.currentState!.validate();
+
+    if (isValid) {
+      final event = Schedule(
+        id: 0,
+        name: titleController.text,
+        color: selectedColor,
+        startDate: fromDate,
+        endDate: toDate,
+        isAllDay: isAllDay,
+        description: descriptionController.text,
+      );
+
+      final provider = Provider.of<EventProvider>(context, listen: false);
+      provider.updateEvent(event);
+      Navigator.pop(context);
+    }
+  }
+
+  Future deleteEvent() async {
+    final event = widget.event;
+
+    final provider = Provider.of<EventProvider>(context, listen: false);
+    provider.deleteEvent(event!.id);
+    Navigator.pop(context);
   }
 
   Widget buildPullDownColorPicker() {
@@ -504,10 +613,13 @@ class _EventEditinPageState extends State<EventEditinPage> {
           iconColor: Colors.amber,
         ),
       ],
-      buttonBuilder: (context, showMenu) => FilledButton.tonalIcon(
-        onPressed: showMenu,
-        label: Text("Renk Seçimi"),
-        icon: const Icon(Icons.color_lens_outlined),
+      buttonBuilder: (context, showMenu) => SizedBox(
+        height: 48,
+        child: FilledButton.tonalIcon(
+          onPressed: showMenu,
+          label: Text("Renk Seçimi"),
+          icon: const Icon(Icons.color_lens_outlined),
+        ),
       ),
     );
   }

@@ -342,7 +342,7 @@ packages:
     source: hosted
     version: "2.3.2"
   hive:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: hive
       sha256: "8dcf6db979d7933da8217edcec84e9df1bdb4e4edc7fc77dbd5aa74356d6d941"
@@ -867,7 +867,7 @@ packages:
     source: hosted
     version: "31.2.12"
   syncfusion_localizations:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: syncfusion_localizations
       sha256: "4e84bdec8def9c4ef37f448cf75c8e86cd5903b03a8261ff2e041ebd2f6b2090"

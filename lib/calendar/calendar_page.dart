@@ -56,6 +56,7 @@ class _CalendarPageState extends State<CalendarPage> {
           children: [
             Expanded(
               child: SfCalendar(
+                headerStyle: CalendarHeaderStyle(backgroundColor: Colors.white),
                 controller: _calendarController,
                 view: CalendarView.month,
                 dataSource: ScheduleDataSource(events),
@@ -68,7 +69,11 @@ class _CalendarPageState extends State<CalendarPage> {
                   }
                 },
                 monthViewSettings: const MonthViewSettings(
+                  monthCellStyle: MonthCellStyle(
+                    textStyle: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   showAgenda: true,
+                  agendaViewHeight: 350,
                   appointmentDisplayCount: 3,
                   appointmentDisplayMode: MonthAppointmentDisplayMode.indicator,
                 ),
@@ -86,6 +91,8 @@ class _CalendarPageState extends State<CalendarPage> {
                       calendarLongPressDetails.date!,
                     );
                   }
+                  if (calendarLongPressDetails.targetElement ==
+                      CalendarElement.appointment) {}
                 },
                 onTap: (calendarTapDetails) {
                   // Etkinliğe tıklandıysa detayları göster
@@ -93,10 +100,11 @@ class _CalendarPageState extends State<CalendarPage> {
                       CalendarElement.appointment) {
                     final Schedule tappedEvent =
                         calendarTapDetails.appointments![0];
-                    EventDialogsWidgets.showEventDetailsDialog(
-                      context,
-                      tappedEvent,
-                    );
+                    // EventDialogsWidgets.showEventDetailsDialog(
+                    //   context,
+                    //   tappedEvent,
+                    // );
+                    EventDialogsWidgets.showEditingPage(tappedEvent, context);
                   }
                   // Boş tarihe tıklandıysa yeni etkinlik ekle
                 },
@@ -160,62 +168,64 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  Widget buildCalendarViewOptions(CalendarController controller) =>
-      PullDownButton(
-        routeTheme: PullDownMenuRouteTheme(backgroundColor: Colors.white),
-        itemBuilder: (context) => [
-          PullDownMenuItem.selectable(
-            selected: controller.view == CalendarView.month,
-            onTap: () {
-              setState(() {
-                controller.view = CalendarView.month;
-              });
-            },
-            title: "Ay Görünüm",
-          ),
-          PullDownMenuItem.selectable(
-            selected: controller.view == CalendarView.day,
-            onTap: () {
-              setState(() {
-                controller.view = CalendarView.day;
-              });
-            },
-            title: "Gün Görünüm",
-          ),
-          PullDownMenuItem.selectable(
-            selected: controller.view == CalendarView.week,
-            onTap: () {
-              setState(() {
-                controller.view = CalendarView.week;
-              });
-            },
-            title: "Hafta Görünüm",
-          ),
-          PullDownMenuItem.selectable(
-            selected: controller.view == CalendarView.schedule,
-            onTap: () {
-              setState(() {
-                controller.view = CalendarView.schedule;
-              });
-            },
-            title: "Etkinlik Görünümü ",
-          ),
-        ],
-        position: PullDownMenuPosition.automatic,
-        buttonBuilder: (context, showMenu) => GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            showMenu();
-          },
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 5,
-              top: 20,
-              bottom: 20,
-              right: 5,
-            ),
-            child: Icon(Icons.more_vert),
-          ),
-        ),
-      );
+  Widget buildCalendarViewOptions(
+    CalendarController controller,
+  ) => PullDownButton(
+    routeTheme: PullDownMenuRouteTheme(backgroundColor: Colors.white),
+    itemBuilder: (context) => [
+      PullDownMenuItem.selectable(
+        selected: controller.view == CalendarView.month,
+        onTap: () {
+          setState(() {
+            controller.view = CalendarView.month;
+          });
+        },
+        title: "Ay Görünüm",
+      ),
+      PullDownMenuItem.selectable(
+        selected: controller.view == CalendarView.day,
+        onTap: () {
+          setState(() {
+            controller.view = CalendarView.day;
+          });
+        },
+        title: "Gün Görünüm",
+      ),
+      PullDownMenuItem.selectable(
+        selected: controller.view == CalendarView.week,
+        onTap: () {
+          setState(() {
+            controller.view = CalendarView.week;
+          });
+        },
+        title: "Hafta Görünüm",
+      ),
+      PullDownMenuItem.selectable(
+        selected: controller.view == CalendarView.schedule,
+        onTap: () {
+          setState(() {
+            controller.view = CalendarView.schedule;
+          });
+        },
+        title: "Etkinlik Görünümü ",
+      ),
+      PullDownMenuItem(
+        onTap: () {
+          Provider.of<EventProvider>(context, listen: false).resetAllEvents();
+        },
+        title: "Tüm Etkinlikleri Sil",
+      ),
+    ],
+    position: PullDownMenuPosition.automatic,
+    buttonBuilder: (context, showMenu) => GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        showMenu();
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 5, top: 20, bottom: 20, right: 5),
+        child: Icon(Icons.more_vert),
+      ),
+    ),
+  );
 }
