@@ -54,6 +54,7 @@ class _CostumersState extends State<Costumers> {
         .watch<CostumerProvider>()
         .costumersList;
     return Scaffold(
+      appBar: AppBar(title: Text("Müşteriler"), actions: [Icon(Icons.search)]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           navigateToAddCostumerPage();

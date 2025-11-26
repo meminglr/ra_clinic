@@ -12,8 +12,7 @@ class EventEditinPage extends StatefulWidget {
   final Schedule? event;
   final DateTime selectedDate;
 
-  const EventEditinPage({Key? key, this.event, required this.selectedDate})
-    : super(key: key);
+  const EventEditinPage({super.key, this.event, required this.selectedDate});
 
   @override
   State<EventEditinPage> createState() => _EventEditinPageState();

@@ -30,11 +30,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final events = Provider.of<EventProvider>(context).events;
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Takvim"),
-        centerTitle: true,
-        actions: [buildCalendarViewOptions(_calendarController)],
-      ),
+      appBar: AppBar(title: Text("Takvim"), centerTitle: true, actions: []),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // EventDialogsWidgets.showAddEventDialog(
@@ -54,6 +50,61 @@ class _CalendarPageState extends State<CalendarPage> {
       body: SafeArea(
         child: Column(
           children: [
+            SegmentedButton<CalendarView>(
+              // 1. Controller'daki mevcut görünümü alıyoruz.
+              // Not: .view null olabileceği için varsayılan olarak 'month' veriyoruz.
+              selected: <CalendarView>{
+                _calendarController.view ?? CalendarView.month,
+              },
+
+              // 2. Seçim değiştiğinde controller'ı güncelliyoruz.
+              onSelectionChanged: (Set<CalendarView> newSelection) {
+                setState(() {
+                  // Seçilen yeni görünümü controller'a atıyoruz.
+                  // Bu işlem takvimin de görünümünü değiştirecektir.
+                  _calendarController.view = newSelection.first;
+                });
+              },
+
+              // 3. Segment (Buton) Tanımları
+              segments: const <ButtonSegment<CalendarView>>[
+                ButtonSegment<CalendarView>(
+                  value: CalendarView.month,
+                  label: Text('Ay'),
+                  icon: Icon(Icons.calendar_view_month),
+                ),
+                ButtonSegment<CalendarView>(
+                  value: CalendarView.week,
+                  label: Text('Hafta'),
+                  icon: Icon(Icons.calendar_view_week),
+                ),
+                ButtonSegment<CalendarView>(
+                  value: CalendarView.day,
+                  label: Text('Gün'),
+                  icon: Icon(Icons.calendar_view_day),
+                ),
+                ButtonSegment<CalendarView>(
+                  value: CalendarView.schedule,
+                  label: Text('Etkinlik'),
+                  icon: Icon(
+                    Icons.view_agenda_outlined,
+                  ), // Ajanda/Liste görünümü için uygun ikon
+                ),
+              ],
+
+              // İsteğe bağlı görsel ayarlar
+              showSelectedIcon: false,
+              style: ButtonStyle(
+                // Yatay ve dikey boşlukları minimuma indirir (-4 en sıkı ayardır)
+                visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
+
+                // İç padding'i sıfırlar veya çok azaltır
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8),
+                ),
+              ),
+            ),
+
             Expanded(
               child: SfCalendar(
                 headerStyle: CalendarHeaderStyle(backgroundColor: Colors.white),
@@ -132,9 +183,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void resizeStart(
     AppointmentResizeStartDetails appointmentResizeStartDetails,
-  ) {
-    print('Resize başladı');
-  }
+  ) {}
 
   void resizeUpdate(
     AppointmentResizeUpdateDetails appointmentResizeUpdateDetails,

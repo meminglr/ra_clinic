@@ -1,6 +1,5 @@
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';

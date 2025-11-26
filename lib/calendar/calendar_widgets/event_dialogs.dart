@@ -97,7 +97,7 @@ class EventDialogsWidgets {
                         child: ListTile(
                           leading: Icon(Icons.access_time, color: Colors.green),
                           title: Text('Başlangıç Saati'),
-                          subtitle: Text('${startTime.format(context)}'),
+                          subtitle: Text(startTime.format(context)),
                           trailing: Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () async {
                             final TimeOfDay? picked = await showTimePicker(
@@ -120,7 +120,7 @@ class EventDialogsWidgets {
                         child: ListTile(
                           leading: Icon(Icons.access_time, color: Colors.red),
                           title: Text('Bitiş Saati'),
-                          subtitle: Text('${endTime.format(context)}'),
+                          subtitle: Text(endTime.format(context)),
                           trailing: Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () async {
                             final TimeOfDay? picked = await showTimePicker(

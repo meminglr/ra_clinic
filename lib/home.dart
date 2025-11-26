@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
-
-import 'custom_app_bars.dart';
-
+import 'package:ra_clinic/screens/profile_page.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -12,33 +10,87 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final List pages = [Costumers(), CalendarPage()];
+  // PageController'ı tanımlayın.
+  late PageController _pageController;
+
+  // Sayfa içeriğini tutan listeniz.
+  final List<Widget> pages = [
+    const Costumers(),
+    const CalendarPage(),
+    const ProfilePage(),
+  ];
+
+  // Seçili sayfanın indeksi.
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Controller'ı başlangıç indeksi ile başlatın.
+    _pageController = PageController(initialPage: selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    // Controller'ı temizlemeyi unutmayın.
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onDestinationSelected(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+
+    // *** Burası anahtar noktadır! ***
+    // Tıklandığında PageView'e o sayfaya animasyonlu olarak (kayarak) gitmesini söyler.
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300), // Kayma süresi (300ms ideal)
+      curve: Curves.easeInOutCubicEmphasized, // Yumuşak geçiş eğrisi
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppbars.buildAppBar(selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: (value) => {
+      // *** Sayfaların Kayarak Göründüğü Kısım: PageView ***
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+
+        // Kullanıcı parmağıyla kaydırdığında alttaki navigasyon barını günceller.
+        onPageChanged: (index) {
           setState(() {
-            selectedIndex = value;
-          }),
+            selectedIndex = index;
+          });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
+        children: pages,
+        // İsteğe bağlı: Kaydırmayı sadece butonlara kısıtlamak için:
+        // physics: const NeverScrollableScrollPhysics(),
+      ),
+
+      // *** Navigasyon Butonları Kısım: NavigationBar ***
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected:
+            _onDestinationSelected, // Güncellediğimiz fonksiyona bağlandı
+        selectedIndex: selectedIndex,
+        // PageView'e geçişi PageController yönettiği için buradaki animationDuration'ı kaldırabiliriz veya düşük tutabiliriz.
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.group_outlined),
             label: 'Müşteriler',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             label: 'Takvim',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            label: 'Profil',
+          ),
         ],
       ),
-
-      body: pages[selectedIndex],
     );
   }
 }
