@@ -64,13 +64,6 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FilledButton.tonalIcon(
-              style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(
-                  _isCallExpanded
-                      ? Colors.green.shade200
-                      : (_phoneIsNotEmpty ? null : Colors.grey.shade300),
-                ),
-              ),
               onPressed: () {
                 if (_phoneIsNotEmpty) {
                   CommunicationHelper.makePhoneCall(
@@ -90,9 +83,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
             FilledButton.tonalIcon(
               style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(
-                  _isMessageExpanded
-                      ? Colors.green.shade200
-                      : (_phoneIsNotEmpty ? null : Colors.grey.shade300),
+                  _isMessageExpanded ? null : null,
                 ),
               ),
               onPressed: () {
@@ -115,7 +106,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
             FilledButton.tonalIcon(
               style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(
-                  _phoneIsNotEmpty ? null : Colors.grey.shade300,
+                  _phoneIsNotEmpty ? null : null,
                 ),
               ),
               onPressed: () {
@@ -165,7 +156,9 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
                       icon: Icon(Icons.message_outlined),
                       label: Text("Kısa Mesaj"),
                       style: ButtonStyle(
-                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                        foregroundColor: WidgetStatePropertyAll(
+                          Theme.of(context).colorScheme.onPrimary,
+                        ),
                         backgroundColor: WidgetStatePropertyAll(Colors.orange),
                       ),
                     ),
@@ -179,7 +172,9 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
                       icon: Icon(Icons.message_outlined),
                       label: Text("Whastapp"),
                       style: ButtonStyle(
-                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                        foregroundColor: WidgetStatePropertyAll(
+                          Theme.of(context).colorScheme.onPrimary,
+                        ),
                         backgroundColor: WidgetStatePropertyAll(Colors.green),
                       ),
                     ),

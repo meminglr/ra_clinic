@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
+import 'package:ra_clinic/ex_calendar.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -17,7 +19,7 @@ class _HomeState extends State<Home> {
   final List<Widget> pages = [
     const Costumers(),
     const CalendarPage(),
-    const ProfilePage(),
+    const SettingsPage(),
   ];
 
   // Seçili sayfanın indeksi.

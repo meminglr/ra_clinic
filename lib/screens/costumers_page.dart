@@ -10,6 +10,8 @@ import 'package:ra_clinic/screens/add_costumer_page.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/screens/edit_costumer_page.dart';
 
+import 'costumer_updating.dart';
+
 class Costumers extends StatefulWidget {
   const Costumers({super.key});
 
@@ -21,7 +23,7 @@ class _CostumersState extends State<Costumers> {
   void navigateToAddCostumerPage() async {
     final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
       context,
-      CupertinoPageRoute(builder: (builder) => AddCostumerPage()),
+      CupertinoPageRoute(builder: (builder) => CostumerUpdating()),
     );
 
     if (newCostumer != null) {
@@ -34,7 +36,7 @@ class _CostumersState extends State<Costumers> {
       context,
       CupertinoPageRoute(
         builder: (builder) {
-          return EditCostumerPage(costumer: costumer);
+          return CostumerUpdating(costumer: costumer);
         },
       ),
     );
@@ -67,15 +69,11 @@ class _CostumersState extends State<Costumers> {
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.person_off_outlined,
-                    size: 100,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.person_off_outlined, size: 100),
                   Text(
                     "Henüz eklenmiş bir müşteri yok.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(fontSize: 18),
                   ),
                 ],
               )
@@ -128,7 +126,6 @@ class _CostumersState extends State<Costumers> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          color: Colors.green.shade100,
                           child: Padding(
                             padding: const EdgeInsets.only(
                               left: 16,
@@ -188,9 +185,6 @@ class _CostumersState extends State<Costumers> {
                                         shape: WidgetStatePropertyAll(
                                           CircleBorder(),
                                         ),
-                                        backgroundColor: WidgetStatePropertyAll(
-                                          Colors.green.shade600,
-                                        ),
                                       ),
                                       onPressed: () {
                                         CommunicationHelper.openSmsApp(
@@ -203,7 +197,9 @@ class _CostumersState extends State<Costumers> {
 
                                     PullDownButton(
                                       routeTheme: PullDownMenuRouteTheme(
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).colorScheme.surface,
                                       ),
                                       itemBuilder: (context) => [
                                         PullDownMenuItem(

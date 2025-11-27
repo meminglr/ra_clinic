@@ -132,7 +132,6 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         hintText: "Müşteri ismini giriniz",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -146,7 +145,6 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
                       ],
                       decoration: InputDecoration(
                         hintText: "Telefon No",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.phone_outlined),
                       ),
                     ),
@@ -157,7 +155,6 @@ class _AddCostumerPageState extends State<AddCostumerPage> {
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
                         hintText: "Not",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),

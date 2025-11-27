@@ -12,6 +12,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.d
 import 'package:ra_clinic/providers/costumer_provider.dart';
 
 import '../../func/communication_helper.dart';
+import '../../screens/costumer_updating.dart';
 import '../../screens/edit_costumer_page.dart';
 
 class CostumerDetail extends StatefulWidget {
@@ -37,7 +38,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
       context,
       CupertinoPageRoute(
         builder: (builder) {
-          return EditCostumerPage(costumer: costumer);
+          return CostumerUpdating(costumer: costumer);
         },
       ),
     );

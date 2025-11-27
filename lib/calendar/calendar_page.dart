@@ -107,7 +107,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
             Expanded(
               child: SfCalendar(
-                headerStyle: CalendarHeaderStyle(backgroundColor: Colors.white),
+                headerStyle: CalendarHeaderStyle(),
                 controller: _calendarController,
                 view: CalendarView.month,
                 dataSource: ScheduleDataSource(events),
@@ -121,10 +121,13 @@ class _CalendarPageState extends State<CalendarPage> {
                 },
                 monthViewSettings: const MonthViewSettings(
                   monthCellStyle: MonthCellStyle(
-                    textStyle: TextStyle(fontWeight: FontWeight.w700),
+                    textStyle: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
                   ),
                   showAgenda: true,
-                  agendaViewHeight: 350,
+                  agendaViewHeight: 275,
                   appointmentDisplayCount: 3,
                   appointmentDisplayMode: MonthAppointmentDisplayMode.indicator,
                 ),

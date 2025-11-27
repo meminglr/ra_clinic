@@ -25,7 +25,6 @@ class SeansListView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    color: Colors.green.shade100,
                     child: Padding(
                       padding: const EdgeInsets.only(
                         left: 16,

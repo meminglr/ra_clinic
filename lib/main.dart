@@ -8,8 +8,11 @@ import 'package:ra_clinic/home.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
+import 'package:ra_clinic/theme/app_themes.dart';
 import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
+
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,12 +22,14 @@ void main() async {
   Hive.registerAdapter(ScheduleAdapter());
   await Hive.openBox<CostumerModel>("costumersBox");
   await Hive.openBox<Schedule>("scheduleBox");
+  await Hive.openBox('settings');
   await initializeDateFormatting('tr_TR', null);
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CostumerProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MainApp(),
     ),
@@ -36,6 +41,8 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       locale: const Locale('tr', 'TR'), // 🌍 Türkçe dil ayarı
       supportedLocales: const [Locale('tr', 'TR'), Locale('en', 'US')],
@@ -45,21 +52,10 @@ class MainApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         SfGlobalLocalizations.delegate,
       ],
-      theme: ThemeData(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          actionsPadding: EdgeInsets.symmetric(horizontal: 10),
-          scrolledUnderElevation: 0,
-        ),
-        scaffoldBackgroundColor: Colors.white,
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-        ),
-        cardTheme: CardThemeData(elevation: 0),
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-      ),
+      
+      themeMode: themeProvider.themeMode,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       home: const Home(),
     );

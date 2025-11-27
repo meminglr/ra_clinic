@@ -69,11 +69,10 @@ class _EventEditinPageState extends State<EventEditinPage> {
         child: Form(
           key: _formKey,
           child: Column(
+            spacing: 10,
             children: [
               buildTitle(),
               buildDateTimePicker(),
-
-              //buildAllDayCheck(),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -82,7 +81,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(flex: 2, child: buildPullDownColorPicker()),
-                    Expanded(flex: 3, child: buildAllDay2()),
+                    Expanded(flex: 3, child: buildAllDay()),
                   ],
                 ),
               ),
@@ -129,15 +128,23 @@ class _EventEditinPageState extends State<EventEditinPage> {
     onFieldSubmitted: (_) {},
 
     style: TextStyle(fontSize: 50),
-    decoration: InputDecoration(hintText: "Başlık", border: InputBorder.none),
+
+    decoration: InputDecoration(
+      hintText: "Başlık",
+      filled: false,
+      border: InputBorder.none,
+    ),
   );
 
-  Widget buildDateTimePicker() => Card(
-    elevation: 0,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      child: Column(children: [buildFrom(), buildTo()]),
-    ),
+  Widget buildDateTimePicker() => AnimatedSize(
+    duration: Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+    child: isAllDay
+        ? SizedBox()
+        : Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            child: Column(spacing: 10, children: [buildFrom(), buildTo()]),
+          ),
   );
 
   Widget buildFrom() => Row(
@@ -153,6 +160,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
   Widget buildFromDate() => CupertinoCalendarPickerButton(
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       backgroundType: PickerBackgroundType.plainColor,
     ),
     minimumDateTime: fromDate.add(Duration(days: -365)),
@@ -181,39 +189,28 @@ class _EventEditinPageState extends State<EventEditinPage> {
     ],
   );
   Widget buildFromTime() => CupertinoTimePickerButton(
-    barrierColor: Colors.transparent,
     initialTime: TimeOfDay.fromDateTime(fromDate),
+    barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       backgroundType: PickerBackgroundType.plainColor,
     ),
   );
 
-  Widget buildTo() => AnimatedSize(
-    duration: Duration(milliseconds: 300),
-    curve: Curves.easeInOut,
-    child: isAllDay
-        ? SizedBox()
-        : Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Row(
-              spacing: 10,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.alarm_off_outlined,
-                  size: 30,
-                  color: Colors.redAccent,
-                ),
-                Expanded(flex: 2, child: buildToDate()),
-                Expanded(child: buildToTime()),
-              ],
-            ),
-          ),
+  Widget buildTo() => Row(
+    spacing: 10,
+    mainAxisAlignment: MainAxisAlignment.start,
+    children: [
+      Icon(Icons.alarm_off_outlined, size: 30, color: Colors.redAccent),
+      Expanded(flex: 2, child: buildToDate()),
+      Expanded(child: buildToTime()),
+    ],
   );
 
   Widget buildToDate() => CupertinoCalendarPickerButton(
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       backgroundType: PickerBackgroundType.plainColor,
     ),
     minimumDateTime: toDate.add(Duration(days: -365)),
@@ -236,9 +233,10 @@ class _EventEditinPageState extends State<EventEditinPage> {
     ],
   );
   Widget buildToTime() => CupertinoTimePickerButton(
-    barrierColor: Colors.transparent,
     initialTime: TimeOfDay.fromDateTime(toDate),
+    barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       backgroundType: PickerBackgroundType.plainColor,
     ),
   );
@@ -345,7 +343,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
     );
   }
 
-  Widget buildAllDay2() {
+  Widget buildAllDay() {
     return FilledButton.tonal(
       style: FilledButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
@@ -353,17 +351,6 @@ class _EventEditinPageState extends State<EventEditinPage> {
       onPressed: () {
         setState(() {
           isAllDay = !isAllDay;
-          if (isAllDay) {
-            toDate = DateTime(
-              fromDate.year,
-              fromDate.month,
-              fromDate.day,
-              23,
-              59,
-              59,
-              999,
-            );
-          }
         });
       },
       child: Row(
@@ -377,17 +364,6 @@ class _EventEditinPageState extends State<EventEditinPage> {
             onChanged: (value) {
               setState(() {
                 isAllDay = value;
-                if (isAllDay) {
-                  toDate = DateTime(
-                    fromDate.year,
-                    fromDate.month,
-                    fromDate.day,
-                    23,
-                    59,
-                    59,
-                    999,
-                  );
-                }
               });
             },
           ),
@@ -396,76 +372,12 @@ class _EventEditinPageState extends State<EventEditinPage> {
     );
   }
 
-  Widget buildAllDayCheck() => Padding(
-    padding: const EdgeInsets.only(top: 5),
-    child: GestureDetector(
-      onTap: () {
-        setState(() {
-          isAllDay = !isAllDay;
-          if (isAllDay) {
-            toDate = DateTime(
-              fromDate.year,
-              fromDate.month,
-              fromDate.day,
-              23,
-              59,
-              59,
-              999,
-            );
-          }
-        });
-      },
-      child: Card(
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: 5,
-            children: [
-              Text("Tüm Gün", style: TextStyle(fontSize: 16)),
-              Switch(
-                value: isAllDay,
-                onChanged: (value) {
-                  setState(() {
-                    isAllDay = value;
-                    if (isAllDay) {
-                      toDate = DateTime(
-                        fromDate.year,
-                        fromDate.month,
-                        fromDate.day,
-                        23,
-                        59,
-                        59,
-                        999,
-                      );
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-
-  Widget buildDescription() => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Card(
-      elevation: 0,
-      child: TextFormField(
-        controller: descriptionController,
-        onFieldSubmitted: (_) {},
-        maxLines: 8,
-        style: TextStyle(fontSize: 24),
-        decoration: InputDecoration(
-          hintText: "Açıklama",
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.all(10),
-        ),
-      ),
-    ),
+  Widget buildDescription() => TextFormField(
+    controller: descriptionController,
+    onFieldSubmitted: (_) {},
+    maxLines: 8,
+    style: TextStyle(fontSize: 24),
+    decoration: InputDecoration(hintText: "Açıklama"),
   );
 
   Future saveForm() async {
@@ -518,19 +430,21 @@ class _EventEditinPageState extends State<EventEditinPage> {
 
   Widget buildPullDownColorPicker() {
     return PullDownButton(
-      routeTheme: PullDownMenuRouteTheme(backgroundColor: Colors.white),
+      routeTheme: PullDownMenuRouteTheme(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+      ),
 
       itemBuilder: (_) => [
         PullDownMenuItem.selectable(
           onTap: () {
             setState(() {
-              selectedColor = Colors.blue;
+              selectedColor = Theme.of(context).primaryColor;
             });
           },
-          selected: selectedColor == Colors.blue,
-          title: 'Mavi',
+          selected: selectedColor == Theme.of(context).primaryColor,
+          title: 'Varsayılan',
           icon: CupertinoIcons.circle_fill,
-          iconColor: Colors.blue,
+          iconColor: Theme.of(context).primaryColor,
         ),
         PullDownMenuItem.selectable(
           onTap: () {

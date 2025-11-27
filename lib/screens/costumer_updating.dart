@@ -1,26 +1,31 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
+import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/utils.dart';
 
-class EditCostumerPage extends StatefulWidget {
-  final CostumerModel costumer;
-  const EditCostumerPage({super.key, required this.costumer});
+class CostumerUpdating extends StatefulWidget {
+  final CostumerModel? costumer;
+  const CostumerUpdating({super.key, this.costumer});
 
   @override
-  State<EditCostumerPage> createState() => _EditCostumerPageState();
+  State<CostumerUpdating> createState() => _CostumerUpdatingState();
 }
 
-class _EditCostumerPageState extends State<EditCostumerPage> {
+class _CostumerUpdatingState extends State<CostumerUpdating> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _telNoController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   List<SeansModel> _seansList = [];
-  final Map<SeansModel, TextEditingController> _controllers = {};
+  final Map<SeansModel, TextEditingController> _seansControllers = {};
 
-  DateTime now = DateTime.now();
+  DateTime costumerStartDate = DateTime.now();
 
   final _formKey = GlobalKey<FormState>();
   String kayitTarihi = "";
@@ -29,59 +34,61 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.costumer.name;
-    _telNoController.text = widget.costumer.phone ?? "";
-    _noteController.text = widget.costumer.notes ?? "";
-    _seansList = widget.costumer.seansList;
-    for (var seans in widget.costumer.seansList) {
-      _controllers[seans] = TextEditingController(text: seans.seansNote);
+    if (widget.costumer == null) {
+      for (var seans in _seansList) {
+        _seansControllers[seans] = TextEditingController(text: seans.seansNote);
+      }
     }
 
-    musteriTarihVeSaatAl();
+    if (widget.costumer != null) {
+      _nameController.text = widget.costumer!.name;
+      _telNoController.text = widget.costumer!.phone ?? "";
+      _noteController.text = widget.costumer!.notes ?? "";
+      _seansList = widget.costumer!.seansList;
+      costumerStartDate = widget.costumer!.startDate;
+      kayitTarihi = widget.costumer!.startDateString;
+      for (var seans in widget.costumer!.seansList) {
+        _seansControllers[seans] = TextEditingController(text: seans.seansNote);
+      }
+    }
+    kayitTarihiGuncelle();
   }
 
-  void removeSeans(int index) {
-    if (_seansList.isNotEmpty) {
-      _seansList[index].isDeleted = !_seansList[index].isDeleted;
-      setState(() {});
-    }
+  void removeSeans(int index, List seansList) {
+    context.read<CostumerProvider>().removeSeans(index, seansList);
+    setState(() {});
   }
 
   void seansEkle() {
-    seansTarihSaatAl();
-    _seansList.add(
-      SeansModel(
-        id: _seansList.length,
-        startDate: now,
-        startDateString: seansTarihi,
-        seansCount: _seansList.length + 1,
-      ),
+    final newSeans = SeansModel(
+      id: _seansList.length,
+      startDate: DateTime.now(),
+      startDateString: Utils.toDate(DateTime.now()),
+      seansCount: _seansList.length + 1,
     );
+    _seansControllers[newSeans] = TextEditingController();
+    context.read<CostumerProvider>().seansEkle(newSeans, _seansList);
     setState(() {});
   }
 
-  void musteriTarihVeSaatAl() {
-    kayitTarihi = Utils.toDate(now);
-    setState(() {});
-  }
-
-  void seansTarihSaatAl() {
-    seansTarihi = Utils.toDate(now);
+  void kayitTarihiGuncelle() {
+    kayitTarihi = Utils.toDate(costumerStartDate);
     setState(() {});
   }
 
   void saveAndReturn() {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
-      final CostumerModel modifiedCostumer = CostumerModel(
-        id: widget.costumer.id,
+      final id = Uuid().v4();
+      final CostumerModel newCostumer = CostumerModel(
+        id: id,
         name: _nameController.text,
         phone: _telNoController.text,
-        startDate: now,
+        startDate: costumerStartDate,
         notes: _noteController.text,
         seansList: _seansList,
         startDateString: kayitTarihi,
       );
-      Navigator.pop(context, modifiedCostumer);
+      Navigator.pop(context, newCostumer);
     } else {
       ScaffoldMessenger.of(
         context,
@@ -94,13 +101,16 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
     _nameController.dispose();
     _telNoController.dispose();
     _noteController.dispose();
+    for (var controller in _seansControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Müşteri Düzenle")),
+      appBar: AppBar(title: const Text("Müşteri Ekle")),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           saveAndReturn();
@@ -117,12 +127,9 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
               child: Form(
                 key: _formKey,
                 child: Column(
-                  spacing: 16,
+                  spacing: 15,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage("assets/avatar.png"),
-                    ),
+                    Icon(Icons.account_circle, size: 150, color: Colors.grey),
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -134,7 +141,6 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         hintText: "Müşteri ismini giriniz",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -148,7 +154,6 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                       ],
                       decoration: InputDecoration(
                         hintText: "Telefon No",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.phone_outlined),
                       ),
                     ),
@@ -159,27 +164,26 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
                         hintText: "Not",
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),
-
                     CupertinoCalendarPickerButton(
                       minimumDateTime: DateTime(2020, 1, 1),
                       maximumDateTime: DateTime(2030, 12, 31),
-                      initialDateTime: widget.costumer.startDate,
+                      initialDateTime: costumerStartDate,
                       barrierColor: Colors.transparent,
-
                       containerDecoration: PickerContainerDecoration(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         backgroundType: PickerBackgroundType.plainColor,
                       ),
-                      mode: CupertinoCalendarMode.dateTime,
+                      mode: CupertinoCalendarMode.date,
                       timeLabel: 'Saat',
                       onDateTimeChanged: (date) {
-                        now = date;
-                        musteriTarihVeSaatAl();
+                        costumerStartDate = date;
+                        kayitTarihiGuncelle();
                       },
                     ),
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -193,71 +197,72 @@ class _EditCostumerPageState extends State<EditCostumerPage> {
                     seans.isDeleted
                         ? FilledButton.tonal(
                             onPressed: () {
-                              removeSeans(index);
+                              removeSeans(index, _seansList);
                             },
                             child: Text("${seans.seansCount}. Seansı Ekle"),
                           )
                         : Card.filled(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 16,
-                                right: 16,
-                                top: 8,
-                                bottom: 16,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              spacing: 10,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onInverseSurface,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
 
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${seans.seansCount}. Seans·",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${seans.seansCount}. Seans·",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
                                             ),
+                                            Text(
+                                              seans.startDateString,
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                          ],
+                                        ),
+                                        GestureDetector(
+                                          onTap: () =>
+                                              removeSeans(index, _seansList),
+                                          child: Icon(
+                                            Icons.delete_outline,
+                                            size: 30,
                                           ),
-                                          Text(
-                                            seans.startDateString,
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                        ],
-                                      ),
-                                      FilledButton.icon(
-                                        onPressed: () {
-                                          removeSeans(index);
-                                        },
-                                        label: Text("Sil"),
-                                        icon: Icon(Icons.delete_outline),
-                                      ),
-                                    ],
-                                  ),
-                                  TextFormField(
-                                    controller: _controllers[seans],
-                                    minLines: 1,
-                                    maxLines: null,
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    onChanged: (value) {
-                                      seans.seansNote = value;
-                                    },
-                                    decoration: InputDecoration(
-                                      hintText: "Seans Notu Ekle",
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                TextFormField(
+                                  controller: _seansControllers[seans],
+                                  minLines: 1,
+                                  maxLines: null,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  onChanged: (value) {
+                                    seans.seansNote = value;
+                                  },
+                                  decoration: InputDecoration(
+                                    filled: false,
+                                    hintText: "Seans Notu Ekle",
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                   ],
