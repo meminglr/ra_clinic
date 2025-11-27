@@ -11,9 +11,9 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 
+import '../../constants/app_constants.dart';
 import '../../func/communication_helper.dart';
 import '../../screens/costumer_updating.dart';
-import '../../screens/edit_costumer_page.dart';
 
 class CostumerDetail extends StatefulWidget {
   final int index;
@@ -84,7 +84,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
                 PullDownButton(
                   routeTheme: PullDownMenuRouteTheme(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppConstants.dropDownButtonsColor(context),
                   ),
                   itemBuilder: (context) => [
                     PullDownMenuItem(

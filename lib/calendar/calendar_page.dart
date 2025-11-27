@@ -9,6 +9,8 @@ import 'package:ra_clinic/calendar/model/schedule_data_source.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
+import '../constants/app_constants.dart';
+
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -28,7 +30,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final events = Provider.of<EventProvider>(context).events;
+    final eventProvider = Provider.of<EventProvider>(context);
+
+    final events = eventProvider.events;
+    Offset _touchPosition = Offset.zero;
     return Scaffold(
       appBar: AppBar(title: Text("Takvim"), centerTitle: true, actions: []),
       floatingActionButton: FloatingActionButton.extended(
@@ -106,62 +111,110 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
 
             Expanded(
-              child: SfCalendar(
-                headerStyle: CalendarHeaderStyle(),
-                controller: _calendarController,
-                view: CalendarView.month,
-                dataSource: ScheduleDataSource(events),
-                initialSelectedDate: DateTime.now(),
-                firstDayOfWeek: 1,
-                showCurrentTimeIndicator: false,
-                onSelectionChanged: (calendarSelectionDetails) {
-                  if (calendarSelectionDetails.date != null) {
-                    selectedDate = calendarSelectionDetails.date!;
-                  }
+              child: Listener(
+                onPointerDown: (PointerDownEvent event) {
+                  _touchPosition = event.position;
                 },
-                monthViewSettings: const MonthViewSettings(
-                  monthCellStyle: MonthCellStyle(
-                    textStyle: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
+                child: SfCalendar(
+                  headerStyle: CalendarHeaderStyle(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                   ),
-                  showAgenda: true,
-                  agendaViewHeight: 275,
-                  appointmentDisplayCount: 3,
-                  appointmentDisplayMode: MonthAppointmentDisplayMode.indicator,
+
+                  controller: _calendarController,
+                  view: CalendarView.month,
+                  dataSource: ScheduleDataSource(events),
+                  initialSelectedDate: DateTime.now(),
+                  firstDayOfWeek: 1,
+                  showCurrentTimeIndicator: true,
+                  showDatePickerButton: true,
+                  showNavigationArrow: true,
+                  showTodayButton: true,
+
+                  onSelectionChanged: (calendarSelectionDetails) {
+                    if (calendarSelectionDetails.date != null) {
+                      selectedDate = calendarSelectionDetails.date!;
+                    }
+                  },
+                  monthViewSettings: const MonthViewSettings(
+                    monthCellStyle: MonthCellStyle(
+                      textStyle: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    showAgenda: true,
+                    agendaViewHeight: 275,
+                    appointmentDisplayCount: 3,
+                    appointmentDisplayMode:
+                        MonthAppointmentDisplayMode.indicator,
+                  ),
+                  allowDragAndDrop: true,
+                  onDragEnd: _onDragEnd,
+                  allowAppointmentResize: true,
+                  onAppointmentResizeStart: resizeStart,
+                  onAppointmentResizeUpdate: resizeUpdate,
+                  onAppointmentResizeEnd: resizeEnd,
+                  // 2. ADIM: Uzun basıldığında yakalanan pozisyonu kullan
+                  onLongPress: (CalendarLongPressDetails details) {
+                    if (details.targetElement == CalendarElement.appointment) {
+                      final Schedule tappedEvent = details.appointments![0];
+                      showPullDownMenu(
+                        routeTheme: PullDownMenuRouteTheme(
+                          backgroundColor: AppConstants.dropDownButtonsColor(
+                            context,
+                          ),
+                        ),
+                        context: context,
+                        // Yakalanan _touchPosition değişkenini burada kullanıyoruz
+                        position: Rect.fromCenter(
+                          center: _touchPosition,
+                          width: 0,
+                          height: 0,
+                        ),
+                        items: [
+                          PullDownMenuItem(
+                            onTap: () {
+                              EventDialogsWidgets.showEditingPage(
+                                tappedEvent,
+                                context,
+                              );
+                            },
+                            title: "Düzenle",
+                            icon: Icons.edit,
+                          ),
+                          PullDownMenuItem(
+                            onTap: () {
+                              eventProvider.deleteEvent(tappedEvent.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Etkinlik silindi'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            title: "Sil",
+                            isDestructive: true,
+                            icon: Icons.delete,
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                  onTap: (calendarTapDetails) {
+                    // Etkinliğe tıklandıysa detayları göster
+                    if (calendarTapDetails.targetElement ==
+                        CalendarElement.appointment) {
+                      final Schedule tappedEvent =
+                          calendarTapDetails.appointments![0];
+                      // EventDialogsWidgets.showEventDetailsDialog(
+                      //   context,
+                      //   tappedEvent,
+                      // );
+                      EventDialogsWidgets.showEditingPage(tappedEvent, context);
+                    }
+                    // Boş tarihe tıklandıysa yeni etkinlik ekle
+                  },
                 ),
-                allowDragAndDrop: true,
-                onDragEnd: _onDragEnd,
-                allowAppointmentResize: true,
-                onAppointmentResizeStart: resizeStart,
-                onAppointmentResizeUpdate: resizeUpdate,
-                onAppointmentResizeEnd: resizeEnd,
-                onLongPress: (calendarLongPressDetails) {
-                  if (calendarLongPressDetails.targetElement ==
-                      CalendarElement.calendarCell) {
-                    EventDialogsWidgets.showAddEventDialog(
-                      context,
-                      calendarLongPressDetails.date!,
-                    );
-                  }
-                  if (calendarLongPressDetails.targetElement ==
-                      CalendarElement.appointment) {}
-                },
-                onTap: (calendarTapDetails) {
-                  // Etkinliğe tıklandıysa detayları göster
-                  if (calendarTapDetails.targetElement ==
-                      CalendarElement.appointment) {
-                    final Schedule tappedEvent =
-                        calendarTapDetails.appointments![0];
-                    // EventDialogsWidgets.showEventDetailsDialog(
-                    //   context,
-                    //   tappedEvent,
-                    // );
-                    EventDialogsWidgets.showEditingPage(tappedEvent, context);
-                  }
-                  // Boş tarihe tıklandıysa yeni etkinlik ekle
-                },
               ),
             ),
           ],

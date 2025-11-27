@@ -10,6 +10,8 @@ import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/utils.dart';
 
+import '../constants/app_constants.dart';
+
 class CostumerUpdating extends StatefulWidget {
   final CostumerModel? costumer;
   const CostumerUpdating({super.key, this.costumer});
@@ -173,7 +175,9 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                       initialDateTime: costumerStartDate,
                       barrierColor: Colors.transparent,
                       containerDecoration: PickerContainerDecoration(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        backgroundColor: AppConstants.dropDownButtonsColor(
+                          context,
+                        ),
                         backgroundType: PickerBackgroundType.plainColor,
                       ),
                       mode: CupertinoCalendarMode.date,

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:ra_clinic/constants/app_constants.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
-import 'package:ra_clinic/screens/add_costumer_page.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
-import 'package:ra_clinic/screens/edit_costumer_page.dart';
+
 
 import 'costumer_updating.dart';
 
@@ -197,9 +197,10 @@ class _CostumersState extends State<Costumers> {
 
                                     PullDownButton(
                                       routeTheme: PullDownMenuRouteTheme(
-                                        backgroundColor: Theme.of(
-                                          context,
-                                        ).colorScheme.surface,
+                                        backgroundColor:
+                                            AppConstants.dropDownButtonsColor(
+                                              context,
+                                            ),
                                       ),
                                       itemBuilder: (context) => [
                                         PullDownMenuItem(

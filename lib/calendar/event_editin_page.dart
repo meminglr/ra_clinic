@@ -8,6 +8,8 @@ import 'package:ra_clinic/calendar/model/schedule.dart';
 
 import 'package:ra_clinic/providers/event_provider.dart';
 
+import '../constants/app_constants.dart';
+
 class EventEditinPage extends StatefulWidget {
   final Schedule? event;
   final DateTime selectedDate;
@@ -160,7 +162,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
   Widget buildFromDate() => CupertinoCalendarPickerButton(
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppConstants.dropDownButtonsColor(context),
       backgroundType: PickerBackgroundType.plainColor,
     ),
     minimumDateTime: fromDate.add(Duration(days: -365)),
@@ -192,7 +194,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
     initialTime: TimeOfDay.fromDateTime(fromDate),
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppConstants.dropDownButtonsColor(context),
       backgroundType: PickerBackgroundType.plainColor,
     ),
   );
@@ -210,7 +212,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
   Widget buildToDate() => CupertinoCalendarPickerButton(
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppConstants.dropDownButtonsColor(context),
       backgroundType: PickerBackgroundType.plainColor,
     ),
     minimumDateTime: toDate.add(Duration(days: -365)),
@@ -236,7 +238,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
     initialTime: TimeOfDay.fromDateTime(toDate),
     barrierColor: Colors.transparent,
     containerDecoration: PickerContainerDecoration(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppConstants.dropDownButtonsColor(context),
       backgroundType: PickerBackgroundType.plainColor,
     ),
   );
@@ -260,7 +262,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
                       children: [
                         Icon(
                           Icons.palette,
-                          color: Theme.of(context).primaryColor,
+                          color: AppConstants.dropDownButtonsColor(context),
                         ),
                         Text(
                           'Renk Seçimi',
@@ -405,7 +407,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
 
     if (isValid) {
       final event = Schedule(
-        id: 0,
+        id: widget.event!.id,
         name: titleController.text,
         color: selectedColor,
         startDate: fromDate,
@@ -431,7 +433,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
   Widget buildPullDownColorPicker() {
     return PullDownButton(
       routeTheme: PullDownMenuRouteTheme(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppConstants.dropDownButtonsColor(context),
       ),
 
       itemBuilder: (_) => [

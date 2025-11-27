@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:contact_add/contact.dart';
 import 'package:contact_add/contact_add.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 
@@ -30,14 +29,12 @@ class CommunicationButtons extends StatefulWidget {
 class _CommunicationButtonsState extends State<CommunicationButtons> {
   late bool _phoneIsNotEmpty;
   late bool _isMessageExpanded;
-  late bool _isCallExpanded;
 
   @override
   void initState() {
     super.initState();
     _phoneIsNotEmpty = widget.phoneIsNotEmpty;
     _isMessageExpanded = widget.isMessageExpanded;
-    _isCallExpanded = widget.isCallExpanded;
   }
 
   @override
@@ -49,9 +46,6 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
     }
     if (oldWidget.isMessageExpanded != widget.isMessageExpanded) {
       _isMessageExpanded = widget.isMessageExpanded;
-    }
-    if (oldWidget.isCallExpanded != widget.isCallExpanded) {
-      _isCallExpanded = widget.isCallExpanded;
     }
   }
 
@@ -90,7 +84,6 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
                 if (_phoneIsNotEmpty) {
                   setState(() {
                     _isMessageExpanded = !_isMessageExpanded;
-                    _isCallExpanded = false;
                   });
                 } else {
                   widget.messenger.hideCurrentSnackBar();

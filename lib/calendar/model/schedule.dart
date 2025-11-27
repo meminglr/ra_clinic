@@ -35,8 +35,7 @@ class Schedule extends HiveObject {
     required this.endDate,
     required this.isAllDay,
     this.description,
-  }) : 
-       colorValue = (color ?? Colors.blue).value;
+  }) : colorValue = (color ?? Colors.blue).value;
 
   Color get color => Color(colorValue);
 }
