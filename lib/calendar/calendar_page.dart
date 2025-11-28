@@ -33,7 +33,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final eventProvider = Provider.of<EventProvider>(context);
 
     final events = eventProvider.events;
-    Offset _touchPosition = Offset.zero;
+    Offset touchPosition = Offset.zero;
     return Scaffold(
       appBar: AppBar(title: Text("Takvim"), centerTitle: true, actions: []),
       floatingActionButton: FloatingActionButton.extended(
@@ -113,7 +113,7 @@ class _CalendarPageState extends State<CalendarPage> {
             Expanded(
               child: Listener(
                 onPointerDown: (PointerDownEvent event) {
-                  _touchPosition = event.position;
+                  touchPosition = event.position;
                 },
                 child: SfCalendar(
                   headerStyle: CalendarHeaderStyle(
@@ -156,7 +156,10 @@ class _CalendarPageState extends State<CalendarPage> {
                   onAppointmentResizeEnd: resizeEnd,
                   // 2. ADIM: Uzun basıldığında yakalanan pozisyonu kullan
                   onLongPress: (CalendarLongPressDetails details) {
-                    if (details.targetElement == CalendarElement.appointment) {
+                    final calendarView = _calendarController.view;
+                    if (details.targetElement == CalendarElement.appointment &&
+                            calendarView == CalendarView.month ||
+                        calendarView == CalendarView.schedule) {
                       final Schedule tappedEvent = details.appointments![0];
                       showPullDownMenu(
                         routeTheme: PullDownMenuRouteTheme(
@@ -167,7 +170,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         context: context,
                         // Yakalanan _touchPosition değişkenini burada kullanıyoruz
                         position: Rect.fromCenter(
-                          center: _touchPosition,
+                          center: touchPosition,
                           width: 0,
                           height: 0,
                         ),
