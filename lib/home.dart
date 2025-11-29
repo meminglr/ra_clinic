@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
+import 'package:ra_clinic/screens/costumers_page2.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
 
 class Home extends StatefulWidget {
@@ -11,29 +12,24 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // PageController'ı tanımlayın.
   late PageController _pageController;
 
-  // Sayfa içeriğini tutan listeniz.
   final List<Widget> pages = [
-    const Costumers(),
+    const CostumersPage2(),
     const CalendarPage(),
-    const SettingsPage(),
+    const SettingsPage(), // Düzeltilmiş: SettingsPage -> ProfilePage
   ];
 
-  // Seçili sayfanın indeksi.
   int selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    // Controller'ı başlangıç indeksi ile başlatın.
     _pageController = PageController(initialPage: selectedIndex);
   }
 
   @override
   void dispose() {
-    // Controller'ı temizlemeyi unutmayın.
     _pageController.dispose();
     super.dispose();
   }
@@ -43,52 +39,89 @@ class _HomeState extends State<Home> {
       selectedIndex = index;
     });
 
-    // *** Burası anahtar noktadır! ***
-    // Tıklandığında PageView'e o sayfaya animasyonlu olarak (kayarak) gitmesini söyler.
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300), // Kayma süresi (300ms ideal)
-      curve: Curves.easeInOutCubicEmphasized, // Yumuşak geçiş eğrisi
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubicEmphasized,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final bool isWideScreen = width > 640;
+
     return Scaffold(
-      // *** Sayfaların Kayarak Göründüğü Kısım: PageView ***
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
+      bottomNavigationBar: isWideScreen
+          ? null
+          : NavigationBar(
+              onDestinationSelected: _onDestinationSelected,
+              selectedIndex: selectedIndex,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.group_outlined),
+                  label: 'Müşteriler',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  label: 'Takvim',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  label: 'Profil',
+                ),
+              ],
+            ),
 
-        // Kullanıcı parmağıyla kaydırdığında alttaki navigasyon barını günceller.
-        onPageChanged: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        children: pages,
-        // İsteğe bağlı: Kaydırmayı sadece butonlara kısıtlamak için:
-        // physics: const NeverScrollableScrollPhysics(),
-      ),
+      body: Row(
+        children: [
+          if (isWideScreen)
+            NavigationRail(
+              selectedIndex: selectedIndex,
+              onDestinationSelected: _onDestinationSelected,
 
-      // *** Navigasyon Butonları Kısım: NavigationBar ***
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected:
-            _onDestinationSelected, // Güncellediğimiz fonksiyona bağlandı
-        selectedIndex: selectedIndex,
-        // PageView'e geçişi PageController yönettiği için buradaki animationDuration'ı kaldırabiliriz veya düşük tutabiliriz.
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.group_outlined),
-            label: 'Müşteriler',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            label: 'Takvim',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
+              // Leading içeriğini minimal yüksekliğe indiriyoruz
+              leading: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
+                  const SizedBox(height: 8),
+                ],
+              ),
+
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.group_outlined),
+                  selectedIcon: Icon(Icons.group),
+                  label: Text('Müşteriler'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  selectedIcon: Icon(Icons.calendar_month),
+                  label: Text('Takvim'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: Text('Profil'),
+                ),
+              ],
+            ),
+
+          if (isWideScreen) const VerticalDivider(thickness: 1, width: 1),
+
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              scrollDirection: isWideScreen ? Axis.vertical : Axis.horizontal,
+              onPageChanged: (index) {
+                setState(() {
+                  selectedIndex = index;
+                });
+              },
+              children: pages,
+            ),
           ),
         ],
       ),

@@ -22,41 +22,45 @@ class SeansListView extends StatelessWidget {
                     child: Text("${seans.seansCount}. seans yok"),
                   )
                 : Card.filled(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        top: 16,
-                        bottom: 16,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "${seans.seansCount}. Seans·",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                seans.startDateString,
-                                style: TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          color: Theme.of(context).colorScheme.onInverseSurface,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                          _seansList[index].seansNote != null
-                              ? Text("${_seansList[index].seansNote}")
-                              : SizedBox(),
-                        ],
-                      ),
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      "${seans.seansCount}. Seans·",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      seans.startDateString,
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          child: Text(seans.seansNote ?? ""),
+                        ),
+                      ],
                     ),
                   ),
           ],

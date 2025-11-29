@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 ///   darkTheme: AppTheme.dark,
 /// );
 abstract final class AppTheme {
+  
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
@@ -25,6 +26,7 @@ abstract final class AppTheme {
     useMaterial3ErrorColors: true,
     // Convenience direct styling properties.
     appBarStyle: FlexAppBarStyle.scaffoldBackground,
+    
     // Component theme configurations for light mode.
     subThemesData: const FlexSubThemesData(
       interactionEffects: true,
@@ -45,8 +47,13 @@ abstract final class AppTheme {
       alignedDropdown: true,
       appBarScrolledUnderElevation: 0.0,
       appBarCenterTitle: true,
+      navigationBarSelectedIconSchemeColor: SchemeColor.primaryFixed,
       navigationBarIndicatorSchemeColor: SchemeColor.primary,
+      navigationRailSelectedIconSchemeColor: SchemeColor.primaryFixed,
       navigationRailUseIndicator: true,
+      navigationRailIndicatorSchemeColor: SchemeColor.primary,
+      navigationRailBackgroundSchemeColor: SchemeColor.surfaceContainer,
+      navigationRailLabelType: NavigationRailLabelType.all,
     ),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
@@ -55,6 +62,7 @@ abstract final class AppTheme {
 
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
+    
     // Using FlexColorScheme built-in FlexScheme enum based colors.
     scheme: FlexScheme.shadGreen,
     // Input color modifiers.
@@ -81,8 +89,13 @@ abstract final class AppTheme {
       alignedDropdown: true,
       appBarScrolledUnderElevation: 0.0,
       appBarCenterTitle: true,
+      navigationBarSelectedIconSchemeColor: SchemeColor.primaryFixed,
       navigationBarIndicatorSchemeColor: SchemeColor.primary,
+      navigationRailSelectedIconSchemeColor: SchemeColor.primaryFixed,
       navigationRailUseIndicator: true,
+      navigationRailIndicatorSchemeColor: SchemeColor.primary,
+      navigationRailBackgroundSchemeColor: SchemeColor.surfaceContainer,
+      navigationRailLabelType: NavigationRailLabelType.all,
     ),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,

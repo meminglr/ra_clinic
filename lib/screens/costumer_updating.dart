@@ -112,7 +112,11 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Müşteri Ekle")),
+      appBar: AppBar(
+        title: Text(
+          widget.costumer == null ? "Müşteri Ekle" : "Müşteri Düzenle",
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           saveAndReturn();
@@ -169,23 +173,34 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),
-                    CupertinoCalendarPickerButton(
-                      minimumDateTime: DateTime(2020, 1, 1),
-                      maximumDateTime: DateTime(2030, 12, 31),
-                      initialDateTime: costumerStartDate,
-                      barrierColor: Colors.transparent,
-                      containerDecoration: PickerContainerDecoration(
-                        backgroundColor: AppConstants.dropDownButtonsColor(
-                          context,
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Icon(
+                          Icons.calendar_month_outlined,
+                          size: 30,
+                          color: Colors.grey,
                         ),
-                        backgroundType: PickerBackgroundType.plainColor,
-                      ),
-                      mode: CupertinoCalendarMode.date,
-                      timeLabel: 'Saat',
-                      onDateTimeChanged: (date) {
-                        costumerStartDate = date;
-                        kayitTarihiGuncelle();
-                      },
+                        Expanded(
+                          child: CupertinoCalendarPickerButton(
+                            minimumDateTime: DateTime(2020, 1, 1),
+                            maximumDateTime: DateTime(2030, 12, 31),
+                            initialDateTime: costumerStartDate,
+                            barrierColor: Colors.transparent,
+                            containerDecoration: PickerContainerDecoration(
+                              backgroundColor:
+                                  AppConstants.dropDownButtonsColor(context),
+                              backgroundType: PickerBackgroundType.plainColor,
+                            ),
+                            mode: CupertinoCalendarMode.date,
+                            timeLabel: 'Saat',
+                            onDateTimeChanged: (date) {
+                              costumerStartDate = date;
+                              kayitTarihiGuncelle();
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 10),
                   ],
