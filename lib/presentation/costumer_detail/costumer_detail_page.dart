@@ -62,64 +62,64 @@ class _CostumerDetailState extends State<CostumerDetail> {
     final messenger = ScaffoldMessenger.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              spacing: 12,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    context.read<CostumerProvider>().deleteCostumer(
-                      widget.index,
-                    );
-                    Navigator.pop(context);
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text("Müşteri silindi")),
-                    );
-                  },
-                  child: Icon(Icons.delete_outline, size: 30),
-                ),
+      // appBar: AppBar(
+      //   actions: [
+      //     Padding(
+      //       padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      //       child: Row(
+      //         spacing: 12,
+      //         children: [
+      //           GestureDetector(
+      //             onTap: () {
+      //               context.read<CostumerProvider>().deleteCostumer(
+      //                 widget.index,
+      //               );
+      //               Navigator.pop(context);
+      //               messenger.showSnackBar(
+      //                 const SnackBar(content: Text("Müşteri silindi")),
+      //               );
+      //             },
+      //             child: Icon(Icons.delete_outline, size: 30),
+      //           ),
 
-                PullDownButton(
-                  routeTheme: PullDownMenuRouteTheme(
-                    backgroundColor: AppConstants.dropDownButtonsColor(context),
-                  ),
-                  itemBuilder: (context) => [
-                    PullDownMenuItem(
-                      onTap: () {
-                        navigateToEditCostumerPage(
-                          widget.index,
-                          currentCostumer,
-                        );
-                      },
-                      title: 'Düzenle',
-                      icon: Icons.edit_outlined,
-                    ),
-                    PullDownMenuItem(
-                      onTap: () {
-                        CommunicationHelper.shareCostumer(currentCostumer);
-                      },
-                      title: 'Paylaş',
-                      icon: Icons.share_outlined,
-                    ),
-                  ],
-                  position: PullDownMenuPosition.automatic,
-                  buttonBuilder: (context, showMenu) => GestureDetector(
-                    behavior: HitTestBehavior.translucent,
+      //           PullDownButton(
+      //             routeTheme: PullDownMenuRouteTheme(
+      //               backgroundColor: AppConstants.dropDownButtonsColor(context),
+      //             ),
+      //             itemBuilder: (context) => [
+      //               PullDownMenuItem(
+      //                 onTap: () {
+      //                   navigateToEditCostumerPage(
+      //                     widget.index,
+      //                     currentCostumer,
+      //                   );
+      //                 },
+      //                 title: 'Düzenle',
+      //                 icon: Icons.edit_outlined,
+      //               ),
+      //               PullDownMenuItem(
+      //                 onTap: () {
+      //                   CommunicationHelper.shareCostumer(currentCostumer);
+      //                 },
+      //                 title: 'Paylaş',
+      //                 icon: Icons.share_outlined,
+      //               ),
+      //             ],
+      //             position: PullDownMenuPosition.automatic,
+      //             buttonBuilder: (context, showMenu) => GestureDetector(
+      //               behavior: HitTestBehavior.translucent,
 
-                    onTap: () {
-                      showMenu();
-                    },
-                    child: Icon(Icons.more_vert, size: 30),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      //               onTap: () {
+      //                 showMenu();
+      //               },
+      //               child: Icon(Icons.more_vert, size: 30),
+      //             ),
+      //           ),
+      //         ],
+      //       ),
+      //     ),
+      //   ],
+      // ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           navigateToEditCostumerPage(widget.index, currentCostumer);
@@ -131,10 +131,91 @@ class _CostumerDetailState extends State<CostumerDetail> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: CustomScrollView(
           slivers: [
+            SliverAppBar(
+              elevation: 0,
+              pinned: true,
+              snap: false,
+              floating: true,
+              expandedHeight: 200.0,
+
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                expandedTitleScale: 2,
+                title: Text(
+                  currentCostumer.name,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                background: Icon(
+                  Icons.account_circle,
+                  size: 150,
+                  color: Colors.grey,
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    spacing: 12,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.read<CostumerProvider>().deleteCostumer(
+                            widget.index,
+                          );
+                          Navigator.pop(context);
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text("Müşteri silindi")),
+                          );
+                        },
+                        child: Icon(Icons.delete_outline, size: 30),
+                      ),
+
+                      PullDownButton(
+                        routeTheme: PullDownMenuRouteTheme(
+                          backgroundColor: AppConstants.dropDownButtonsColor(
+                            context,
+                          ),
+                        ),
+                        itemBuilder: (context) => [
+                          PullDownMenuItem(
+                            onTap: () {
+                              navigateToEditCostumerPage(
+                                widget.index,
+                                currentCostumer,
+                              );
+                            },
+                            title: 'Düzenle',
+                            icon: Icons.edit_outlined,
+                          ),
+                          PullDownMenuItem(
+                            onTap: () {
+                              CommunicationHelper.shareCostumer(
+                                currentCostumer,
+                              );
+                            },
+                            title: 'Paylaş',
+                            icon: Icons.share_outlined,
+                          ),
+                        ],
+                        position: PullDownMenuPosition.automatic,
+                        buttonBuilder: (context, showMenu) => GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+
+                          onTap: () {
+                            showMenu();
+                          },
+                          child: Icon(Icons.more_vert, size: 30),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  CostumerDetailHeader(costumer: currentCostumer),
+                  // CostumerDetailHeader(costumer: currentCostumer),
                   if (phoneIsNotEmpty)
                     CostumerPhoneDisplay(
                       costumer: currentCostumer,
