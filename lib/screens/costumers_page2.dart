@@ -6,6 +6,7 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
+import 'package:ra_clinic/presentation/costumer_detail/2costumer_detail_page.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 
@@ -82,7 +83,6 @@ class _CostumersPage2State extends State<CostumersPage2> {
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   SliverAppBar(
-                    
                     pinned: true,
                     snap: false,
                     floating: true,
@@ -117,7 +117,7 @@ class _CostumersPage2State extends State<CostumersPage2> {
                               context,
                               CupertinoPageRoute(
                                 builder: (builder) =>
-                                    CostumerDetail(index: index),
+                                    CostumerDetail2(index: index),
                               ),
                             );
                           },

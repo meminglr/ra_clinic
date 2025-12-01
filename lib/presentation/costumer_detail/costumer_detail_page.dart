@@ -9,6 +9,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_detail_h
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_display.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
+import 'package:ra_clinic/presentation/costumer_detail/widgets/tab_bar.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 
 import '../../constants/app_constants.dart';
@@ -127,92 +128,94 @@ class _CostumerDetailState extends State<CostumerDetail> {
         label: const Text("Düzenle"),
         icon: const Icon(Icons.edit_outlined),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              elevation: 0,
-              pinned: true,
-              snap: false,
-              floating: true,
-              expandedHeight: 200.0,
-
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                expandedTitleScale: 2,
-                title: Text(
-                  currentCostumer.name,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                background: Icon(
-                  Icons.account_circle,
-                  size: 150,
-                  color: Colors.grey,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            elevation: 0,
+            pinned: true,
+            snap: false,
+            floating: true,
+            expandedHeight: 200,
+            titleSpacing: 30,
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              titlePadding: EdgeInsets.only(bottom: 10),
+              background: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                  color: Theme.of(context).colorScheme.secondaryFixedDim,
                 ),
               ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    spacing: 12,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          context.read<CostumerProvider>().deleteCostumer(
-                            widget.index,
-                          );
-                          Navigator.pop(context);
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text("Müşteri silindi")),
-                          );
-                        },
-                        child: Icon(Icons.delete_outline, size: 30),
-                      ),
-
-                      PullDownButton(
-                        routeTheme: PullDownMenuRouteTheme(
-                          backgroundColor: AppConstants.dropDownButtonsColor(
-                            context,
-                          ),
-                        ),
-                        itemBuilder: (context) => [
-                          PullDownMenuItem(
-                            onTap: () {
-                              navigateToEditCostumerPage(
-                                widget.index,
-                                currentCostumer,
-                              );
-                            },
-                            title: 'Düzenle',
-                            icon: Icons.edit_outlined,
-                          ),
-                          PullDownMenuItem(
-                            onTap: () {
-                              CommunicationHelper.shareCostumer(
-                                currentCostumer,
-                              );
-                            },
-                            title: 'Paylaş',
-                            icon: Icons.share_outlined,
-                          ),
-                        ],
-                        position: PullDownMenuPosition.automatic,
-                        buttonBuilder: (context, showMenu) => GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-
-                          onTap: () {
-                            showMenu();
-                          },
-                          child: Icon(Icons.more_vert, size: 30),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              title: Text(
+                currentCostumer.name,
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              ),
             ),
-            SliverToBoxAdapter(
+            actions: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.read<CostumerProvider>().deleteCostumer(
+                          widget.index,
+                        );
+                        Navigator.pop(context);
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text("Müşteri silindi")),
+                        );
+                      },
+                      child: Icon(Icons.delete_outline, size: 30),
+                    ),
+
+                    PullDownButton(
+                      routeTheme: PullDownMenuRouteTheme(
+                        backgroundColor: AppConstants.dropDownButtonsColor(
+                          context,
+                        ),
+                      ),
+                      itemBuilder: (context) => [
+                        PullDownMenuItem(
+                          onTap: () {
+                            navigateToEditCostumerPage(
+                              widget.index,
+                              currentCostumer,
+                            );
+                          },
+                          title: 'Düzenle',
+                          icon: Icons.edit_outlined,
+                        ),
+                        PullDownMenuItem(
+                          onTap: () {
+                            CommunicationHelper.shareCostumer(currentCostumer);
+                          },
+                          title: 'Paylaş',
+                          icon: Icons.share_outlined,
+                        ),
+                      ],
+                      position: PullDownMenuPosition.automatic,
+                      buttonBuilder: (context, showMenu) => GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+
+                        onTap: () {
+                          showMenu();
+                        },
+                        child: Icon(Icons.more_vert, size: 30),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               child: Column(
                 children: [
                   // CostumerDetailHeader(costumer: currentCostumer),
@@ -231,18 +234,22 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 ],
               ),
             ),
-            SliverToBoxAdapter(
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CostumerNotesCard(
                 costumer: currentCostumer,
                 noteIsNotEmpty: noteIsNotEmpty,
               ),
             ),
-            if (currentCostumer.seansList.isEmpty) NoSeansWarning(),
+          ),
+          if (currentCostumer.seansList.isEmpty) NoSeansWarning(),
 
-            if (currentCostumer.seansList.isNotEmpty)
-              SeansListView(seansList: currentCostumer.seansList),
-          ],
-        ),
+          if (currentCostumer.seansList.isNotEmpty)
+            SeansListView(seansList: currentCostumer.seansList),
+            
+        ],
       ),
     );
   }

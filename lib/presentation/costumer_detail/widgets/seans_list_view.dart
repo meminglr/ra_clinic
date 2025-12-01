@@ -14,56 +14,62 @@ class SeansListView extends StatelessWidget {
       itemBuilder: (context, index) {
         SeansModel seans = _seansList[index];
 
-        return Column(
-          children: [
-            seans.isDeleted
-                ? FilledButton.tonal(
-                    onPressed: () {},
-                    child: Text("${seans.seansCount}. seans yok"),
-                  )
-                : Card.filled(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          color: Theme.of(context).colorScheme.onInverseSurface,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              seans.isDeleted
+                  ? FilledButton.tonal(
+                      onPressed: () {},
+                      child: Text("${seans.seansCount}. seans yok"),
+                    )
+                  : Card.filled(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onInverseSurface,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
 
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      "${seans.seansCount}. Seans·",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "${seans.seansCount}. Seans·",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      seans.startDateString,
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      Text(
+                                        seans.startDateString,
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            child: Text(seans.seansNote ?? ""),
                           ),
-                          child: Text(seans.seansNote ?? ""),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-          ],
+            ],
+          ),
         );
       },
     );
