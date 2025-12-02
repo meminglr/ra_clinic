@@ -6,19 +6,20 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
+import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 
 import 'costumer_updating.dart';
 
-class Costumers extends StatefulWidget {
-  const Costumers({super.key});
+class CostumersPage extends StatefulWidget {
+  const CostumersPage({super.key});
 
   @override
-  State<Costumers> createState() => _CostumersState();
+  State<CostumersPage> createState() => _CostumersPageState();
 }
 
-class _CostumersState extends State<Costumers> {
+class _CostumersPageState extends State<CostumersPage> {
   void navigateToAddCostumerPage() async {
     final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
       context,
@@ -58,7 +59,6 @@ class _CostumersState extends State<Costumers> {
         .watch<CostumerProvider>()
         .costumersList;
     return Scaffold(
-      appBar: AppBar(title: Text("Müşteriler"), actions: [Icon(Icons.search)]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           navigateToAddCostumerPage();
@@ -79,225 +79,238 @@ class _CostumersState extends State<Costumers> {
                   ),
                 ],
               )
-            : Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: ListView.builder(
-                        physics: BouncingScrollPhysics(),
-                        itemCount: costumersList.length,
-                        itemBuilder: (itemBuilder, index) {
-                          CostumerModel item = costumersList[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                CupertinoPageRoute(
-                                  builder: (builder) =>
-                                      CostumerDetail(index: index),
-                                ),
-                              );
-                            },
-                            child: Slidable(
-                              key: Key(item.id),
-
-                              endActionPane: ActionPane(
-                                dismissible: DismissiblePane(
-                                  onDismissed: () {
+            : CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverAppBar(
+                    pinned: true,
+                    snap: false,
+                    floating: true,
+                    expandedHeight: 130.0,
+                    flexibleSpace: const FlexibleSpaceBar(
+                      centerTitle: true,
+                      title: Text('Müşteriler'),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 5,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: TextField(
+                        focusNode: FocusNode(),
+                        decoration: InputDecoration(hintText: 'Müşteri Ara...'),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    sliver: SliverList.builder(
+                      itemCount: costumersList.length,
+                      itemBuilder: (context, index) {
+                        // itemBuilder ismini context olarak düzelttim (standart kullanım)
+                        CostumerModel item = costumersList[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (builder) =>
+                                    CostumerDetail(index: index),
+                              ),
+                            );
+                          },
+                          child: Slidable(
+                            key: Key(item.id),
+                            endActionPane: ActionPane(
+                              dismissible: DismissiblePane(
+                                onDismissed: () {
+                                  context
+                                      .read<CostumerProvider>()
+                                      .deleteCostumer(index);
+                                },
+                              ),
+                              motion: const StretchMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) {
                                     context
                                         .read<CostumerProvider>()
                                         .deleteCostumer(index);
                                   },
-                                ),
-                                motion: StretchMotion(),
-                                children: [
-                                  SlidableAction(
-                                    onPressed: (context) {
-                                      context
-                                          .read<CostumerProvider>()
-                                          .deleteCostumer(index);
-                                    },
-                                    backgroundColor: Colors.redAccent,
-                                    foregroundColor: Colors.red.shade100,
-                                    icon: Icons.delete_outline,
-
-                                    label: 'Sil',
-
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ],
-                              ),
-                              child: Card.filled(
-                                shape: RoundedRectangleBorder(
+                                  backgroundColor: Colors.redAccent,
+                                  foregroundColor: Colors.red.shade100,
+                                  icon: Icons.delete_outline,
+                                  label: 'Sil',
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 16,
-                                    right: 16,
-                                    top: 8,
-                                    bottom: 16,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
+                              ],
+                            ),
+                            child: Card.filled(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  top: 8,
+                                  bottom: 16,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        Text(item.startDateString),
+                                        Text(
+                                          "Seans Sayısı: ${item.seansList.length}",
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        FilledButton(
+                                          style: const ButtonStyle(
+                                            padding: WidgetStatePropertyAll(
+                                              EdgeInsets.zero,
+                                            ),
+                                            minimumSize: WidgetStatePropertyAll(
+                                              Size(40, 40),
+                                            ),
+                                            shape: WidgetStatePropertyAll(
+                                              CircleBorder(),
                                             ),
                                           ),
-                                          Text(item.startDateString),
-                                          Text(
-                                            "Seans Sayısı: ${item.seansList.length}",
+                                          onPressed: () {
+                                            CommunicationHelper.makePhoneCall(
+                                              context,
+                                              item.phone!,
+                                            );
+                                          },
+                                          child: const Icon(
+                                            Icons.phone_outlined,
                                           ),
-                                        ],
-                                      ),
-                                      Row(
-                                        spacing: 10,
-                                        children: [
-                                          FilledButton(
-                                            style: ButtonStyle(
-                                              padding: WidgetStatePropertyAll(
-                                                EdgeInsets.zero,
-                                              ),
-                                              minimumSize:
-                                                  WidgetStatePropertyAll(
-                                                    Size(40, 40),
-                                                  ),
-                                              shape: WidgetStatePropertyAll(
-                                                CircleBorder(),
-                                              ),
+                                        ),
+                                        FilledButton(
+                                          style: const ButtonStyle(
+                                            padding: WidgetStatePropertyAll(
+                                              EdgeInsets.zero,
                                             ),
-                                            onPressed: () {
-                                              CommunicationHelper.makePhoneCall(
-                                                context,
-                                                item.phone!,
-                                              );
-                                            },
-                                            child: Icon(Icons.phone_outlined),
+                                            minimumSize: WidgetStatePropertyAll(
+                                              Size(40, 40),
+                                            ),
+                                            shape: WidgetStatePropertyAll(
+                                              CircleBorder(),
+                                            ),
                                           ),
-                                          FilledButton(
-                                            style: ButtonStyle(
-                                              padding: WidgetStatePropertyAll(
-                                                EdgeInsets.zero,
-                                              ),
-                                              minimumSize:
-                                                  WidgetStatePropertyAll(
-                                                    Size(40, 40),
-                                                  ),
-                                              shape: WidgetStatePropertyAll(
-                                                CircleBorder(),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              CommunicationHelper.openSmsApp(
-                                                context,
-                                                item.phone!,
-                                              );
-                                            },
-                                            child: Icon(Icons.message_outlined),
+                                          onPressed: () {
+                                            CommunicationHelper.openSmsApp(
+                                              context,
+                                              item.phone!,
+                                            );
+                                          },
+                                          child: const Icon(
+                                            Icons.message_outlined,
                                           ),
-
-                                          PullDownButton(
-                                            routeTheme: PullDownMenuRouteTheme(
-                                              backgroundColor:
-                                                  AppConstants.dropDownButtonsColor(
-                                                    context,
-                                                  ),
-                                            ),
-                                            itemBuilder: (context) => [
-                                              PullDownMenuItem(
-                                                onTap: () {
-                                                  Slidable.of(
-                                                    context,
-                                                  )?.openEndActionPane(
-                                                    duration: Durations.long1,
-                                                  );
-                                                  Slidable.of(context)?.dismiss(
-                                                    ResizeRequest(
-                                                      Durations.medium3,
-                                                      () {
-                                                        context
-                                                            .read<
-                                                              CostumerProvider
-                                                            >()
-                                                            .deleteCostumer(
-                                                              index,
-                                                            );
-                                                      },
-                                                    ),
-                                                  );
-                                                },
-                                                title: 'Sil',
-                                                isDestructive: true,
-                                                iconColor: Colors.red,
-                                                icon: Icons.delete_outline,
-                                              ),
-                                              PullDownMenuItem(
-                                                onTap: () {
-                                                  navigateToEditCostumerPage(
-                                                    index,
-                                                    item,
-                                                  );
-                                                },
-                                                title: 'Düzenle',
-                                                icon: Icons.edit_outlined,
-                                              ),
-                                              PullDownMenuItem(
-                                                onTap: () {
-                                                  CommunicationHelper.shareCostumer(
-                                                    item,
-                                                  );
-                                                },
-                                                title: 'Paylaş',
-                                                icon: Icons.share_outlined,
-                                              ),
-                                            ],
-                                            position:
-                                                PullDownMenuPosition.automatic,
-                                            buttonBuilder:
-                                                (
+                                        ),
+                                        PullDownButton(
+                                          routeTheme: PullDownMenuRouteTheme(
+                                            backgroundColor:
+                                                AppConstants.dropDownButtonsColor(
                                                   context,
-                                                  showMenu,
-                                                ) => GestureDetector(
-                                                  behavior: HitTestBehavior
-                                                      .translucent,
-
-                                                  onTap: () {
-                                                    showMenu();
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          left: 5,
-                                                          top: 20,
-                                                          bottom: 20,
-                                                          right: 5,
-                                                        ),
-                                                    child: Icon(
-                                                      Icons.more_vert,
-                                                    ),
-                                                  ),
                                                 ),
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                          itemBuilder: (context) => [
+                                            PullDownMenuItem(
+                                              onTap: () {
+                                                // Slidable'ı programatik olarak açıp silme işlemi
+                                                final slidable = Slidable.of(
+                                                  context,
+                                                );
+                                                slidable?.openEndActionPane(
+                                                  duration: Durations.long1,
+                                                );
+
+                                                // Biraz bekleyip dismiss animasyonunu tetikle
+                                                Future.delayed(
+                                                  Durations.medium3,
+                                                  () {
+                                                    if (context.mounted) {
+                                                      context
+                                                          .read<
+                                                            CostumerProvider
+                                                          >()
+                                                          .deleteCostumer(
+                                                            index,
+                                                          );
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                              title: 'Sil',
+                                              isDestructive: true,
+                                              iconColor: Colors.red,
+                                              icon: Icons.delete_outline,
+                                            ),
+                                            PullDownMenuItem(
+                                              onTap: () {
+                                                navigateToEditCostumerPage(
+                                                  index,
+                                                  item,
+                                                );
+                                              },
+                                              title: 'Düzenle',
+                                              icon: Icons.edit_outlined,
+                                            ),
+                                            PullDownMenuItem(
+                                              onTap: () {
+                                                CommunicationHelper.shareCostumer(
+                                                  item,
+                                                );
+                                              },
+                                              title: 'Paylaş',
+                                              icon: Icons.share_outlined,
+                                            ),
+                                          ],
+                                          position:
+                                              PullDownMenuPosition.automatic,
+                                          buttonBuilder: (context, showMenu) =>
+                                              GestureDetector(
+                                                behavior:
+                                                    HitTestBehavior.translucent,
+                                                onTap: showMenu,
+                                                child: const Padding(
+                                                  padding: EdgeInsets.only(
+                                                    left: 5,
+                                                    top: 20,
+                                                    bottom: 20,
+                                                    right: 5,
+                                                  ),
+                                                  child: Icon(Icons.more_vert),
+                                                ),
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

@@ -5,6 +5,7 @@
 import FlutterMacOS
 import Foundation
 
+import app_links
 import contact_add
 import desktop_window
 import flutter_localization
@@ -14,6 +15,7 @@ import shared_preferences_foundation
 import url_launcher_macos
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  AppLinksMacosPlugin.register(with: registry.registrar(forPlugin: "AppLinksMacosPlugin"))
   ContactAddPlugin.register(with: registry.registrar(forPlugin: "ContactAddPlugin"))
   DesktopWindowPlugin.register(with: registry.registrar(forPlugin: "DesktopWindowPlugin"))
   FlutterLocalizationPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalizationPlugin"))

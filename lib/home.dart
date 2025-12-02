@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
-import 'package:ra_clinic/screens/costumers_page2.dart';
+import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
 
 class Home extends StatefulWidget {
@@ -15,7 +15,7 @@ class _HomeState extends State<Home> {
   late PageController _pageController;
 
   final List<Widget> pages = [
-    const CostumersPage2(),
+    const CostumersPage(),
     const CalendarPage(),
     const SettingsPage(), // Düzeltilmiş: SettingsPage -> ProfilePage
   ];
