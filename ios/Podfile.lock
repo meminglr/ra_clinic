@@ -1,4 +1,6 @@
 PODS:
+  - app_links (6.4.1):
+    - Flutter
   - contact_add (0.0.3):
     - Flutter
   - Flutter (1.0.0)
@@ -18,6 +20,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - app_links (from `.symlinks/plugins/app_links/ios`)
   - contact_add (from `.symlinks/plugins/contact_add/ios`)
   - Flutter (from `Flutter`)
   - flutter_localization (from `.symlinks/plugins/flutter_localization/ios`)
@@ -28,6 +31,8 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 EXTERNAL SOURCES:
+  app_links:
+    :path: ".symlinks/plugins/app_links/ios"
   contact_add:
     :path: ".symlinks/plugins/contact_add/ios"
   Flutter:
@@ -46,6 +51,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  app_links: 585674be3c6661708e6cd794ab4f39fb9d8356f9
   contact_add: 50b81c9e6553348ff8129353dc25fde0fb6c0437
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_localization: f43b18844a2b3d2c71fd64f04ffd6b1e64dd54d4

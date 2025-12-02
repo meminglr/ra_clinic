@@ -16,20 +16,38 @@ class CostumerNotesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 60),
-      child: Card.filled(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Column(
-            children: [
-              Text(" ${costumer.startDateString} "),
-              if (noteIsNotEmpty)
-                Text("Not: ${costumer.notes} ", style: TextStyle(fontSize: 16)),
-            ],
+      child: Column(
+        children: [
+          Card.filled(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadiusGeometry.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Text(" ${costumer.startDateString} "),
+            ),
           ),
-        ),
+          if (noteIsNotEmpty)
+            Card.filled(
+              color: Colors.orange.withAlpha(50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: Text(
+                  "Not: ${costumer.notes} ",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -2,13 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CostumerProvider extends ChangeNotifier {
   static const String _boxName = "costumersBox";
   final Box<CostumerModel> _box = Hive.box(_boxName);
-
   final List<CostumerModel> _costumersList = [];
   List<CostumerModel> get costumersList => List.unmodifiable(_costumersList);
+  final supabase = Supabase.instance.client;
 
   CostumerProvider() {
     _loadFromHive();
@@ -27,6 +28,12 @@ class CostumerProvider extends ChangeNotifier {
 
   void addCostumer(CostumerModel newCostumer) {
     _costumersList.add(newCostumer);
+    try {
+      supabase.from("costumers").insert(newCostumer.toMap());
+      print("başarılı");
+    } on Exception catch (e) {
+      print(e);
+    }
     _saveToHive();
     notifyListeners();
   }
@@ -53,11 +60,10 @@ class CostumerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteCostumer(int index) async{
+  void deleteCostumer(int index) async {
     await _box.deleteAt(index);
-     _costumersList.removeAt(index);
-      _saveToHive();
-      notifyListeners();
-    
+    _costumersList.removeAt(index);
+    _saveToHive();
+    notifyListeners();
   }
 }

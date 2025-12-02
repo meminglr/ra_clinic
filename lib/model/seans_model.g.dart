@@ -20,7 +20,7 @@ class SeansModelAdapter extends TypeAdapter<SeansModel> {
       startDateString: fields[2] as String,
       seansNote: fields[5] as String?,
       isDeleted: fields[6] as bool,
-      id: fields[0] as int,
+      id: fields[0] as String,
       seansCount: fields[4] as int,
       startDate: fields[1] as DateTime,
       endDate: fields[3] as DateTime?,

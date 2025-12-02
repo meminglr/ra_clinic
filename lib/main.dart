@@ -9,6 +9,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:ra_clinic/theme/app_themes.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
@@ -17,6 +18,10 @@ import 'providers/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await Supabase.initialize(
+    url: "https://avvdoddnflrgkgjwdzcr.supabase.co",
+    anonKey: "sb_secret_Qy9cm0yvnhLhsgXjyyRkug_AORqg8ak",
+  );
   Hive.registerAdapter(CostumerModelAdapter());
   Hive.registerAdapter(SeansModelAdapter());
   Hive.registerAdapter(ScheduleAdapter());

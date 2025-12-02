@@ -23,7 +23,6 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       endDateString: fields[7] as String,
       seansCount: fields[9] as int?,
       notes: fields[3] as String?,
-      seans: fields[8] as SeansModel?,
       endDate: fields[5] as DateTime?,
       seansList: (fields[11] as List).cast<SeansModel>(),
       name: fields[1] as String,
@@ -35,7 +34,7 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
   @override
   void write(BinaryWriter writer, CostumerModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -52,8 +51,6 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       ..write(obj.startDateString)
       ..writeByte(7)
       ..write(obj.endDateString)
-      ..writeByte(8)
-      ..write(obj.seans)
       ..writeByte(9)
       ..write(obj.seansCount)
       ..writeByte(10)

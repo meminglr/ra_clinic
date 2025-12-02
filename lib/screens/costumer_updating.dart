@@ -28,10 +28,10 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   final Map<SeansModel, TextEditingController> _seansControllers = {};
 
   DateTime costumerStartDate = DateTime.now();
-
   final _formKey = GlobalKey<FormState>();
   String kayitTarihi = "";
   String seansTarihi = "";
+  String? id;
 
   @override
   void initState() {
@@ -40,6 +40,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       for (var seans in _seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
+      id = const Uuid().v4();
     }
 
     if (widget.costumer != null) {
@@ -49,6 +50,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       _seansList = widget.costumer!.seansList;
       costumerStartDate = widget.costumer!.startDate;
       kayitTarihi = widget.costumer!.startDateString;
+      id = widget.costumer!.id;
       for (var seans in widget.costumer!.seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
@@ -61,9 +63,9 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
     setState(() {});
   }
 
-  void seansEkle() {
+  void seansEkle(String id) {
     final newSeans = SeansModel(
-      id: _seansList.length,
+      id: id,
       startDate: DateTime.now(),
       startDateString: Utils.toDate(DateTime.now()),
       seansCount: _seansList.length + 1,
@@ -78,9 +80,8 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
     setState(() {});
   }
 
-  void saveAndReturn() {
+  void saveAndReturn(String id) {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
-      final id = Uuid().v4();
       final CostumerModel newCostumer = CostumerModel(
         id: id,
         name: _nameController.text,
@@ -119,7 +120,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          saveAndReturn();
+          saveAndReturn(id!);
           //  Navigator.pop(context);
         },
         label: const Text("Kaydet"),
@@ -298,7 +299,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                 ),
                 child: FilledButton(
                   onPressed: () {
-                    seansEkle();
+                    seansEkle(id!);
                   },
                   child: Text("Seans Ekle"),
                 ),
