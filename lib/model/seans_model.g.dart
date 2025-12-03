@@ -17,33 +17,30 @@ class SeansModelAdapter extends TypeAdapter<SeansModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SeansModel(
-      startDateString: fields[2] as String,
-      seansNote: fields[5] as String?,
-      isDeleted: fields[6] as bool,
-      id: fields[0] as String,
-      seansCount: fields[4] as int,
+      seansNote: fields[4] as String?,
+      isDeleted: fields[5] as bool,
+      seansId: fields[0] as String,
+      seansCount: fields[3] as int,
       startDate: fields[1] as DateTime,
-      endDate: fields[3] as DateTime?,
+      endDate: fields[2] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SeansModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(6)
       ..writeByte(0)
-      ..write(obj.id)
+      ..write(obj.seansId)
       ..writeByte(1)
       ..write(obj.startDate)
       ..writeByte(2)
-      ..write(obj.startDateString)
-      ..writeByte(3)
       ..write(obj.endDate)
-      ..writeByte(4)
+      ..writeByte(3)
       ..write(obj.seansCount)
-      ..writeByte(5)
+      ..writeByte(4)
       ..write(obj.seansNote)
-      ..writeByte(6)
+      ..writeByte(5)
       ..write(obj.isDeleted);
   }
 

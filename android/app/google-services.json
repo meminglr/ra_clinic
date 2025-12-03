@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "63452043288",
+    "project_id": "clinic-crm-bf690",
+    "storage_bucket": "clinic-crm-bf690.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:63452043288:android:0100e477ec2b4f9bb74b6d",
+        "android_client_info": {
+          "package_name": "com.example.ra_clinic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDC0LzwQOis3lw1oggl42GGwI5HONuGHfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

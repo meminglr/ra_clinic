@@ -1,15 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/calendar/model/schedule.dart';
+import 'package:ra_clinic/firebase_options.dart';
 import 'package:ra_clinic/home.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:ra_clinic/theme/app_themes.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
@@ -18,9 +19,8 @@ import 'providers/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Supabase.initialize(
-    url: "https://avvdoddnflrgkgjwdzcr.supabase.co",
-    anonKey: "sb_secret_Qy9cm0yvnhLhsgXjyyRkug_AORqg8ak",
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   Hive.registerAdapter(CostumerModelAdapter());
   Hive.registerAdapter(SeansModelAdapter());

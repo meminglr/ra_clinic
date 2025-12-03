@@ -8,7 +8,7 @@ import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
-import 'package:ra_clinic/utils.dart';
+import 'package:ra_clinic/func/utils.dart';
 
 import '../constants/app_constants.dart';
 
@@ -49,8 +49,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       _noteController.text = widget.costumer!.notes ?? "";
       _seansList = widget.costumer!.seansList;
       costumerStartDate = widget.costumer!.startDate;
-      kayitTarihi = widget.costumer!.startDateString;
-      id = widget.costumer!.id;
+      id = widget.costumer!.customerId;
       for (var seans in widget.costumer!.seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
@@ -65,9 +64,8 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
 
   void seansEkle(String id) {
     final newSeans = SeansModel(
-      id: id,
+      seansId: id,
       startDate: DateTime.now(),
-      startDateString: Utils.toDate(DateTime.now()),
       seansCount: _seansList.length + 1,
     );
     _seansControllers[newSeans] = TextEditingController();
@@ -83,13 +81,12 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   void saveAndReturn(String id) {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
       final CostumerModel newCostumer = CostumerModel(
-        id: id,
+        customerId: id,
         name: _nameController.text,
         phone: _telNoController.text,
         startDate: costumerStartDate,
         notes: _noteController.text,
         seansList: _seansList,
-        startDateString: kayitTarihi,
       );
       Navigator.pop(context, newCostumer);
     } else {
@@ -248,7 +245,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                                               ),
                                             ),
                                             Text(
-                                              seans.startDateString,
+                                              Utils.toDate(seans.startDate),
                                               style: TextStyle(fontSize: 10),
                                             ),
                                           ],

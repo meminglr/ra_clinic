@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,10 +21,9 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           StreamBuilder(
-            stream: Supabase.instance.client.auth.onAuthStateChange,
+            stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {
-              final session = snapshot.data?.session;
-              if (session == null) {
+              if (!snapshot.hasData) {
                 return ListTile(
                   title: const Text('Giriş Yap / Kayıt Ol'),
                   subtitle: const Text(
@@ -46,9 +46,9 @@ class SettingsPage extends StatelessWidget {
               } else {
                 return FilledButton.icon(
                   onPressed: () async {
-                    await Supabase.instance.client.auth.signOut();
+                    await FirebaseAuth.instance.signOut();
                   },
-                  icon: const Icon(CupertinoIcons.person_fill),
+                  icon: const Icon(Icons.person),
                   label: const Text('Çıkış Yap'),
                 );
               }

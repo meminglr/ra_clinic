@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ra_clinic/model/seans_model.dart';
+import 'package:ra_clinic/func/utils.dart';
 
 class SeansListView extends StatelessWidget {
   const SeansListView({super.key, required List<SeansModel> seansList})
@@ -49,7 +50,7 @@ class SeansListView extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        seans.startDateString,
+                                        Utils.toDate(seans.startDate),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ra_clinic/func/utils.dart';
 
 import '../../../model/costumer_model.dart';
 
@@ -27,7 +28,7 @@ class CostumerNotesCard extends StatelessWidget {
                 horizontal: 16.0,
                 vertical: 8.0,
               ),
-              child: Text(" ${costumer.startDateString} "),
+              child: Text(" ${Utils.toDate(costumer.startDate)} "),
             ),
           ),
           if (noteIsNotEmpty)

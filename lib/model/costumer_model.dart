@@ -1,16 +1,13 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
-import 'package:ra_clinic/model/seans_model.dart';
+import 'seans_model.dart'; // Dosya yolunu kendine göre ayarla
 
 part 'costumer_model.g.dart';
 
 @HiveType(typeId: 1)
 class CostumerModel {
   @HiveField(0)
-  final String id;
+  final String customerId;
   @HiveField(1)
   final String name;
   @HiveField(2)
@@ -22,21 +19,17 @@ class CostumerModel {
   @HiveField(5)
   final DateTime? endDate;
   @HiveField(6)
-  final String startDateString;
-  @HiveField(7)
-  final String endDateString;
-  @HiveField(9)
   final int? seansCount;
-  @HiveField(10)
-  final DateTime? modifiedDate;
-  @HiveField(11)
+  @HiveField(7)
+   DateTime? modifiedDate;
+  @HiveField(8)
   final List<SeansModel> seansList;
+  @HiveField(9) // Yeni alan
+  bool isSynced;
 
   CostumerModel({
-    required this.id,
+    required this.customerId,
     this.modifiedDate,
-    this.startDateString = "",
-    this.endDateString = "",
     this.seansCount,
     this.notes,
     this.endDate,
@@ -44,41 +37,42 @@ class CostumerModel {
     required this.name,
     this.phone,
     required this.startDate,
+    this.isSynced = false,
   });
 
+  // Firebase'e gönderirken
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
+    return {
+      'customerId': customerId,
       'name': name,
       'phone': phone,
       'notes': notes,
-      'startDate': startDate.millisecondsSinceEpoch,
-      'endDate': endDate?.millisecondsSinceEpoch,
-      'startDateString': startDateString,
-      'endDateString': endDateString,
+      'startDate': Timestamp.fromDate(startDate),
+      'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
+      'modifiedDate': modifiedDate != null ? Timestamp.fromDate(modifiedDate!) : null,
       'seansCount': seansCount,
-      'modifiedDate': modifiedDate?.millisecondsSinceEpoch,
+      // Listeyi de map listesine çevirmeliyiz:
       'seansList': seansList.map((x) => x.toMap()).toList(),
     };
   }
 
-  factory CostumerModel.fromMap(Map<String, dynamic> map) {
+  // Firebase'den çekerken
+  factory CostumerModel.fromMap(Map<String, dynamic> map, String docId) {
     return CostumerModel(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      phone: map['phone'] != null ? map['phone'] as String : null,
-      notes: map['notes'] != null ? map['notes'] as String : null,
-      startDate: DateTime.fromMillisecondsSinceEpoch(map['startDate'] as int),
-      endDate: map['endDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['endDate'] as int) : null,
-      startDateString: map['startDateString'] as String,
-      endDateString: map['endDateString'] as String,
-      seansCount: map['seansCount'] != null ? map['seansCount'] as int : null,
-      modifiedDate: map['modifiedDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['modifiedDate'] as int) : null,
-      seansList: List<SeansModel>.from((map['seansList'] as List<int>).map<SeansModel>((x) => SeansModel.fromMap(x as Map<String,dynamic>),),),
+      customerId: docId, // Firebase'in kendi ID'sini kullanmak genelde daha güvenlidir
+      name: map['name'] ?? '',
+      phone: map['phone'],
+      notes: map['notes'],
+      startDate: (map['startDate'] as Timestamp).toDate(),
+      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
+      modifiedDate: map['modifiedDate'] != null ? (map['modifiedDate'] as Timestamp).toDate() : null,
+      seansCount: map['seansCount'],
+      // Map listesini geri nesne listesine çeviriyoruz:
+      seansList: map['seansList'] != null
+          ? List<SeansModel>.from(
+              (map['seansList'] as List).map((x) => SeansModel.fromMap(x as Map<String, dynamic>)),
+            )
+          : [],
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory CostumerModel.fromJson(String source) => CostumerModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }

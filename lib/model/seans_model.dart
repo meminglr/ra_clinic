@@ -1,6 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
+import 'package:cloud_firestore/cloud_firestore.dart'; // Timestamp için gerekli
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'seans_model.g.dart';
@@ -8,58 +6,49 @@ part 'seans_model.g.dart';
 @HiveType(typeId: 2)
 class SeansModel {
   @HiveField(0)
-  final String id;
+  final String seansId;
   @HiveField(1)
   final DateTime startDate;
   @HiveField(2)
-  final String startDateString;
-  @HiveField(3)
   final DateTime? endDate;
-  @HiveField(4)
+  @HiveField(3)
   final int seansCount;
-  @HiveField(5)
+  @HiveField(4)
   String? seansNote;
-  @HiveField(6)
+  @HiveField(5)
   bool isDeleted;
 
   SeansModel({
-    this.startDateString = "",
     this.seansNote,
     this.isDeleted = false,
-    required this.id,
+    required this.seansId,
     required this.seansCount,
     required this.startDate,
     this.endDate,
   });
 
+  // Firebase'e veri gönderirken (Nesne -> Map)
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'startDate': startDate.millisecondsSinceEpoch,
-      'startDateString': startDateString,
-      'endDate': endDate?.millisecondsSinceEpoch,
+    return {
+      'seansId': seansId,
+      'startDate': Timestamp.fromDate(startDate), // DateTime -> Timestamp
+      'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
       'seansCount': seansCount,
       'seansNote': seansNote,
       'isDeleted': isDeleted,
     };
   }
 
+  // Firebase'den veri çekerken (Map -> Nesne)
   factory SeansModel.fromMap(Map<String, dynamic> map) {
     return SeansModel(
-      id: map['id'] as String,
-      startDate: DateTime.fromMillisecondsSinceEpoch(map['startDate'] as int),
-      startDateString: map['startDateString'] as String,
-      endDate: map['endDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['endDate'] as int)
-          : null,
-      seansCount: map['seansCount'] as int,
-      seansNote: map['seansNote'] != null ? map['seansNote'] as String : null,
-      isDeleted: map['isDeleted'] as bool,
+      seansId: map['seansId'] ?? '',
+      // Timestamp -> DateTime dönüşümü çok önemlidir:
+      startDate: (map['startDate'] as Timestamp).toDate(),
+      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
+      seansCount: map['seansCount']?.toInt() ?? 0,
+      seansNote: map['seansNote'],
+      isDeleted: map['isDeleted'] ?? false,
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory SeansModel.fromJson(String source) =>
-      SeansModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }

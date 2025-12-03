@@ -17,14 +17,12 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return CostumerModel(
-      id: fields[0] as String,
-      modifiedDate: fields[10] as DateTime?,
-      startDateString: fields[6] as String,
-      endDateString: fields[7] as String,
-      seansCount: fields[9] as int?,
+      customerId: fields[0] as String,
+      modifiedDate: fields[7] as DateTime?,
+      seansCount: fields[6] as int?,
       notes: fields[3] as String?,
       endDate: fields[5] as DateTime?,
-      seansList: (fields[11] as List).cast<SeansModel>(),
+      seansList: (fields[8] as List).cast<SeansModel>(),
       name: fields[1] as String,
       phone: fields[2] as String?,
       startDate: fields[4] as DateTime,
@@ -34,9 +32,9 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
   @override
   void write(BinaryWriter writer, CostumerModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(9)
       ..writeByte(0)
-      ..write(obj.id)
+      ..write(obj.customerId)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
@@ -48,14 +46,10 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       ..writeByte(5)
       ..write(obj.endDate)
       ..writeByte(6)
-      ..write(obj.startDateString)
-      ..writeByte(7)
-      ..write(obj.endDateString)
-      ..writeByte(9)
       ..write(obj.seansCount)
-      ..writeByte(10)
+      ..writeByte(7)
       ..write(obj.modifiedDate)
-      ..writeByte(11)
+      ..writeByte(8)
       ..write(obj.seansList);
   }
 

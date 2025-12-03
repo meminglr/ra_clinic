@@ -9,6 +9,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
+import 'package:ra_clinic/func/utils.dart';
 
 import 'costumer_updating.dart';
 
@@ -122,7 +123,7 @@ class _CostumersPageState extends State<CostumersPage> {
                             );
                           },
                           child: Slidable(
-                            key: Key(item.id),
+                            key: Key(item.customerId),
                             endActionPane: ActionPane(
                               dismissible: DismissiblePane(
                                 onDismissed: () {
@@ -173,7 +174,7 @@ class _CostumersPageState extends State<CostumersPage> {
                                             fontSize: 18,
                                           ),
                                         ),
-                                        Text(item.startDateString),
+                                        Text(Utils.toDate(item.startDate)),
                                         Text(
                                           "Seans Sayısı: ${item.seansList.length}",
                                         ),

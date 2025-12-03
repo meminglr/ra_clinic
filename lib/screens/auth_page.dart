@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../services/auth_service.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -14,7 +15,7 @@ class _AuthPageState extends State<AuthPage> {
   bool _isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final _supabase = Supabase.instance.client;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -23,58 +24,10 @@ class _AuthPageState extends State<AuthPage> {
     _passwordController.dispose();
   }
 
-  // Giriş Yapma Fonksiyonu
-  Future<void> _signIn() async {
-    setState(() => _isLoading = true);
-    try {
-      await _supabase.auth.signInWithPassword(
-        email: _emailController.text,
-        password: _passwordController.text.trim(),
-      );
-      // Başarılı olursa AuthGate otomatik olarak HomePage'e yönlendirecek
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Giriş başarılı!')));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Hata: ${e.toString()}')));
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-
-        Navigator.pop(context);
-      }
-    }
-  }
-
-  // Kayıt Olma Fonksiyonu
-  Future<void> _signUp() async {
-    setState(() => _isLoading = true);
-    try {
-      await _supabase.auth.signUp(
-        email: _emailController.text,
-        password: _passwordController.text.trim(),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kayıt başarılı! Giriş yapabilirsiniz.')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Hata: ${e.toString()}')));
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pop(context);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Authentication Page')),
+      appBar: AppBar(title: const Text('Giriş / Kayıt')),
       body: Center(
         child: Form(
           key: _formKey,
@@ -105,14 +58,33 @@ class _AuthPageState extends State<AuthPage> {
                   obscureText: true,
                 ),
                 FilledButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       if (isLogin) {
-                        _signIn();
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        await _authService.signIn(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
                       } else {
-                        _signUp();
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        await _authService.signUp(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
                       }
                     }
+                    Navigator.pop(context);
                   },
                   label: _isLoading
                       ? CircularProgressIndicator(
