@@ -3,7 +3,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 
 class CostumerDetailHeader extends StatelessWidget {
   const CostumerDetailHeader({super.key, required this.costumer});
-  final CostumerModel costumer;
+  final CustomerModel costumer;
 
   @override
   Widget build(BuildContext context) {

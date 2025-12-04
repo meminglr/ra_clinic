@@ -9,7 +9,7 @@ import '../../../func/communication_helper.dart';
 class CommunicationButtons extends StatefulWidget {
   final bool phoneIsNotEmpty;
   final ScaffoldMessengerState messenger;
-  final CostumerModel costumer;
+  final CustomerModel costumer;
   final bool isMessageExpanded;
   final bool isCallExpanded;
 

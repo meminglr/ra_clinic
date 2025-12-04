@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ra_clinic/providers/auth_provider.dart';
 import 'package:ra_clinic/providers/theme_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_page.dart';
 
@@ -14,6 +14,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // listen: true kullanılması, sayfa açıkken tema değişikliklerini anlık yansıtmak içindir
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final authProvider = Provider.of<FirebaseAuthProvider>(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ayarlar')),

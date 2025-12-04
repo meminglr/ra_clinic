@@ -14,27 +14,27 @@ import 'package:ra_clinic/theme/app_themes.dart';
 import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
+import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  Hive.registerAdapter(CostumerModelAdapter());
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  Hive.registerAdapter(CustomerModelAdapter());
   Hive.registerAdapter(SeansModelAdapter());
   Hive.registerAdapter(ScheduleAdapter());
-  await Hive.openBox<CostumerModel>("costumersBox");
+  await Hive.openBox<CustomerModel>("customersBox");
   await Hive.openBox<Schedule>("scheduleBox");
   await Hive.openBox('settings');
   await initializeDateFormatting('tr_TR', null);
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => CostumerProvider()),
+        ChangeNotifierProvider(create: (_) => CustomerProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
       ],
       child: const MainApp(),
     ),

@@ -1,41 +1,61 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  // Firebase Auth instance'ını alıyoruz (yetkili kişi)
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // 1. KAYIT OLMA FONKSİYONU
-  Future<User?> signUp(String email, String password) async {
-    try {
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
-        email: email, 
-        password: password
-      );
-      return credential.user;
-    } on FirebaseAuthException catch (e) {
-      // Hata olursa (örneğin: bu mail zaten kayıtlı, şifre çok zayıf)
-      print("Kayıt Hatası: ${e.message}");
-      return null;
-    }
-  }
+  // Şu anki kullanıcıyı getir (Oturum açık mı?)
+  User? get currentUser => _auth.currentUser;
 
-  // 2. GİRİŞ YAPMA FONKSİYONU
+  // Oturum Durumunu Dinle (Stream)
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // --- GİRİŞ YAP (Sign In) ---
   Future<User?> signIn(String email, String password) async {
     try {
-      UserCredential credential = await _auth.signInWithEmailAndPassword(
+      UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email, 
         password: password
       );
-      return credential.user;
+      return result.user;
     } on FirebaseAuthException catch (e) {
-      // Hata olursa (örneğin: şifre yanlış, kullanıcı bulunamadı)
-      print("Giriş Hatası: ${e.message}");
-      return null;
+      // Hata mesajlarını Türkçeleştirebilirsin
+      throw _hataCevir(e.code);
     }
   }
 
-  // 3. ÇIKIŞ YAPMA FONKSİYONU
+  // --- KAYIT OL (Sign Up) ---
+  Future<User?> signUp(String email, String password) async {
+    try {
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
+        email: email, 
+        password: password
+      );
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+      throw _hataCevir(e.code);
+    }
+  }
+
+  // --- ÇIKIŞ YAP (Sign Out) ---
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  // Hata Kodlarını Anlaşılır Hale Getirme
+  String _hataCevir(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'Böyle bir kullanıcı bulunamadı.';
+      case 'wrong-password':
+        return 'Şifre hatalı.';
+      case 'email-already-in-use':
+        return 'Bu e-posta adresi zaten kullanımda.';
+      case 'invalid-email':
+        return 'Geçersiz e-posta formatı.';
+      case 'weak-password':
+        return 'Şifre çok zayıf (en az 6 karakter olmalı).';
+      default:
+        return 'Bir hata oluştu: $code';
+    }
   }
 }

@@ -5,7 +5,7 @@ import 'seans_model.dart'; // Dosya yolunu kendine göre ayarla
 part 'costumer_model.g.dart';
 
 @HiveType(typeId: 1)
-class CostumerModel {
+class CustomerModel {
   @HiveField(0)
   final String customerId;
   @HiveField(1)
@@ -21,15 +21,17 @@ class CostumerModel {
   @HiveField(6)
   final int? seansCount;
   @HiveField(7)
-   DateTime? modifiedDate;
+  DateTime? lastUpdated;
   @HiveField(8)
   final List<SeansModel> seansList;
   @HiveField(9) // Yeni alan
   bool isSynced;
+  @HiveField(10)
+  bool isDeleted;
 
-  CostumerModel({
+  CustomerModel({
     required this.customerId,
-    this.modifiedDate,
+    this.lastUpdated,
     this.seansCount,
     this.notes,
     this.endDate,
@@ -38,6 +40,7 @@ class CostumerModel {
     this.phone,
     required this.startDate,
     this.isSynced = false,
+    this.isDeleted = false,
   });
 
   // Firebase'e gönderirken
@@ -49,30 +52,72 @@ class CostumerModel {
       'notes': notes,
       'startDate': Timestamp.fromDate(startDate),
       'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
-      'modifiedDate': modifiedDate != null ? Timestamp.fromDate(modifiedDate!) : null,
+      'lastUpdated': lastUpdated != null
+          ? Timestamp.fromDate(lastUpdated!)
+          : null,
       'seansCount': seansCount,
       // Listeyi de map listesine çevirmeliyiz:
       'seansList': seansList.map((x) => x.toMap()).toList(),
+      'isSynced': isSynced,
+      'isDeleted': isDeleted,
     };
   }
 
   // Firebase'den çekerken
-  factory CostumerModel.fromMap(Map<String, dynamic> map, String docId) {
-    return CostumerModel(
-      customerId: docId, // Firebase'in kendi ID'sini kullanmak genelde daha güvenlidir
-      name: map['name'] ?? '',
-      phone: map['phone'],
-      notes: map['notes'],
-      startDate: (map['startDate'] as Timestamp).toDate(),
-      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
-      modifiedDate: map['modifiedDate'] != null ? (map['modifiedDate'] as Timestamp).toDate() : null,
-      seansCount: map['seansCount'],
+  factory CustomerModel.fromMap(Map<String, dynamic> data, String docId) {
+    return CustomerModel(
+      customerId:
+          docId, // Firebase'in kendi ID'sini kullanmak genelde daha güvenlidir
+      name: data['name'] ?? '',
+      phone: data['phone'],
+      notes: data['notes'],
+      startDate: (data['startDate'] as Timestamp).toDate(),
+      endDate: data['endDate'] != null
+          ? (data['endDate'] as Timestamp).toDate()
+          : null,
+      lastUpdated: data['lastUpdated'] != null
+          ? (data['lastUpdated'] as Timestamp).toDate()
+          : null,
+      seansCount: data['seansCount'],
       // Map listesini geri nesne listesine çeviriyoruz:
-      seansList: map['seansList'] != null
+      seansList: data['seansList'] != null
           ? List<SeansModel>.from(
-              (map['seansList'] as List).map((x) => SeansModel.fromMap(x as Map<String, dynamic>)),
+              (data['seansList'] as List).map(
+                (x) => SeansModel.fromMap(x as Map<String, dynamic>),
+              ),
             )
           : [],
+      isSynced: true, // Firebase'den gelen veriler senkronizedir
+      isDeleted: data['isDeleted'] ?? false,
+    );
+  }
+
+  // CostumerModel sınıfının içine ekle:
+  CustomerModel copyWith({
+    String? customerId,
+    String? name,
+    String? phone,
+    String? notes,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? seansCount,
+    DateTime? lastUpdated,
+    List<SeansModel>? seansList,
+    bool? isSynced,
+    bool? isDeleted,
+  }) {
+    return CustomerModel(
+      customerId: customerId ?? this.customerId,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      notes: notes ?? this.notes,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      seansCount: seansCount ?? this.seansCount,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      seansList: seansList ?? this.seansList,
+      isSynced: isSynced ?? this.isSynced,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

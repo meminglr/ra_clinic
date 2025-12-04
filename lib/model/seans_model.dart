@@ -51,4 +51,22 @@ class SeansModel {
       isDeleted: map['isDeleted'] ?? false,
     );
   }
+
+  SeansModel copyWith({
+    String? seansId,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? seansCount,
+    String? seansNote,
+    bool? isDeleted,
+  }) {
+    return SeansModel(
+      seansId: seansId ?? this.seansId,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      seansCount: seansCount ?? this.seansCount,
+      seansNote: seansNote ?? this.seansNote,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
 }

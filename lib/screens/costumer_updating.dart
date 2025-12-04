@@ -13,7 +13,7 @@ import 'package:ra_clinic/func/utils.dart';
 import '../constants/app_constants.dart';
 
 class CostumerUpdating extends StatefulWidget {
-  final CostumerModel? costumer;
+  final CustomerModel? costumer;
   const CostumerUpdating({super.key, this.costumer});
 
   @override
@@ -31,7 +31,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   final _formKey = GlobalKey<FormState>();
   String kayitTarihi = "";
   String seansTarihi = "";
-  String? id;
+  String? costumerId;
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       for (var seans in _seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
-      id = const Uuid().v4();
+      costumerId = const Uuid().v4();
     }
 
     if (widget.costumer != null) {
@@ -49,7 +49,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       _noteController.text = widget.costumer!.notes ?? "";
       _seansList = widget.costumer!.seansList;
       costumerStartDate = widget.costumer!.startDate;
-      id = widget.costumer!.customerId;
+      costumerId = widget.costumer!.customerId;
       for (var seans in widget.costumer!.seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
@@ -57,19 +57,29 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
     kayitTarihiGuncelle();
   }
 
-  void removeSeans(int index, List seansList) {
-    context.read<CostumerProvider>().removeSeans(index, seansList);
+  void removeSeans(int seansIndex) {
+    if (_seansList.isNotEmpty) {
+      _seansList[seansIndex].isDeleted = !_seansList[seansIndex].isDeleted;
+    }
+    // context.read<CostumerProvider>().removeSeans(index, seansList);
     setState(() {});
   }
 
-  void seansEkle(String id) {
+  void seansEkle() {
+    String newSeansId = const Uuid().v4();
     final newSeans = SeansModel(
-      seansId: id,
+      seansId: newSeansId,
       startDate: DateTime.now(),
       seansCount: _seansList.length + 1,
     );
     _seansControllers[newSeans] = TextEditingController();
-    context.read<CostumerProvider>().seansEkle(newSeans, _seansList);
+    _seansList.add(newSeans);
+    if (widget.costumer != null) {
+      context.read<CustomerProvider>().updateCustomerAfterSeansChange(
+        widget.costumer!,
+      );
+    }
+
     setState(() {});
   }
 
@@ -80,7 +90,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
 
   void saveAndReturn(String id) {
     if (_nameController.text.isNotEmpty || _formKey.currentState!.validate()) {
-      final CostumerModel newCostumer = CostumerModel(
+      final CustomerModel newCostumer = CustomerModel(
         customerId: id,
         name: _nameController.text,
         phone: _telNoController.text,
@@ -117,7 +127,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          saveAndReturn(id!);
+          saveAndReturn(costumerId!);
           //  Navigator.pop(context);
         },
         label: const Text("Kaydet"),
@@ -214,7 +224,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                     seans.isDeleted
                         ? FilledButton.tonal(
                             onPressed: () {
-                              removeSeans(index, _seansList);
+                              removeSeans(index);
                             },
                             child: Text("${seans.seansCount}. Seansı Ekle"),
                           )
@@ -251,8 +261,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                                           ],
                                         ),
                                         GestureDetector(
-                                          onTap: () =>
-                                              removeSeans(index, _seansList),
+                                          onTap: () => removeSeans(index),
                                           child: Icon(
                                             Icons.delete_outline,
                                             size: 30,
@@ -296,7 +305,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                 ),
                 child: FilledButton(
                   onPressed: () {
-                    seansEkle(id!);
+                    seansEkle();
                   },
                   child: Text("Seans Ekle"),
                 ),

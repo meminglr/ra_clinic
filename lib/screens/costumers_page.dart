@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
@@ -8,9 +13,9 @@ import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
-import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/func/utils.dart';
 
+import '../services/sync_service.dart';
 import 'costumer_updating.dart';
 
 class CostumersPage extends StatefulWidget {
@@ -22,17 +27,17 @@ class CostumersPage extends StatefulWidget {
 
 class _CostumersPageState extends State<CostumersPage> {
   void navigateToAddCostumerPage() async {
-    final CostumerModel? newCostumer = await Navigator.push<CostumerModel>(
+    final CustomerModel? newCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(builder: (builder) => CostumerUpdating()),
     );
     if (newCostumer != null) {
-      context.read<CostumerProvider>().addCostumer(newCostumer);
+      context.read<CustomerProvider>().addCustomer(newCostumer);
     }
   }
 
-  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
-    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
+  void navigateToEditCostumerPage(int index, CustomerModel costumer) async {
+    final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(
         builder: (builder) {
@@ -42,12 +47,59 @@ class _CostumersPageState extends State<CostumersPage> {
     );
 
     if (modifiedCostumer != null) {
-      context.read<CostumerProvider>().editCostumer(index, modifiedCostumer);
+      context.read<CustomerProvider>().editCustomer(modifiedCostumer);
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Değişiklikler kaydedildi")));
     }
+  }
+
+  SyncService? _syncService;
+  StreamSubscription? _internetSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSyncSystem();
+  }
+
+  void _initSyncSystem() {
+    // 1. Mevcut kullanıcının ID'sini al
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _syncService = SyncService(user.uid);
+
+      // A. Uygulama açılır açılmaz bir kere PUSH yap (Bekleyenleri gönder)
+      _syncService!.syncLocalToRemote();
+
+      // B. Firebase'i dinlemeye başla (PULL)
+      _syncService!.startListeningToRemoteChanges();
+
+      // C. İnternet gidip gelirse otomatik PUSH tetikle
+      _internetSubscription = Connectivity().onConnectivityChanged.listen((
+        result,
+      ) {
+        if (result != ConnectivityResult.none) {
+          print("🌐 İnternet geldi, sync tetikleniyor...");
+          _syncService!.syncLocalToRemote();
+        }
+      });
+
+      // D. Kullanıcı bir veri kaydettiğinde (Hive değiştiğinde) anında PUSH yap
+      Hive.box<CustomerModel>("customersBox").listenable().addListener(() {
+        // Buraya bir "Throttle" (yavaşlatma) koymak iyi olabilir ama şimdilik direkt çağıralım
+        _syncService!.syncLocalToRemote();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Sayfa kapanırsa dinlemeleri durdur (Hafıza sızıntısını önle)
+    _syncService?.stopListening();
+    _internetSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -56,9 +108,10 @@ class _CostumersPageState extends State<CostumersPage> {
     //     .watch<CostumerProvider>()
     //     .costumersList;
 
-    List<CostumerModel> costumersList = context
-        .watch<CostumerProvider>()
-        .costumersList;
+    List<CustomerModel> costumersList = context
+        .watch<CustomerProvider>(
+        )
+        .customersList;
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -68,32 +121,34 @@ class _CostumersPageState extends State<CostumersPage> {
         icon: const Icon(Icons.add),
       ),
       body: Center(
-        child: costumersList.isEmpty
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_off_outlined, size: 100),
-                  Text(
-                    "Henüz eklenmiş bir müşteri yok.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ],
-              )
-            : CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverAppBar(
-                    pinned: true,
-                    snap: false,
-                    floating: true,
-                    expandedHeight: 130.0,
-                    flexibleSpace: const FlexibleSpaceBar(
-                      centerTitle: true,
-                      title: Text('Müşteriler'),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              snap: false,
+              floating: true,
+              expandedHeight: 130.0,
+              flexibleSpace: const FlexibleSpaceBar(
+                centerTitle: true,
+                title: Text('Müşteriler'),
+              ),
+            ),
+            costumersList.isEmpty
+                ? SliverToBoxAdapter(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_off_outlined, size: 100),
+                        Text(
+                          "Henüz eklenmiş bir müşteri yok.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ],
                     ),
-                  ),
-                  SliverPadding(
+                  )
+                : SliverPadding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 15,
                       vertical: 5,
@@ -105,217 +160,202 @@ class _CostumersPageState extends State<CostumersPage> {
                       ),
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    sliver: SliverList.builder(
-                      itemCount: costumersList.length,
-                      itemBuilder: (context, index) {
-                        // itemBuilder ismini context olarak düzelttim (standart kullanım)
-                        CostumerModel item = costumersList[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (builder) =>
-                                    CostumerDetail(index: index),
-                              ),
+
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              sliver: SliverList.builder(
+                itemCount: costumersList.length,
+                itemBuilder: (context, index) {
+                  // itemBuilder ismini context olarak düzelttim (standart kullanım)
+                  CustomerModel item = costumersList[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (builder) => CostumerDetail(index: index),
+                        ),
+                      );
+                    },
+                    child: Slidable(
+                      key: Key(item.customerId),
+                      endActionPane: ActionPane(
+                        dismissible: DismissiblePane(
+                          onDismissed: () {
+                            context.read<CustomerProvider>().deleteCustomer(
+                              item.customerId,
                             );
                           },
-                          child: Slidable(
-                            key: Key(item.customerId),
-                            endActionPane: ActionPane(
-                              dismissible: DismissiblePane(
-                                onDismissed: () {
-                                  context
-                                      .read<CostumerProvider>()
-                                      .deleteCostumer(index);
-                                },
-                              ),
-                              motion: const StretchMotion(),
-                              children: [
-                                SlidableAction(
-                                  onPressed: (context) {
-                                    context
-                                        .read<CostumerProvider>()
-                                        .deleteCostumer(index);
-                                  },
-                                  backgroundColor: Colors.redAccent,
-                                  foregroundColor: Colors.red.shade100,
-                                  icon: Icons.delete_outline,
-                                  label: 'Sil',
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ],
-                            ),
-                            child: Card.filled(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 16,
-                                  right: 16,
-                                  top: 8,
-                                  bottom: 16,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        Text(Utils.toDate(item.startDate)),
-                                        Text(
-                                          "Seans Sayısı: ${item.seansList.length}",
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        FilledButton(
-                                          style: const ButtonStyle(
-                                            padding: WidgetStatePropertyAll(
-                                              EdgeInsets.zero,
-                                            ),
-                                            minimumSize: WidgetStatePropertyAll(
-                                              Size(40, 40),
-                                            ),
-                                            shape: WidgetStatePropertyAll(
-                                              CircleBorder(),
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            CommunicationHelper.makePhoneCall(
-                                              context,
-                                              item.phone!,
-                                            );
-                                          },
-                                          child: const Icon(
-                                            Icons.phone_outlined,
-                                          ),
-                                        ),
-                                        FilledButton(
-                                          style: const ButtonStyle(
-                                            padding: WidgetStatePropertyAll(
-                                              EdgeInsets.zero,
-                                            ),
-                                            minimumSize: WidgetStatePropertyAll(
-                                              Size(40, 40),
-                                            ),
-                                            shape: WidgetStatePropertyAll(
-                                              CircleBorder(),
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            CommunicationHelper.openSmsApp(
-                                              context,
-                                              item.phone!,
-                                            );
-                                          },
-                                          child: const Icon(
-                                            Icons.message_outlined,
-                                          ),
-                                        ),
-                                        PullDownButton(
-                                          routeTheme: PullDownMenuRouteTheme(
-                                            backgroundColor:
-                                                AppConstants.dropDownButtonsColor(
-                                                  context,
-                                                ),
-                                          ),
-                                          itemBuilder: (context) => [
-                                            PullDownMenuItem(
-                                              onTap: () {
-                                                // Slidable'ı programatik olarak açıp silme işlemi
-                                                final slidable = Slidable.of(
-                                                  context,
-                                                );
-                                                slidable?.openEndActionPane(
-                                                  duration: Durations.long1,
-                                                );
-
-                                                // Biraz bekleyip dismiss animasyonunu tetikle
-                                                Future.delayed(
-                                                  Durations.medium3,
-                                                  () {
-                                                    if (context.mounted) {
-                                                      context
-                                                          .read<
-                                                            CostumerProvider
-                                                          >()
-                                                          .deleteCostumer(
-                                                            index,
-                                                          );
-                                                    }
-                                                  },
-                                                );
-                                              },
-                                              title: 'Sil',
-                                              isDestructive: true,
-                                              iconColor: Colors.red,
-                                              icon: Icons.delete_outline,
-                                            ),
-                                            PullDownMenuItem(
-                                              onTap: () {
-                                                navigateToEditCostumerPage(
-                                                  index,
-                                                  item,
-                                                );
-                                              },
-                                              title: 'Düzenle',
-                                              icon: Icons.edit_outlined,
-                                            ),
-                                            PullDownMenuItem(
-                                              onTap: () {
-                                                CommunicationHelper.shareCostumer(
-                                                  item,
-                                                );
-                                              },
-                                              title: 'Paylaş',
-                                              icon: Icons.share_outlined,
-                                            ),
-                                          ],
-                                          position:
-                                              PullDownMenuPosition.automatic,
-                                          buttonBuilder: (context, showMenu) =>
-                                              GestureDetector(
-                                                behavior:
-                                                    HitTestBehavior.translucent,
-                                                onTap: showMenu,
-                                                child: const Padding(
-                                                  padding: EdgeInsets.only(
-                                                    left: 5,
-                                                    top: 20,
-                                                    bottom: 20,
-                                                    right: 5,
-                                                  ),
-                                                  child: Icon(Icons.more_vert),
-                                                ),
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                        ),
+                        motion: const StretchMotion(),
+                        children: [
+                          SlidableAction(
+                            onPressed: (context) {
+                              context.read<CustomerProvider>().deleteCustomer(
+                                item.customerId,
+                              );
+                            },
+                            backgroundColor: Colors.redAccent,
+                            foregroundColor: Colors.red.shade100,
+                            icon: Icons.delete_outline,
+                            label: 'Sil',
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                      child: Card.filled(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 8,
+                            bottom: 16,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(Utils.toDate(item.startDate)),
+                                  Text(
+                                    "Seans Sayısı: ${item.seansList.length}",
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  FilledButton(
+                                    style: const ButtonStyle(
+                                      padding: WidgetStatePropertyAll(
+                                        EdgeInsets.zero,
+                                      ),
+                                      minimumSize: WidgetStatePropertyAll(
+                                        Size(40, 40),
+                                      ),
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      CommunicationHelper.makePhoneCall(
+                                        context,
+                                        item.phone!,
+                                      );
+                                    },
+                                    child: const Icon(Icons.phone_outlined),
+                                  ),
+                                  FilledButton(
+                                    style: const ButtonStyle(
+                                      padding: WidgetStatePropertyAll(
+                                        EdgeInsets.zero,
+                                      ),
+                                      minimumSize: WidgetStatePropertyAll(
+                                        Size(40, 40),
+                                      ),
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      CommunicationHelper.openSmsApp(
+                                        context,
+                                        item.phone!,
+                                      );
+                                    },
+                                    child: const Icon(Icons.message_outlined),
+                                  ),
+                                  PullDownButton(
+                                    routeTheme: PullDownMenuRouteTheme(
+                                      backgroundColor:
+                                          AppConstants.dropDownButtonsColor(
+                                            context,
+                                          ),
+                                    ),
+                                    itemBuilder: (context) => [
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          // Slidable'ı programatik olarak açıp silme işlemi
+                                          final slidable = Slidable.of(context);
+                                          slidable?.openEndActionPane(
+                                            duration: Durations.long1,
+                                          );
+
+                                          // Biraz bekleyip dismiss animasyonunu tetikle
+                                          Future.delayed(Durations.medium3, () {
+                                            if (context.mounted) {
+                                              context
+                                                  .read<CustomerProvider>()
+                                                  .deleteCustomer(
+                                                    item.customerId,
+                                                  );
+                                            }
+                                          });
+                                        },
+                                        title: 'Sil',
+                                        isDestructive: true,
+                                        iconColor: Colors.red,
+                                        icon: Icons.delete_outline,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          navigateToEditCostumerPage(
+                                            index,
+                                            item,
+                                          );
+                                        },
+                                        title: 'Düzenle',
+                                        icon: Icons.edit_outlined,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          CommunicationHelper.shareCostumer(
+                                            item,
+                                          );
+                                        },
+                                        title: 'Paylaş',
+                                        icon: Icons.share_outlined,
+                                      ),
+                                    ],
+                                    position: PullDownMenuPosition.automatic,
+                                    buttonBuilder: (context, showMenu) =>
+                                        GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: showMenu,
+                                          child: const Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 5,
+                                              top: 20,
+                                              bottom: 20,
+                                              right: 5,
+                                            ),
+                                            child: Icon(Icons.more_vert),
+                                          ),
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
+            ),
+          ],
+        ),
       ),
     );
   }

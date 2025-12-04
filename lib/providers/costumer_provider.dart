@@ -1,61 +1,83 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/model/seans_model.dart';
+import 'package:uuid/uuid.dart';
+import 'package:ra_clinic/model/costumer_model.dart'; // Dosya adın buysa kalsın, ama customer_model.dart olması daha iyi
 
-class CostumerProvider extends ChangeNotifier {
-  static const String _boxName = "costumersBox";
-  final Box<CostumerModel> _box = Hive.box(_boxName);
-  final List<CostumerModel> _costumersList = [];
-  List<CostumerModel> get costumersList => List.unmodifiable(_costumersList);
+class CustomerProvider extends ChangeNotifier {
+  static const String _boxName = "customersBox";
+  late Box<CustomerModel> _box;
 
-  CostumerProvider() {
-    _loadFromHive();
-  }
-
-  void _loadFromHive() {
-    _costumersList.clear();
-    _costumersList.addAll(_box.values.toList());
-  }
-
-  void _saveToHive() {
-    _box.clear().then((onValue) {
-      _box.addAll(_costumersList);
+  CustomerProvider() {
+    _box = Hive.box<CustomerModel>(_boxName);
+    // BÜYÜK SIR: Hive kutusunu dinliyoruz!
+    // Kutuda herhangi bir değişiklik (SyncService'den veya başka yerden)
+    // olduğu an arayüze "Güncellen" emri gönderiyoruz.
+    _box.listenable().addListener(() {
+      notifyListeners();
     });
   }
 
-  Future<void> addCostumer(CostumerModel newCostumer) async {
-    _costumersList.add(newCostumer);
-    _saveToHive();
+  // --- GETTER ---
+  List<CustomerModel> get customersList {
+    // costumers -> customers
+    return _box.values.where((c) => !c.isDeleted).toList();
+  }
+
+  // --- MÜŞTERİ EKLEME ---
+  Future<void> addCustomer(CustomerModel newCustomer) async {
+    // addCostumer -> addCustomer
+    String finalId = newCustomer.customerId.isEmpty
+        ? const Uuid().v4()
+        : newCustomer.customerId;
+
+    final customerToSave = newCustomer.copyWith(
+      customerId: finalId,
+      lastUpdated: DateTime.now(),
+      isSynced: false,
+      isDeleted: false,
+    );
+
+    await _box.put(finalId, customerToSave);
     notifyListeners();
   }
 
-  void editCostumer(int index, CostumerModel modifiedCostumer) {
-    if (index >= 0 && index < _costumersList.length) {
-      _costumersList[index] = modifiedCostumer;
-      _saveToHive();
+  // --- MÜŞTERİ DÜZENLEME ---
+  Future<void> editCustomer(CustomerModel updatedCustomer) async {
+    final customerToSave = updatedCustomer.copyWith(
+      lastUpdated: DateTime.now(),
+      isSynced: false,
+    );
+
+    await _box.put(customerToSave.customerId, customerToSave);
+    notifyListeners();
+  }
+
+  // --- MÜŞTERİ SİLME (SOFT DELETE) ---
+  Future<void> deleteCustomer(String customerId) async {
+    final existingCustomer = _box.get(customerId);
+
+    if (existingCustomer != null) {
+      final deletedCustomer = existingCustomer.copyWith(
+        isDeleted: true,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+
+      await _box.put(customerId, deletedCustomer);
       notifyListeners();
     }
   }
 
-  void removeSeans(int index, List seansList) {
-    if (seansList.isNotEmpty) {
-      seansList[index].isDeleted = !seansList[index].isDeleted;
-    }
-    _saveToHive();
-    notifyListeners();
-  }
+  // --- SEANS DEĞİŞİKLİĞİ SONRASI ---
+  Future<void> updateCustomerAfterSeansChange(
+    CustomerModel modifiedCustomer,
+  ) async {
+    final finalCustomer = modifiedCustomer.copyWith(
+      lastUpdated: DateTime.now(),
+      isSynced: false,
+    );
 
-  void seansEkle(SeansModel newSeans, List seansList) {
-    seansList.add(newSeans);
-    _saveToHive();
-    notifyListeners();
-  }
-
-  void deleteCostumer(int index) async {
-    await _box.deleteAt(index);
-    _costumersList.removeAt(index);
-    _saveToHive();
+    await _box.put(finalCustomer.customerId, finalCustomer);
     notifyListeners();
   }
 }

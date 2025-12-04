@@ -4,7 +4,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 
 class CostumerPhoneDisplay extends StatelessWidget {
   final ScaffoldMessengerState messenger;
-  final CostumerModel costumer;
+  final CustomerModel costumer;
   const CostumerPhoneDisplay({
     required this.costumer,
     required this.messenger,

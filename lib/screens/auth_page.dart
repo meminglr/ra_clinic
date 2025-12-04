@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 
 class AuthPage extends StatefulWidget {
@@ -12,10 +14,9 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final _formKey = GlobalKey<FormState>();
   bool isLogin = true;
-  bool _isLoading = false;
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -26,6 +27,9 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<FirebaseAuthProvider>(context);
+    final isLoading = provider.isLoading;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Giriş / Kayıt')),
       body: Center(
@@ -61,32 +65,22 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       if (isLogin) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        await _authService.signIn(
-                          _emailController.text,
-                          _passwordController.text,
+                        provider.login(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
+                          context,
                         );
-                        setState(() {
-                          _isLoading = false;
-                        });
                       } else {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        await _authService.signUp(
-                          _emailController.text,
-                          _passwordController.text,
+                        provider.register(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
+                          context,
                         );
-                        setState(() {
-                          _isLoading = false;
-                        });
                       }
                     }
                     Navigator.pop(context);
                   },
-                  label: _isLoading
+                  label: isLoading
                       ? CircularProgressIndicator(
                           constraints: BoxConstraints(
                             minHeight: 20,

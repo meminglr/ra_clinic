@@ -6,19 +6,19 @@ part of 'costumer_model.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
+class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
   @override
   final int typeId = 1;
 
   @override
-  CostumerModel read(BinaryReader reader) {
+  CustomerModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return CostumerModel(
+    return CustomerModel(
       customerId: fields[0] as String,
-      modifiedDate: fields[7] as DateTime?,
+      lastUpdated: fields[7] as DateTime?,
       seansCount: fields[6] as int?,
       notes: fields[3] as String?,
       endDate: fields[5] as DateTime?,
@@ -26,13 +26,15 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       name: fields[1] as String,
       phone: fields[2] as String?,
       startDate: fields[4] as DateTime,
+      isSynced: fields[9] as bool,
+      isDeleted: fields[10] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, CostumerModel obj) {
+  void write(BinaryWriter writer, CustomerModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.customerId)
       ..writeByte(1)
@@ -48,9 +50,13 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
       ..writeByte(6)
       ..write(obj.seansCount)
       ..writeByte(7)
-      ..write(obj.modifiedDate)
+      ..write(obj.lastUpdated)
       ..writeByte(8)
-      ..write(obj.seansList);
+      ..write(obj.seansList)
+      ..writeByte(9)
+      ..write(obj.isSynced)
+      ..writeByte(10)
+      ..write(obj.isDeleted);
   }
 
   @override
@@ -59,7 +65,7 @@ class CostumerModelAdapter extends TypeAdapter<CostumerModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CostumerModelAdapter &&
+      other is CustomerModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

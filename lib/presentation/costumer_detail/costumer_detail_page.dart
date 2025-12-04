@@ -26,8 +26,8 @@ class _CostumerDetailState extends State<CostumerDetail> {
   bool isMessageExpanded = false;
   bool isCallExpanded = false;
 
-  void navigateToEditCostumerPage(int index, CostumerModel costumer) async {
-    final CostumerModel? modifiedCostumer = await Navigator.push<CostumerModel>(
+  void navigateToEditCostumerPage(int index, CustomerModel costumer) async {
+    final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(
         builder: (builder) {
@@ -38,7 +38,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
     if (modifiedCostumer != null) {
       if (mounted) {
-        context.read<CostumerProvider>().editCostumer(index, modifiedCostumer);
+        context.read<CustomerProvider>().editCustomer(modifiedCostumer);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Değişiklikler kaydedildi")),
         );
@@ -48,14 +48,14 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CostumerProvider>();
+    final provider = context.watch<CustomerProvider>();
 
     // Silinme durumunda index hatası almamak için güvenlik kontrolü
-    if (widget.index >= provider.costumersList.length) {
+    if (widget.index >= provider.customersList.length) {
       return const SizedBox();
     }
 
-    CostumerModel currentCostumer = provider.costumersList[widget.index];
+    CustomerModel currentCostumer = provider.customersList[widget.index];
     var phoneIsNotEmpty = currentCostumer.phone?.isNotEmpty ?? false;
     var noteIsNotEmpty = currentCostumer.notes?.isNotEmpty ?? false;
     final messenger = ScaffoldMessenger.of(context);
@@ -147,7 +147,6 @@ class _CostumerDetailState extends State<CostumerDetail> {
                       ),
                     ),
                   ),
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
                 ],
               ),
             ],
@@ -161,7 +160,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
   SliverToBoxAdapter communicationButtons(
     bool phoneIsNotEmpty,
-    CostumerModel currentCostumer,
+    CustomerModel currentCostumer,
     ScaffoldMessengerState messenger,
   ) {
     return SliverToBoxAdapter(
@@ -189,7 +188,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
 
   SliverAppBar musteriAdiAppBar(
     BuildContext context,
-    CostumerModel currentCostumer,
+    CustomerModel currentCostumer,
     ScaffoldMessengerState messenger,
   ) {
     return SliverAppBar(
@@ -231,7 +230,9 @@ class _CostumerDetailState extends State<CostumerDetail> {
             children: [
               GestureDetector(
                 onTap: () {
-                  context.read<CostumerProvider>().deleteCostumer(widget.index);
+                  context.read<CustomerProvider>().deleteCustomer(
+                    currentCostumer.customerId,
+                  );
                   Navigator.pop(context);
                   messenger.showSnackBar(
                     const SnackBar(content: Text("Müşteri silindi")),

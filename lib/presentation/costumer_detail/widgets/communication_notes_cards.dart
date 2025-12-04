@@ -10,7 +10,7 @@ class CostumerNotesCard extends StatelessWidget {
     required this.noteIsNotEmpty,
   });
 
-  final CostumerModel costumer;
+  final CustomerModel costumer;
   final bool noteIsNotEmpty;
 
   @override
@@ -28,7 +28,14 @@ class CostumerNotesCard extends StatelessWidget {
                 horizontal: 16.0,
                 vertical: 8.0,
               ),
-              child: Text(" ${Utils.toDate(costumer.startDate)} "),
+              child: Column(
+                children: [
+                  Text(" Kayıt Tarihi :${Utils.toDate(costumer.startDate)} "),
+                  Text(
+                    " Son Güncelleme :${costumer.lastUpdated != null ? Utils.toDate(costumer.lastUpdated!) : 'Yok'} ",
+                  ),
+                ],
+              ),
             ),
           ),
           if (noteIsNotEmpty)
