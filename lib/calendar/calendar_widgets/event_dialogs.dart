@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:ra_clinic/calendar/event_editin_page.dart';
 import 'package:ra_clinic/calendar/model/schedule.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class EventDialogsWidgets {
   static void showPullDownForEvent() {}
@@ -270,7 +271,7 @@ class EventDialogsWidgets {
 
                     // Yeni etkinlik oluştur
                     final newEvent = Schedule(
-                      id: DateTime.now().millisecondsSinceEpoch,
+                      id: Uuid().v4(),
                       name: titleController.text,
                       color: Colors.blue,
                       startDate: DateTime(

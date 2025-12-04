@@ -1,71 +1,72 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:ra_clinic/calendar/model/schedule.dart';
+import 'package:uuid/uuid.dart';
+import 'package:ra_clinic/calendar/model/schedule.dart'; // Yolunu kontrol et
 
 class EventProvider extends ChangeNotifier {
+  static const String _boxName = 'scheduleBox';
   late Box<Schedule> _box;
 
   EventProvider() {
-    _box = Hive.box<Schedule>('scheduleBox');
-    _events = _box.values.toList();
+    _box = Hive.box<Schedule>(_boxName);
+    
+    // SyncService dışarıdan veri eklediğinde (Firebase'den gelince)
+    // UI'ın haberi olsun diye dinleyici ekliyoruz.
+    _box.listenable().addListener(() {
+      notifyListeners();
+    });
   }
 
-  List<Schedule> _events = [];
+  // Getter: Sadece silinmemişleri getir
+  List<Schedule> get events => _box.values.where((e) => !e.isDeleted).toList();
 
-  List<Schedule> get events => _events;
+  // --- ETKİNLİK EKLEME ---
+  Future<void> addEvent(Schedule event) async {
+    // ID boş gelirse UUID oluştur
+    String finalId = event.id.isEmpty ? const Uuid().v4() : event.id;
 
-  /// Benzersiz int ID üret
-  int generateId() {
-    if (_box.isEmpty) return 1;
-    final ids = _box.values.map((e) => e.id).toList();
-    ids.sort();
-    return ids.last + 1;
-  }
+    final newEvent = event.copyWith(
+      id: finalId,
+      isSynced: false,
+      isDeleted: false,
+      lastUpdated: DateTime.now(),
+    );
 
-  void addEvent(Schedule event) {
-    // 1) benzersiz int ID üret
-    final newId = generateId();
-    event.id = newId;
-
-    // 2) Hive auto key ile kaydet (key önemli değil)
-    _box.add(event);
-
-    // 3) Listeyi yenile
-    _events = _box.values.toList();
+    // UUID anahtarı ile kaydet
+    await _box.put(finalId, newEvent);
     notifyListeners();
   }
 
-  void updateEvent(Schedule updatedEvent) {
-    // HiveObject’ı yeniden box'a eklemeye çalışmak yerine, key bul ve putAt kullan
-    final key = _box.keys.firstWhere(
-      (k) => _box.get(k)?.id == updatedEvent.id,
-      orElse: () => null,
+  // --- ETKİNLİK GÜNCELLEME ---
+  Future<void> updateEvent(Schedule updatedEvent) async {
+    final eventToSave = updatedEvent.copyWith(
+      isSynced: false, // Değiştiği için tekrar gönderilmeli
+      lastUpdated: DateTime.now(),
     );
 
-    if (key != null) {
-      _box.put(key, updatedEvent);
-      _events = _box.values.toList();
+    await _box.put(eventToSave.id, eventToSave);
+    notifyListeners();
+  }
+
+  // --- ETKİNLİK SİLME (SOFT DELETE) ---
+  Future<void> deleteEvent(String id) async {
+    final event = _box.get(id);
+    if (event != null) {
+      final deletedEvent = event.copyWith(
+        isDeleted: true,
+        isSynced: false, // Silindiği bilgisi server'a gitmeli
+        lastUpdated: DateTime.now(),
+      );
+
+      await _box.put(id, deletedEvent);
       notifyListeners();
     }
   }
-
-  void deleteEvent(int id) {
-    // Hive box içindeki itemleri kontrol et ve id eşleşenleri sil
-    final keyToDelete = _box.keys.firstWhere(
-      (key) => _box.get(key)?.id == id,
-      orElse: () => null,
-    );
-
-    if (keyToDelete != null) {
-      _box.delete(keyToDelete);
-      _events = _box.values.toList();
-      notifyListeners();
-    }
-  }
-
-  Future<void> resetAllEvents() async {
-    await _box.clear(); // Hive verilerini temizle
-    _events = _box.values.toList(); // provider listesini güncelle
+  
+  // Tümünü Temizle (Geliştirme aşamasında lazım olabilir)
+  Future<void> clearLocalData() async {
+    await _box.clear();
     notifyListeners();
   }
 }

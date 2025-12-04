@@ -109,8 +109,7 @@ class _CostumersPageState extends State<CostumersPage> {
     //     .costumersList;
 
     List<CustomerModel> costumersList = context
-        .watch<CustomerProvider>(
-        )
+        .watch<CustomerProvider>()
         .customersList;
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(

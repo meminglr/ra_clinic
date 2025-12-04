@@ -7,6 +7,7 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/calendar/model/schedule.dart';
 
 import 'package:ra_clinic/providers/event_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../constants/app_constants.dart';
 
@@ -387,7 +388,7 @@ class _EventEditinPageState extends State<EventEditinPage> {
 
     if (isValid) {
       final event = Schedule(
-        id: 0,
+        id: Uuid().v4(),
         name: titleController.text,
         color: selectedColor,
         startDate: fromDate,

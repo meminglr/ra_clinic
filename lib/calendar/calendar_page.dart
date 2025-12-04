@@ -1,15 +1,22 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/calendar/calendar_widgets/event_dialogs.dart';
 import 'package:ra_clinic/calendar/event_editin_page.dart';
 import 'package:ra_clinic/calendar/model/schedule.dart';
 import 'package:ra_clinic/calendar/model/schedule_data_source.dart';
+import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import '../constants/app_constants.dart';
+import '../services/sync_service.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -21,18 +28,59 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   final CalendarController _calendarController = CalendarController();
   DateTime? selectedDate;
+  SyncService? _syncService;
+  StreamSubscription? _internetSubscription;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _initSyncSystem();
+    super.initState();
+  }
+
+  void _initSyncSystem() {
+    // 1. Mevcut kullanıcının ID'sini al
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _syncService = SyncService(user.uid);
+
+      // A. Uygulama açılır açılmaz bir kere PUSH yap (Bekleyenleri gönder)
+      _syncService!.syncLocalToRemote();
+
+      // B. Firebase'i dinlemeye başla (PULL)
+      _syncService!.startListeningToRemoteChanges();
+
+      // C. İnternet gidip gelirse otomatik PUSH tetikle
+      _internetSubscription = Connectivity().onConnectivityChanged.listen((
+        result,
+      ) {
+        if (result != ConnectivityResult.none) {
+          print("🌐 İnternet geldi, sync tetikleniyor...");
+          _syncService!.syncLocalToRemote();
+        }
+      });
+
+      // D. Kullanıcı bir veri kaydettiğinde (Hive değiştiğinde) anında PUSH yap
+      Hive.box<Schedule>("scheduleBox").listenable().addListener(() {
+        // Buraya bir "Throttle" (yavaşlatma) koymak iyi olabilir ama şimdilik direkt çağıralım
+        _syncService!.syncLocalToRemote();
+      });
+    }
+  }
 
   @override
   void dispose() {
     super.dispose();
     _calendarController.dispose();
+    _syncService?.stopListening();
+    _internetSubscription?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
 
-    final events = eventProvider.events;
+    final events = context.watch<EventProvider>().events;
     Offset touchPosition = Offset.zero;
     return Scaffold(
       appBar: AppBar(title: Text("Takvim"), centerTitle: true, actions: []),
@@ -319,7 +367,7 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       PullDownMenuItem(
         onTap: () {
-          Provider.of<EventProvider>(context, listen: false).resetAllEvents();
+          Provider.of<EventProvider>(context, listen: false).clearLocalData();
         },
         title: "Tüm Etkinlikleri Sil",
       ),

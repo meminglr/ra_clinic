@@ -17,19 +17,22 @@ class ScheduleAdapter extends TypeAdapter<Schedule> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Schedule(
-      id: fields[0] as int,
+      id: fields[0] as String,
       name: fields[1] as String,
       startDate: fields[3] as DateTime,
       endDate: fields[4] as DateTime,
       isAllDay: fields[5] as bool,
       description: fields[6] as String?,
+      isSynced: fields[7] as bool,
+      isDeleted: fields[8] as bool,
+      lastUpdated: fields[9] as DateTime?,
     )..colorValue = fields[2] as int;
   }
 
   @override
   void write(BinaryWriter writer, Schedule obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -43,7 +46,13 @@ class ScheduleAdapter extends TypeAdapter<Schedule> {
       ..writeByte(5)
       ..write(obj.isAllDay)
       ..writeByte(6)
-      ..write(obj.description);
+      ..write(obj.description)
+      ..writeByte(7)
+      ..write(obj.isSynced)
+      ..writeByte(8)
+      ..write(obj.isDeleted)
+      ..writeByte(9)
+      ..write(obj.lastUpdated);
   }
 
   @override

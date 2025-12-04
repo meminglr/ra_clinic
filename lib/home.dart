@@ -1,8 +1,17 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
+import 'package:ra_clinic/calendar/model/schedule.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
+
+import 'model/costumer_model.dart';
+import 'services/sync_service.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,6 +19,8 @@ class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
+
+int selectedIndex = 0;
 
 class _HomeState extends State<Home> {
   late PageController _pageController;
@@ -19,9 +30,6 @@ class _HomeState extends State<Home> {
     const CalendarPage(),
     const SettingsPage(), // Düzeltilmiş: SettingsPage -> ProfilePage
   ];
-
-  int selectedIndex = 0;
-
   @override
   void initState() {
     super.initState();

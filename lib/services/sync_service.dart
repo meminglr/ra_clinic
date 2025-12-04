@@ -2,35 +2,47 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:ra_clinic/model/costumer_model.dart'; // Model dosyanın yolu
+import 'package:ra_clinic/model/costumer_model.dart'; // Müşteri Modeli
+import 'package:ra_clinic/calendar/model/schedule.dart'; // Takvim Modeli (Bunu import etmeyi unutma)
 
 class SyncService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String userId; // Hangi kullanıcının verisi senkronize edilecek?
-  StreamSubscription? _remoteSubscription; // Dinlemeyi durdurmak için gerekli
+  final String userId;
+  
+  // İki ayrı dinleyiciye ihtiyacımız var, çünkü iki farklı koleksiyon dinliyoruz
+  StreamSubscription? _customerSubscription;
+  StreamSubscription? _calendarSubscription;
 
   SyncService(this.userId);
 
-  // Hive Kutusuna hızlı erişim
-  Box<CustomerModel> get _box => Hive.box<CustomerModel>("customersBox");
+  // Hive Kutularına hızlı erişim
+  Box<CustomerModel> get _customerBox => Hive.box<CustomerModel>("customersBox");
+  Box<Schedule> get _scheduleBox => Hive.box<Schedule>("scheduleBox"); // Takvim kutusu
 
   // ===========================================================================
   // 1. PUSH: LOCAL -> FIREBASE (Bizdeki değişiklikleri gönder)
   // ===========================================================================
+  
+  // Bu ana fonksiyon, hem müşterileri hem takvimi tetikler
   Future<void> syncLocalToRemote() async {
-    // İnternet var mı kontrol et
+    // İnternet kontrolü
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       print("İnternet yok, sync iptal.");
       return;
     }
 
-    // Gönderilmeyi bekleyenleri bul (isSynced == false)
-    var unsyncedList = _box.values.where((c) => !c.isSynced).toList();
+    // İkisini de sırayla gönder
+    await _syncCustomers();
+    await _syncCalendar();
+  }
 
-    if (unsyncedList.isEmpty) return; // Yapacak iş yok
+  // --- MÜŞTERİLERİ GÖNDER (Senin eski kodun) ---
+  Future<void> _syncCustomers() async {
+    var unsyncedList = _customerBox.values.where((c) => !c.isSynced).toList();
+    if (unsyncedList.isEmpty) return;
 
-    print("📤 Sync Başladı: ${unsyncedList.length} veri gönderiliyor...");
+    print("📤 Müşteri Sync Başladı: ${unsyncedList.length} veri...");
 
     for (var localData in unsyncedList) {
       try {
@@ -38,32 +50,54 @@ class SyncService {
             .collection('users')
             .doc(userId)
             .collection('customers')
-            .doc(localData.customerId); // UUID eşleşmesi
+            .doc(localData.customerId);
 
         if (localData.isDeleted) {
-          // --- SENARYO A: SİLİNMİŞ VERİ ---
-          // Eğer soft delete ise, Firebase'den tamamen siliyoruz
           await ref.delete();
-          
-          // Firebase'den sildik, artık Local'den de tamamen uçurabiliriz (yer kaplamasın)
-          await _box.delete(localData.customerId); 
-          print("🗑️ Silindi: ${localData.name}");
-
+          await _customerBox.delete(localData.customerId);
+          print("🗑️ Müşteri Silindi: ${localData.name}");
         } else {
-          // --- SENARYO B: EKLENMİŞ / GÜNCELLENMİŞ VERİ ---
-          // Modelindeki toMap() metodu seansları da kapsadığı için
-          // Müşteriyi gönderince seanslar da otomatik gider!
           await ref.set(localData.toMap(), SetOptions(merge: true));
-
-          // Başarılı oldu, Local'de "Eşitlendi" olarak işaretle
-          // copyWith kullanarak sadece isSynced alanını değiştiriyoruz
           final syncedData = localData.copyWith(isSynced: true);
-          await _box.put(localData.customerId, syncedData);
-          print("✅ Gönderildi: ${localData.name}");
+          await _customerBox.put(localData.customerId, syncedData);
+          print("✅ Müşteri Gönderildi: ${localData.name}");
         }
       } catch (e) {
-        print("❌ Hata (${localData.name}): $e");
-        // Hata olursa isSynced false kalır, sonraki denemede tekrar gider.
+        print("❌ Müşteri Hata (${localData.name}): $e");
+      }
+    }
+  }
+
+  // --- TAKVİMİ GÖNDER (Yeni Eklenen Kısım) ---
+  Future<void> _syncCalendar() async {
+    // Takvim kutusunda senkronize olmamışları bul
+    var unsyncedEvents = _scheduleBox.values.where((e) => !e.isSynced).toList();
+    if (unsyncedEvents.isEmpty) return;
+
+    print("📅 Takvim Sync Başladı: ${unsyncedEvents.length} etkinlik...");
+
+    for (var event in unsyncedEvents) {
+      try {
+        DocumentReference ref = _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('calendar') // Takvim koleksiyonu
+            .doc(event.id);
+
+        if (event.isDeleted) {
+          await ref.delete();
+          await _scheduleBox.delete(event.id); // Localden tamamen sil
+          print("🗑️ Etkinlik Silindi: ${event.name}");
+        } else {
+          await ref.set(event.toMap(), SetOptions(merge: true));
+          
+          // isSynced = true yapıp kaydet
+          final syncedEvent = event.copyWith(isSynced: true);
+          await _scheduleBox.put(event.id, syncedEvent);
+          print("✅ Etkinlik Gönderildi: ${event.name}");
+        }
+      } catch (e) {
+        print("❌ Takvim Hata (${event.name}): $e");
       }
     }
   }
@@ -72,67 +106,105 @@ class SyncService {
   // 2. PULL: FIREBASE -> LOCAL (Serverdaki değişiklikleri dinle)
   // ===========================================================================
   void startListeningToRemoteChanges() {
-    print("🎧 Firebase dinleniyor...");
+    print("🎧 Firebase (Müşteri ve Takvim) dinleniyor...");
     
-    _remoteSubscription = _firestore
+    // --- MÜŞTERİLERİ DİNLE ---
+    _customerSubscription = _firestore
         .collection('users')
         .doc(userId)
         .collection('customers')
-        .snapshots() // Canlı yayın (Stream)
-        .listen((snapshot) async {
+        .snapshots()
+        .listen((snapshot) {
+           _processCustomerChanges(snapshot);
+        });
 
-      for (var change in snapshot.docChanges) {
-        // --- DURUM 1: SERVERDAN SİLİNMİŞ ---
-        if (change.type == DocumentChangeType.removed) {
-          // Serverdan silindiyse, localden de sil
-          await _box.delete(change.doc.id);
-          print("📥 Serverdan silindiği için localden silindi: ${change.doc.id}");
-        } 
-        // --- DURUM 2: SERVERA EKLENMİŞ VEYA DEĞİŞMİŞ ---
-        else {
-          final remoteDataMap = change.doc.data();
-          if (remoteDataMap != null) {
-            // Firebase map'ini bizim modele çevir
-            final remoteCustomer = CustomerModel.fromMap(remoteDataMap, change.doc.id);
-            
-            // ÇAKIŞMA KONTROLÜ (Conflict Resolution)
-            final localCustomer = _box.get(remoteCustomer.customerId);
+    // --- TAKVİMİ DİNLE (YENİ) ---
+    _calendarSubscription = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('calendar')
+        .snapshots()
+        .listen((snapshot) {
+           _processCalendarChanges(snapshot);
+        });
+  }
 
-            bool shouldUpdateLocal = false;
+  // Müşteri Değişikliklerini İşle
+  Future<void> _processCustomerChanges(QuerySnapshot snapshot) async {
+    for (var change in snapshot.docChanges) {
+      if (change.type == DocumentChangeType.removed) {
+        await _customerBox.delete(change.doc.id);
+        print("📥 Serverdan müşteri silindi: ${change.doc.id}");
+      } else {
+        final remoteDataMap = change.doc.data() as Map<String, dynamic>?;
+        if (remoteDataMap != null) {
+          final remoteCustomer = CustomerModel.fromMap(remoteDataMap, change.doc.id);
+          final localCustomer = _customerBox.get(remoteCustomer.customerId);
 
-            if (localCustomer == null) {
-              // Localde hiç yoksa, kesin ekle (Yeni gelmiş)
-              shouldUpdateLocal = true;
-            } else {
-              // Localde varsa tarihlere bak:
-              // Eğer Server'daki tarih > Local'deki tarih ise güncelle.
-              // (Eşitse güncelleme, yoksa sonsuz döngüye gireriz)
-              if (remoteCustomer.lastUpdated != null && localCustomer.lastUpdated != null) {
-                 if (remoteCustomer.lastUpdated!.isAfter(localCustomer.lastUpdated!)) {
-                   shouldUpdateLocal = true;
-                 }
-              }
+          bool shouldUpdateLocal = false;
+          if (localCustomer == null) {
+            shouldUpdateLocal = true;
+          } else {
+            // Tarih kontrolü
+            if (remoteCustomer.lastUpdated != null && localCustomer.lastUpdated != null) {
+               if (remoteCustomer.lastUpdated!.isAfter(localCustomer.lastUpdated!)) {
+                 shouldUpdateLocal = true;
+               }
             }
+          }
 
-            if (shouldUpdateLocal) {
-              // Local veritabanına kaydet
-              // ÖNEMLİ: isSynced: true olarak kaydediyoruz ki tekrar geri göndermesin.
-              final dataToSave = remoteCustomer.copyWith(isSynced: true);
-              await _box.put(dataToSave.customerId, dataToSave);
-              print("📥 Serverdan güncel veri geldi: ${dataToSave.name}");
-            }
+          if (shouldUpdateLocal) {
+            final dataToSave = remoteCustomer.copyWith(isSynced: true);
+            await _customerBox.put(dataToSave.customerId, dataToSave);
+            print("📥 Serverdan müşteri güncellendi: ${dataToSave.name}");
           }
         }
       }
-    });
+    }
   }
 
-  // Dinlemeyi durdur (Örn: Çıkış yapınca)
+  // Takvim Değişikliklerini İşle (YENİ)
+  Future<void> _processCalendarChanges(QuerySnapshot snapshot) async {
+    for (var change in snapshot.docChanges) {
+      if (change.type == DocumentChangeType.removed) {
+        await _scheduleBox.delete(change.doc.id);
+        print("📥 Serverdan etkinlik silindi: ${change.doc.id}");
+      } else {
+        final remoteDataMap = change.doc.data() as Map<String, dynamic>?;
+        if (remoteDataMap != null) {
+          // Schedule modelinde fromMap olduğunu varsayıyorum
+          final remoteEvent = Schedule.fromMap(remoteDataMap); 
+          final localEvent = _scheduleBox.get(remoteEvent.id);
+
+          bool shouldUpdateLocal = false;
+          if (localEvent == null) {
+            shouldUpdateLocal = true;
+          } else {
+            // Tarih kontrolü
+            if (remoteEvent.lastUpdated != null && localEvent.lastUpdated != null) {
+               if (remoteEvent.lastUpdated!.isAfter(localEvent.lastUpdated!)) {
+                 shouldUpdateLocal = true;
+               }
+            }
+          }
+
+          if (shouldUpdateLocal) {
+            final dataToSave = remoteEvent.copyWith(isSynced: true);
+            await _scheduleBox.put(dataToSave.id, dataToSave);
+            print("📥 Serverdan etkinlik güncellendi: ${dataToSave.name}");
+          }
+        }
+      }
+    }
+  }
+
+  // Dinlemeyi durdur
   void stopListening() {
-    _remoteSubscription?.cancel();
+    _customerSubscription?.cancel();
+    _calendarSubscription?.cancel();
+    print("🛑 Dinlemeler durduruldu.");
   }
 }
-
 
 
 
