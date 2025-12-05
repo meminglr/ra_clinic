@@ -238,20 +238,16 @@ class _CostumersPageState extends State<CostumersPage> {
                             itemBuilder: (context) => [
                               PullDownMenuItem(
                                 onTap: () {
-                                  // Slidable'ı programatik olarak açıp silme işlemi
-                                  final slidable = Slidable.of(context);
-                                  slidable?.openEndActionPane(
+                                  Slidable.of(context)?.openEndActionPane(
                                     duration: Durations.long1,
                                   );
-
-                                  // Biraz bekleyip dismiss animasyonunu tetikle
-                                  Future.delayed(Durations.medium3, () {
-                                    if (context.mounted) {
+                                  Slidable.of(context)?.dismiss(
+                                    ResizeRequest(Durations.medium3, () {
                                       context
                                           .read<CustomerProvider>()
                                           .deleteCustomer(item.customerId);
-                                    }
-                                  });
+                                    }),
+                                  );
                                 },
                                 title: 'Sil',
                                 isDestructive: true,

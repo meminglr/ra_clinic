@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:ra_clinic/providers/sync_provider.dart';
 import 'package:ra_clinic/providers/theme_provider.dart';
 
+import '../providers/auth_provider.dart';
 import 'auth_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -16,25 +17,9 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   @override
-  void initState() {
-    super.initState();
-    // final user = FirebaseAuth.instance.currentUser;
-    // if (user != null) {
-    //   _syncService = SyncService(user.uid);
-
-    //   // ÖNCE Listenerları kur (Bunlar bir kere kurulur)
-    //   _syncService!.setupHiveListeners();
-
-    //   // SONRA Başlat (Eğer ayar açıksa çalışmaya başlar)
-    //   _syncService!.initialize();
-    // }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // listen: true kullanılması, sayfa açıkken tema değişikliklerini anlık yansıtmak içindir
     final themeProvider = Provider.of<ThemeProvider>(context);
-
+    final currentUser = context.read<FirebaseAuthProvider>().currentUser;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -54,7 +39,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   return SwitchListTile(
                     title: const Text("Senkronizasyon"),
                     subtitle: Text(
-                      provider.isSyncEnabled
+                      currentUser == null
+                          ? "Verilerin yedeklenmesi için giriş yapın"
+                          : provider.isSyncEnabled
                           ? "Veriler Buluta Yedekleniyor"
                           : "Sadece Cihazda (Offline)",
                     ),
@@ -62,10 +49,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       provider.isSyncEnabled ? Icons.cloud : Icons.cloud_off,
                     ),
                     value: provider.isSyncEnabled,
-                    onChanged: (val) {
-                      // Provider üzerinden kontrol
-                      provider.toggleSync(val);
-                    },
+                    onChanged: currentUser != null
+                        ? (val) {
+                            provider.toggleSync(val);
+                          }
+                        : null,
                   );
                 },
               ),
@@ -107,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // Kullanıcı giriş yapmamışsa
           return ListTile(
             title: const Text('Giriş Yap / Kayıt Ol'),
-            subtitle: const Text("Supabase ile kimlik doğrulama işlemleri"),
+            subtitle: const Text(" "),
             trailing: FilledButton.icon(
               onPressed: () {
                 Navigator.push(
@@ -130,6 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: FilledButton.icon(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
+                setState(() {});
               },
               icon: const Icon(Icons.person),
               label: const Text('Çıkış Yap'),
