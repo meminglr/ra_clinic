@@ -181,36 +181,106 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                         prefixIcon: Icon(Icons.note_outlined),
                       ),
                     ),
+
                     Row(
-                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.calendar_month_outlined,
-                          size: 30,
-                          color: Colors.grey,
-                        ),
-                        Expanded(
-                          child: CupertinoCalendarPickerButton(
-                            minimumDateTime: DateTime(2020, 1, 1),
-                            maximumDateTime: DateTime(2030, 12, 31),
-                            initialDateTime: costumerStartDate,
-                            barrierColor: Colors.transparent,
-                            containerDecoration: PickerContainerDecoration(
-                              backgroundColor:
-                                  AppConstants.dropDownButtonsColor(context),
-                              backgroundType: PickerBackgroundType.plainColor,
+                        Card.filled(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
                             ),
-                            mode: CupertinoCalendarMode.date,
-                            timeLabel: 'Saat',
-                            onDateTimeChanged: (date) {
-                              costumerStartDate = date;
-                              kayitTarihiGuncelle();
-                            },
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_month_outlined,
+                                  size: 25,
+                                  color: Colors.grey,
+                                ),
+                                CupertinoCalendarPickerButton(
+                                  buttonDecoration: PickerButtonDecoration(
+                                    textStyle: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                  minimumDateTime: DateTime(2020, 1, 1),
+                                  maximumDateTime: DateTime(2030, 12, 31),
+                                  initialDateTime: costumerStartDate,
+                                  barrierColor: Colors.transparent,
+
+                                  containerDecoration:
+                                      PickerContainerDecoration(
+                                        backgroundColor:
+                                            AppConstants.dropDownButtonsColor(
+                                              context,
+                                            ),
+                                        backgroundType:
+                                            PickerBackgroundType.plainColor,
+                                      ),
+                                  mode: CupertinoCalendarMode.date,
+                                  timeLabel: 'Saat',
+                                  onDateTimeChanged: (date) {
+                                    costumerStartDate = date;
+                                    kayitTarihiGuncelle();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Card.filled(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time_outlined,
+                                  size: 25,
+                                  color: Colors.grey,
+                                ),
+                                CupertinoTimePickerButton(
+                                  buttonDecoration: PickerButtonDecoration(
+                                    textStyle: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                  barrierColor: Colors.transparent,
+
+                                  containerDecoration:
+                                      PickerContainerDecoration(
+                                        backgroundColor:
+                                            AppConstants.dropDownButtonsColor(
+                                              context,
+                                            ),
+                                        backgroundType:
+                                            PickerBackgroundType.plainColor,
+                                      ),
+                                  onTimeChanged: (value) {
+                                    costumerStartDate = DateTime(
+                                      costumerStartDate.year,
+                                      costumerStartDate.month,
+                                      costumerStartDate.day,
+                                      value.hour,
+                                      value.minute,
+                                    );
+                                    kayitTarihiGuncelle();
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
                   ],
                 ),
               ),

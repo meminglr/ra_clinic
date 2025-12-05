@@ -1,17 +1,12 @@
-import 'dart:async';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
-import 'package:ra_clinic/calendar/model/schedule.dart';
-import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
 
-import 'model/costumer_model.dart';
-import 'services/sync_service.dart';
+import 'providers/sync_provider.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -34,6 +29,15 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: selectedIndex);
+    // 1. Kullanıcı ID'sini Provider'a verip sistemi başlatıyoruz
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // initState içinde Provider'a erişirken "listen: false" çok önemlidir.
+      // Veya addPostFrameCallback kullanabilirsin.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<SyncProvider>().init(user.uid);
+      });
+    }
   }
 
   @override

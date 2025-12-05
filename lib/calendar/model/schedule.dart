@@ -91,7 +91,9 @@ class Schedule extends HiveObject {
       'isAllDay': isAllDay,
       'description': description,
       'isDeleted': isDeleted,
-      'lastUpdated': lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
+      'lastUpdated': lastUpdated != null
+          ? Timestamp.fromDate(lastUpdated!)
+          : null,
       // isSynced alanını Firebase'e göndermeyiz
     };
   }
@@ -107,8 +109,8 @@ class Schedule extends HiveObject {
       isAllDay: map['isAllDay'] ?? false,
       description: map['description'],
       isDeleted: map['isDeleted'] ?? false,
-      lastUpdated: map['lastUpdated'] != null 
-          ? (map['lastUpdated'] as Timestamp).toDate() 
+      lastUpdated: map['lastUpdated'] != null
+          ? (map['lastUpdated'] as Timestamp).toDate()
           : null,
       isSynced: true, // Firebase'den geldiyse zaten sync olmuştur
     );

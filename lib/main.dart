@@ -15,6 +15,7 @@ import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
 import 'providers/auth_provider.dart';
+import 'providers/sync_provider.dart';
 import 'providers/theme_provider.dart';
 
 void main() async {
@@ -26,7 +27,7 @@ void main() async {
   Hive.registerAdapter(ScheduleAdapter());
   await Hive.openBox<CustomerModel>("customersBox");
   await Hive.openBox<Schedule>("scheduleBox");
-  await Hive.openBox('settings');
+  await Hive.openBox('settingsBox');
   await initializeDateFormatting('tr_TR', null);
   runApp(
     MultiProvider(
@@ -35,6 +36,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
+        ChangeNotifierProvider(create: (_) => SyncProvider()),
       ],
       child: const MainApp(),
     ),

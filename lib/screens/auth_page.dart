@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
-import '../services/auth_service.dart';
+import '../providers/sync_provider.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -65,11 +65,23 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       if (isLogin) {
-                        provider.login(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                          context,
-                        );
+                        try {
+                          // 1. Firebase Girişi
+                          await provider.login(
+                            _emailController.text.trim(),
+                            _passwordController.text.trim(),
+                            context,
+                          );
+                          if (provider.currentUser != null) {
+                            // 2. KRİTİK NOKTA: SyncProvider'a "Patron Geldi" de!
+                            // Bu komut, misafirken eklenen tüm verileri alıp bu hesaba yükler.
+                            context.read<SyncProvider>().init(
+                              provider.currentUser!.uid,
+                            );
+                          }
+                        } catch (e) {
+                          // Hata yönetimi
+                        }
                       } else {
                         provider.register(
                           _emailController.text.trim(),

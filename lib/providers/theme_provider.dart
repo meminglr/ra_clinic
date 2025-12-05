@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _isDark = false;
-  final Box _box = Hive.box('settings');
+  final Box _box = Hive.box('settingsBox');
 
   ThemeProvider() {
     _isDark = _box.get('isDark', defaultValue: false);
