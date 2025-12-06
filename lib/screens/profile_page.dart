@@ -22,6 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentUser = context.read<FirebaseAuthProvider>().currentUser;
     return Scaffold(
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           buildAppBar(context),
           SliverList(
@@ -69,6 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
       pinned: true,
       expandedHeight: 150,
       flexibleSpace: FlexibleSpaceBar(
+        centerTitle: true,
         title: const Text('Ayarlar'),
         background: Container(
           decoration: BoxDecoration(

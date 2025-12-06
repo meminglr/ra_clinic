@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'media_model.dart';
 import 'seans_model.dart'; // Dosya yolunu kendine göre ayarla
 
 part 'costumer_model.g.dart';
@@ -28,6 +29,9 @@ class CustomerModel {
   bool isSynced;
   @HiveField(10)
   bool isDeleted;
+  @HiveField(11)
+  final List<CostumerMedia> mediaList;
+
 
   CustomerModel({
     required this.customerId,
@@ -41,6 +45,7 @@ class CustomerModel {
     required this.startDate,
     this.isSynced = false,
     this.isDeleted = false,
+    this.mediaList = const [],
   });
 
   // Firebase'e gönderirken
@@ -60,6 +65,7 @@ class CustomerModel {
       'seansList': seansList.map((x) => x.toMap()).toList(),
       'isSynced': isSynced,
       'isDeleted': isDeleted,
+      'mediaList': mediaList.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -89,6 +95,13 @@ class CustomerModel {
           : [],
       isSynced: true, // Firebase'den gelen veriler senkronizedir
       isDeleted: data['isDeleted'] ?? false,
+      mediaList: data['mediaList'] != null
+          ? List<CostumerMedia>.from(
+              (data['mediaList'] as List).map(
+                (x) => CostumerMedia.fromMap(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
     );
   }
 
@@ -105,6 +118,7 @@ class CustomerModel {
     List<SeansModel>? seansList,
     bool? isSynced,
     bool? isDeleted,
+    List<CostumerMedia>? mediaList,
   }) {
     return CustomerModel(
       customerId: customerId ?? this.customerId,
@@ -118,6 +132,7 @@ class CustomerModel {
       seansList: seansList ?? this.seansList,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      mediaList: mediaList ?? this.mediaList,
     );
   }
 }
