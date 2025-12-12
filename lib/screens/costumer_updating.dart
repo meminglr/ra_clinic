@@ -2,6 +2,9 @@
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:ra_clinic/services/webdav_service.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
@@ -31,7 +34,11 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   final _formKey = GlobalKey<FormState>();
   String kayitTarihi = "";
   String seansTarihi = "";
+
   String? costumerId;
+  String? _profileImageUrl;
+  bool _isUploadingPhoto = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -53,8 +60,48 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       for (var seans in widget.costumer!.seansList) {
         _seansControllers[seans] = TextEditingController(text: seans.seansNote);
       }
+      _profileImageUrl = widget.costumer!.profileImageUrl;
     }
     kayitTarihiGuncelle();
+  }
+
+  Future<void> _pickAndUploadProfilePhoto() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _isUploadingPhoto = true;
+        });
+
+        final data = await image.readAsBytes();
+        // Dosya uzantısını al
+        final extension = image.name.split('.').last;
+        // Benzersiz isim oluştur: profile_<timestamp>.<ext>
+        final fileName =
+            "profile_${DateTime.now().millisecondsSinceEpoch}.$extension";
+
+        final service = context.read<WebDavService>();
+        await service.uploadFile(costumerId!, fileName, data);
+
+        setState(() {
+          _profileImageUrl = fileName;
+          _isUploadingPhoto = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profil fotoğrafı yüklendi")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploadingPhoto = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Hata: $e")));
+      }
+    }
   }
 
   void removeSeans(int seansIndex) {
@@ -96,7 +143,9 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
         phone: _telNoController.text,
         startDate: costumerStartDate,
         notes: _noteController.text,
+
         seansList: _seansList,
+        profileImageUrl: _profileImageUrl,
       );
       Navigator.pop(context, newCostumer);
     } else {
@@ -143,7 +192,56 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                 child: Column(
                   spacing: 15,
                   children: [
-                    Icon(Icons.account_circle, size: 150, color: Colors.grey),
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickAndUploadProfilePhoto,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 75,
+                              backgroundColor: Colors.grey[200],
+                              backgroundImage: _profileImageUrl != null
+                                  ? CachedNetworkImageProvider(
+                                      context.read<WebDavService>().getFileUrl(
+                                        "${costumerId!}/$_profileImageUrl",
+                                      ),
+                                      headers: context
+                                          .read<WebDavService>()
+                                          .getAuthHeaders(),
+                                    )
+                                  : null,
+                              child: _profileImageUrl == null
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Colors.grey,
+                                    )
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            if (_isUploadingPhoto)
+                              const Positioned.fill(
+                                child: CircularProgressIndicator(),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {

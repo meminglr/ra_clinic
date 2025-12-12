@@ -29,13 +29,14 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       isSynced: fields[9] as bool,
       isDeleted: fields[10] as bool,
       mediaList: (fields[11] as List).cast<CostumerMedia>(),
+      profileImageUrl: fields[12] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CustomerModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.customerId)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       ..writeByte(10)
       ..write(obj.isDeleted)
       ..writeByte(11)
-      ..write(obj.mediaList);
+      ..write(obj.mediaList)
+      ..writeByte(12)
+      ..write(obj.profileImageUrl);
   }
 
   @override

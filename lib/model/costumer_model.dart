@@ -31,7 +31,8 @@ class CustomerModel {
   bool isDeleted;
   @HiveField(11)
   final List<CostumerMedia> mediaList;
-
+  @HiveField(12)
+  String? profileImageUrl;
 
   CustomerModel({
     required this.customerId,
@@ -46,6 +47,7 @@ class CustomerModel {
     this.isSynced = false,
     this.isDeleted = false,
     this.mediaList = const [],
+    this.profileImageUrl,
   });
 
   // Firebase'e gönderirken
@@ -66,6 +68,7 @@ class CustomerModel {
       'isSynced': isSynced,
       'isDeleted': isDeleted,
       'mediaList': mediaList.map((x) => x.toMap()).toList(),
+      'profileImageUrl': profileImageUrl,
     };
   }
 
@@ -102,6 +105,7 @@ class CustomerModel {
               ),
             )
           : [],
+      profileImageUrl: data['profileImageUrl'],
     );
   }
 
@@ -119,6 +123,7 @@ class CustomerModel {
     bool? isSynced,
     bool? isDeleted,
     List<CostumerMedia>? mediaList,
+    String? profileImageUrl,
   }) {
     return CustomerModel(
       customerId: customerId ?? this.customerId,
@@ -133,6 +138,7 @@ class CustomerModel {
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
       mediaList: mediaList ?? this.mediaList,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
 }

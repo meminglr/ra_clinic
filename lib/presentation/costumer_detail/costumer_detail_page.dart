@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:ra_clinic/services/webdav_service.dart';
 // Proje importlarınızın doğru olduğundan emin olun
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_buttons.dart';
@@ -187,33 +189,68 @@ class _CostumerDetailState extends State<CostumerDetail> {
     ScaffoldMessengerState messenger,
   ) {
     return SliverAppBar(
+      automaticallyImplyLeading: false,
+      leading: IconButton.filled(
+        style: IconButton.styleFrom(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        ),
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
       elevation: 0,
       pinned: true,
       floating: true,
-      expandedHeight: 200,
+      expandedHeight: MediaQuery.sizeOf(context).width,
       titleSpacing: 30,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
         titlePadding: const EdgeInsets.only(bottom: 10),
-        background: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
             ),
-            // color: AppConstants.sliverAppBarFlexColor(context), // Renk sabitiniz varsa bunu açın
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest, // Yedek renk
-          ),
+            if (currentCostumer.profileImageUrl != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: context.read<WebDavService>().getFileUrl(
+                    "${currentCostumer.customerId}/${currentCostumer.profileImageUrl}",
+                  ),
+                  httpHeaders: context.read<WebDavService>().getAuthHeaders(),
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => const SizedBox(),
+                ),
+              ),
+          ],
         ),
-        title: Text(
-          currentCostumer.name,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+        title: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            color: Theme.of(context).scaffoldBackgroundColor,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+
+          child: Text(
+            currentCostumer.name,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
           ),
         ),
       ),
@@ -233,7 +270,16 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     const SnackBar(content: Text("Müşteri silindi")),
                   );
                 },
-                child: const Icon(Icons.delete_outline, size: 30),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Icon(Icons.delete_outline, size: 30),
+                  ),
+                ),
               ),
               PullDownButton(
                 routeTheme: PullDownMenuRouteTheme(
@@ -259,7 +305,16 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 buttonBuilder: (context, showMenu) => GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: showMenu,
-                  child: const Icon(Icons.more_vert, size: 30),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Icon(Icons.more_vert, size: 30),
+                    ),
+                  ),
                 ),
               ),
             ],
