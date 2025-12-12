@@ -7,6 +7,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_buttons.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_notes_cards.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_display.dart';
+import 'package:ra_clinic/presentation/costumer_detail/widgets/customer_files_widget.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
@@ -97,8 +98,8 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     tabs: const [
                       Tab(text: "Seanslar", icon: Icon(Icons.list_alt)),
                       Tab(
-                        text: "Notlar & Medya",
-                        icon: Icon(Icons.note_alt_outlined),
+                        text: "Medya",
+                        icon: Icon(Icons.photo_library_outlined),
                       ),
                     ],
                   ),
@@ -125,7 +126,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 ],
               ),
 
-              // --- SEKME 2: NOTLAR VE MEDYA ---
+              // --- SEKME 2: MEDYA ---
               CustomScrollView(
                 key: const PageStorageKey<String>('medya'),
                 slivers: [
@@ -136,14 +137,8 @@ class _CostumerDetailState extends State<CostumerDetail> {
                         horizontal: 16.0,
                         vertical: 10,
                       ),
-                      child: Column(
-                        children: [
-                          CostumerNotesCard(
-                            costumer: currentCostumer,
-                            noteIsNotEmpty: noteIsNotEmpty,
-                          ),
-                          // İleride buraya medya galerisi ekleyebilirsiniz
-                        ],
+                      child: CustomerFilesWidget(
+                        customerId: currentCostumer.customerId,
                       ),
                     ),
                   ),

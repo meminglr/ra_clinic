@@ -17,16 +17,12 @@ class CostumerMedia extends HiveObject {
   String filePath;
 
   @HiveField(3)
-  DateTime type;
-
-  @HiveField(4)
   DateTime uploadDate;
 
   CostumerMedia({
     required this.id,
     required this.customerId,
     required this.filePath,
-    required this.type,
     required this.uploadDate,
   });
 
@@ -35,7 +31,6 @@ class CostumerMedia extends HiveObject {
       'id': id,
       'customerId': customerId,
       'filePath': filePath,
-      'type': type.millisecondsSinceEpoch,
       'uploadDate': uploadDate.millisecondsSinceEpoch,
     };
   }
@@ -45,7 +40,6 @@ class CostumerMedia extends HiveObject {
       id: map['id'] as String,
       customerId: map['customerId'] as String,
       filePath: map['filePath'] as String,
-      type: DateTime.fromMillisecondsSinceEpoch(map['type'] as int),
       uploadDate: DateTime.fromMillisecondsSinceEpoch(map['uploadDate'] as int),
     );
   }

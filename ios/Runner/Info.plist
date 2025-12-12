@@ -57,5 +57,12 @@
         <true/>
     </dict>
 	
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Dosya ve fotoğraf yüklemek için galeri erişimi gereklidir.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Fotoğraf çekip yüklemek için kamera erişimi gereklidir.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Video kaydı için mikrofon erişimi gereklidir.</string>
+	
 </dict>
 </plist>

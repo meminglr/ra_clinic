@@ -11,20 +11,25 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/costumer_provider.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:ra_clinic/theme/app_themes.dart';
+import 'model/media_model.dart';
 import 'model/seans_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/webdav_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Hive.registerAdapter(CustomerModelAdapter());
   Hive.registerAdapter(SeansModelAdapter());
   Hive.registerAdapter(ScheduleAdapter());
+  Hive.registerAdapter(CostumerMediaAdapter());
   await Hive.openBox<CustomerModel>("customersBox");
   await Hive.openBox<Schedule>("scheduleBox");
   await Hive.openBox('settingsBox');
@@ -37,6 +42,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
         ChangeNotifierProvider(create: (_) => SyncProvider()),
+        Provider<WebDavService>(create: (_) => WebDavService()..init()),
       ],
       child: const MainApp(),
     ),

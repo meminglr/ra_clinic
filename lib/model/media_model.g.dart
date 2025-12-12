@@ -20,15 +20,14 @@ class CostumerMediaAdapter extends TypeAdapter<CostumerMedia> {
       id: fields[0] as String,
       customerId: fields[1] as String,
       filePath: fields[2] as String,
-      type: fields[3] as DateTime,
-      uploadDate: fields[4] as DateTime,
+      uploadDate: fields[3] as DateTime,
     );
   }
 
   @override
   void write(BinaryWriter writer, CostumerMedia obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -36,8 +35,6 @@ class CostumerMediaAdapter extends TypeAdapter<CostumerMedia> {
       ..writeByte(2)
       ..write(obj.filePath)
       ..writeByte(3)
-      ..write(obj.type)
-      ..writeByte(4)
       ..write(obj.uploadDate);
   }
 
