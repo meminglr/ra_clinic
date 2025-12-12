@@ -392,7 +392,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
       final service = context.read<WebDavService>();
       List<XFile> filesToShare = [];
-      final tempDir = await getTemporaryDirectory();
+      final baseTempDir = await getTemporaryDirectory();
+      final shareDir = Directory(
+        '${baseTempDir.path}/share_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      await shareDir.create(recursive: true);
 
       for (var name in _selectedFiles) {
         try {
@@ -403,14 +407,10 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
             authHeaders: service.getAuthHeaders(),
           );
 
-          // ... inside loop
-          // 2. Copy to temp with original name (friendly for sharing)
+          // 2. Copy to unique temp dir with original name
           final safeName = name.replaceAll(RegExp(r'[^\w\.-]'), '_');
-          final tempFile = File("${tempDir.path}/$safeName");
+          final tempFile = File("${shareDir.path}/$safeName");
 
-          if (await tempFile.exists()) {
-            await tempFile.delete();
-          }
           await fileInfo.file.copy(tempFile.path);
 
           final mimeType = lookupMimeType(name);
@@ -422,14 +422,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
       setState(() {
         _isLoading = false;
-      }); // Hide loading before showing share sheet (native UI)
+      });
 
       if (filesToShare.isNotEmpty) {
-        // 3. Share
-        await Share.shareXFiles(
-          filesToShare,
-          text: "Dosyalar: ${widget.customerId}",
-        );
+        // 3. Share - Removing text to avoid mixing content types issues
+        await Share.shareXFiles(filesToShare);
       }
 
       _exitSelectionMode();
