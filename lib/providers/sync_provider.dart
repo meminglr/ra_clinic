@@ -8,9 +8,9 @@ import 'package:ra_clinic/calendar/model/schedule.dart';
 
 class SyncProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // Kullanıcı ID'si (Login olunca set edilecek)
-  String? _userId; 
+  String? _userId;
 
   StreamSubscription? _customerSubscription;
   StreamSubscription? _calendarSubscription;
@@ -20,13 +20,18 @@ class SyncProvider extends ChangeNotifier {
   bool _isSyncing = false;
   bool get isSyncing => _isSyncing;
 
+  // Remote değişiklikleri uygularken loop'a girmemek için flag
+  bool _isApplyingRemoteChanges = false;
+
   // Hive Kutuları
-  Box<CustomerModel> get _customerBox => Hive.box<CustomerModel>("customersBox");
+  Box<CustomerModel> get _customerBox =>
+      Hive.box<CustomerModel>("customersBox");
   Box<Schedule> get _scheduleBox => Hive.box<Schedule>("scheduleBox");
   Box get _settingsBox => Hive.box("settingsBox");
 
   // --- AYARLAR ---
-  bool get isSyncEnabled => _settingsBox.get("isSyncEnabled", defaultValue: true);
+  bool get isSyncEnabled =>
+      _settingsBox.get("isSyncEnabled", defaultValue: true);
 
   // ===========================================================================
   // 1. BAŞLATMA (INIT) - HomePage'de çağırılacak
@@ -34,7 +39,7 @@ class SyncProvider extends ChangeNotifier {
   void init(String uid) {
     if (_userId == uid) return; // Zaten bu kullanıcı ile çalışıyor
     _userId = uid;
-    
+
     // Hive dinleyicilerini kur (Sadece bir kez kurulur)
     _setupHiveListeners();
 
@@ -48,7 +53,7 @@ class SyncProvider extends ChangeNotifier {
   // ===========================================================================
   // 2. KONTROL (SWITCH & BUTTONS)
   // ===========================================================================
-  
+
   // Switch'e basınca çağırılacak
   void toggleSync(bool value) {
     _settingsBox.put('isSyncEnabled', value);
@@ -67,7 +72,7 @@ class SyncProvider extends ChangeNotifier {
   // Manuel tetikleme veya otomatik tetikleme için
   Future<void> syncNow() async {
     if (!isSyncEnabled || _userId == null) return;
-    
+
     // İnternet kontrolü
     var connectivity = await Connectivity().checkConnectivity();
     if (connectivity == ConnectivityResult.none) return;
@@ -95,13 +100,25 @@ class SyncProvider extends ChangeNotifier {
 
     for (var localData in unsyncedList) {
       try {
-        DocumentReference ref = _firestore.collection('users').doc(_userId).collection('customers').doc(localData.customerId);
+        DocumentReference ref = _firestore
+            .collection('users')
+            .doc(_userId)
+            .collection('customers')
+            .doc(localData.customerId);
         if (localData.isDeleted) {
-          await ref.delete();
-          await _customerBox.delete(localData.customerId);
+          // Soft Delete: Server'da silmek yerine güncelliyoruz (isDeleted: true gider)
+          await ref.set(localData.toMap(), SetOptions(merge: true));
+          // Localde de synced olarak işaretle, AMA SİLME!
+          await _customerBox.put(
+            localData.customerId,
+            localData.copyWith(isSynced: true),
+          );
         } else {
           await ref.set(localData.toMap(), SetOptions(merge: true));
-          await _customerBox.put(localData.customerId, localData.copyWith(isSynced: true));
+          await _customerBox.put(
+            localData.customerId,
+            localData.copyWith(isSynced: true),
+          );
         }
       } catch (e) {
         print("Sync Hatası: $e");
@@ -115,7 +132,11 @@ class SyncProvider extends ChangeNotifier {
 
     for (var event in unsyncedEvents) {
       try {
-        DocumentReference ref = _firestore.collection('users').doc(_userId).collection('calendar').doc(event.id);
+        DocumentReference ref = _firestore
+            .collection('users')
+            .doc(_userId)
+            .collection('calendar')
+            .doc(event.id);
         if (event.isDeleted) {
           await ref.delete();
           await _scheduleBox.delete(event.id);
@@ -144,9 +165,32 @@ class SyncProvider extends ChangeNotifier {
       if (isSyncEnabled && _userId != null) syncNow();
     });
 
+    // 🟢 Hive Watcher: Kalıcı silmeleri yakala (Hard Delete)
+    _customerBox.watch().listen((event) {
+      if (event.deleted &&
+          !_isApplyingRemoteChanges &&
+          isSyncEnabled &&
+          _userId != null) {
+        print("🗑️ Hive Hard Delete Yakalandı: ${event.key}");
+        // Firestore'dan da sil
+        _firestore
+            .collection('users')
+            .doc(_userId)
+            .collection('customers')
+            .doc(event.key.toString())
+            .delete()
+            .then((_) => print("✅ Firestore'dan silindi: ${event.key}"))
+            .catchError((e) => print("❌ Firestore silme hatası: $e"));
+      }
+    });
+
     // İnternet gelirse -> Gönder
-    _internetSubscription = Connectivity().onConnectivityChanged.listen((result) {
-      if (result != ConnectivityResult.none && isSyncEnabled && _userId != null) {
+    _internetSubscription = Connectivity().onConnectivityChanged.listen((
+      result,
+    ) {
+      if (result != ConnectivityResult.none &&
+          isSyncEnabled &&
+          _userId != null) {
         syncNow();
       }
     });
@@ -159,12 +203,20 @@ class SyncProvider extends ChangeNotifier {
     print("🎧 Firebase Dinleniyor...");
 
     // Müşterileri Dinle
-    _customerSubscription = _firestore.collection('users').doc(_userId).collection('customers')
-        .snapshots().listen((snap) => _processChanges(snap, isCustomer: true));
+    _customerSubscription = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('customers')
+        .snapshots()
+        .listen((snap) => _processChanges(snap, isCustomer: true));
 
     // Takvimi Dinle
-    _calendarSubscription = _firestore.collection('users').doc(_userId).collection('calendar')
-        .snapshots().listen((snap) => _processChanges(snap, isCustomer: false));
+    _calendarSubscription = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('calendar')
+        .snapshots()
+        .listen((snap) => _processChanges(snap, isCustomer: false));
   }
 
   void _stopRemoteListening() {
@@ -176,7 +228,11 @@ class SyncProvider extends ChangeNotifier {
   }
 
   // Ortak Değişiklik İşleme Fonksiyonu
-  Future<void> _processChanges(QuerySnapshot snapshot, {required bool isCustomer}) async {
+  Future<void> _processChanges(
+    QuerySnapshot snapshot, {
+    required bool isCustomer,
+  }) async {
+    _isApplyingRemoteChanges = true; // Loop koruması aktif
     for (var change in snapshot.docChanges) {
       if (change.type == DocumentChangeType.removed) {
         if (isCustomer) {
@@ -188,20 +244,23 @@ class SyncProvider extends ChangeNotifier {
         var data = change.doc.data() as Map<String, dynamic>?;
         if (data != null) {
           if (isCustomer) {
-             var remote = CustomerModel.fromMap(data, change.doc.id);
-             var local = _customerBox.get(remote.customerId);
-             // Tarih kontrolü (Basitlik için direkt yazıyorum, tarih kontrolünü ekleyebilirsin)
-             await _customerBox.put(remote.customerId, remote.copyWith(isSynced: true));
+            var remote = CustomerModel.fromMap(data, change.doc.id);
+            // Tarih kontrolü (Basitlik için direkt yazıyorum, tarih kontrolünü ekleyebilirsin)
+            await _customerBox.put(
+              remote.customerId,
+              remote.copyWith(isSynced: true),
+            );
           } else {
-             var remote = Schedule.fromMap(data);
-             // Tarih kontrolü...
-             await _scheduleBox.put(remote.id, remote.copyWith(isSynced: true));
+            var remote = Schedule.fromMap(data);
+            // Tarih kontrolü...
+            await _scheduleBox.put(remote.id, remote.copyWith(isSynced: true));
           }
         }
       }
     }
+    _isApplyingRemoteChanges = false; // Loop koruması pasif
   }
-  
+
   // Çıkış (Logout) için temizlik
   void clear() {
     _stopRemoteListening();

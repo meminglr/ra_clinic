@@ -80,4 +80,62 @@ class CustomerProvider extends ChangeNotifier {
     await _box.put(finalCustomer.customerId, finalCustomer);
     notifyListeners();
   }
+  // --- ÇÖP KUTUSU İŞLEMLERİ ---
+
+  // Silinmiş müşterileri getir
+  List<CustomerModel> get deletedCustomersList {
+    return _box.values.where((c) => c.isDeleted).toList();
+  }
+
+  // Müşteriyi geri yükle
+  Future<void> restoreCustomer(String customerId) async {
+    final existingCustomer = _box.get(customerId);
+
+    if (existingCustomer != null) {
+      final restoredCustomer = existingCustomer.copyWith(
+        isDeleted: false,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+
+      await _box.put(customerId, restoredCustomer);
+      notifyListeners();
+    }
+  }
+
+  // Müşteriyi kalıcı olarak sil
+  Future<void> permanentlyDeleteCustomer(String customerId) async {
+    if (_box.containsKey(customerId)) {
+      await _box.delete(customerId);
+      notifyListeners();
+    }
+  }
+
+  // Çöp kutusunu boşalt
+  Future<void> clearTrash() async {
+    final deletedKeys = _box.values
+        .where((c) => c.isDeleted)
+        .map((c) => c.customerId)
+        .toList();
+
+    if (deletedKeys.isNotEmpty) {
+      await _box.deleteAll(deletedKeys);
+      notifyListeners();
+    }
+  }
+
+  // Tümünü geri yükle
+  Future<void> restoreAllTrash() async {
+    final deletedCustomers = _box.values.where((c) => c.isDeleted).toList();
+
+    for (var customer in deletedCustomers) {
+      final restored = customer.copyWith(
+        isDeleted: false,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+      await _box.put(customer.customerId, restored);
+    }
+    notifyListeners();
+  }
 }

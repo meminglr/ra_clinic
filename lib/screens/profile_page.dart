@@ -7,6 +7,7 @@ import 'package:ra_clinic/providers/theme_provider.dart';
 
 import '../providers/auth_provider.dart';
 import 'auth_page.dart';
+import 'trash_bin_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -34,34 +35,41 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // 2. Bölüm: Tema Ayarı
               buildThemeTile(themeProvider),
+
               const Divider(),
               Consumer<SyncProvider>(
                 builder: (context, provider, _) {
-                  return SwitchListTile(
-                    title: const Text("Senkronizasyon"),
-                    subtitle: Text(
-                      currentUser == null
-                          ? "Verilerin yedeklenmesi için giriş yapın"
-                          : provider.isSyncEnabled
-                          ? "Veriler Buluta Yedekleniyor"
-                          : "Sadece Cihazda (Offline)",
-                    ),
-                    secondary: Icon(
-                      provider.isSyncEnabled ? Icons.cloud : Icons.cloud_off,
-                    ),
-                    value: provider.isSyncEnabled,
-                    onChanged: currentUser != null
-                        ? (val) {
-                            provider.toggleSync(val);
-                          }
-                        : null,
-                  );
+                  return buildSyncTile(currentUser, provider);
                 },
               ),
+              const Divider(),
+              buildTrashBinTile(context),
             ]),
           ),
         ],
       ),
+    );
+  }
+
+  SwitchListTile buildSyncTile(User? currentUser, SyncProvider provider) {
+    return SwitchListTile(
+      title: const Text("Senkronizasyon"),
+      subtitle: Text(
+        currentUser == null
+            ? "Verilerin yedeklenmesi için giriş yapın"
+            : provider.isSyncEnabled
+            ? "Veriler Buluta Yedekleniyor"
+            : "Sadece Cihazda (Offline)",
+      ),
+      secondary: Icon(
+        provider.isSyncEnabled ? Icons.cloud_outlined : Icons.cloud_off,
+      ),
+      value: provider.isSyncEnabled,
+      onChanged: currentUser != null
+          ? (val) {
+              provider.toggleSync(val);
+            }
+          : null,
     );
   }
 
@@ -142,10 +150,27 @@ class _SettingsPageState extends State<SettingsPage> {
         'Uygulamanın temasını karanlık/aydınlık olarak ayarla',
       ),
       secondary: Icon(
-        themeProvider.isDark ? Icons.dark_mode : Icons.light_mode,
+        themeProvider.isDark
+            ? Icons.dark_mode_outlined
+            : Icons.light_mode_outlined,
       ),
       value: themeProvider.isDark,
       onChanged: (v) => themeProvider.setDark(v),
+    );
+  }
+
+  Widget buildTrashBinTile(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.delete_outline),
+      title: const Text("Çöp Kutusu"),
+      subtitle: const Text("Silinen müşterileri yönet"),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (builder) => const TrashBinPage()),
+        );
+      },
     );
   }
 }

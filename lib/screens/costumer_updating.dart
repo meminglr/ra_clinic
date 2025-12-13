@@ -10,7 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'package:ra_clinic/func/turkish_phone_formatter.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
-import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:ra_clinic/func/utils.dart';
 
 import '../constants/app_constants.dart';

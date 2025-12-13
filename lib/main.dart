@@ -8,7 +8,7 @@ import 'package:ra_clinic/calendar/model/schedule.dart';
 import 'package:ra_clinic/firebase_options.dart';
 import 'package:ra_clinic/home.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:ra_clinic/theme/app_themes.dart';
 import 'model/media_model.dart';
