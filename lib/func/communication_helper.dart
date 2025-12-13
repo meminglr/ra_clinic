@@ -29,6 +29,16 @@ class CommunicationHelper {
     );
   }
 
+  static void shareCustomers(List<dynamic> items) {
+    StringBuffer buffer = StringBuffer();
+    for (var item in items) {
+      buffer.writeln('İsim: ${item.name}');
+      buffer.writeln('Telefon: ${item.phone}');
+      buffer.writeln('-------------------');
+    }
+    SharePlus.instance.share(ShareParams(text: buffer.toString()));
+  }
+
   /// Normal telefon araması
   static Future<void> makePhoneCall(
     BuildContext context,

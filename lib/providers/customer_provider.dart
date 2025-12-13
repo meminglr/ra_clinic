@@ -68,6 +68,22 @@ class CustomerProvider extends ChangeNotifier {
     }
   }
 
+  // --- ÇOKLU MÜŞTERİ SİLME (SOFT DELETE) ---
+  Future<void> deleteCustomers(List<String> customerIds) async {
+    for (var customerId in customerIds) {
+      final existingCustomer = _box.get(customerId);
+      if (existingCustomer != null) {
+        final deletedCustomer = existingCustomer.copyWith(
+          isDeleted: true,
+          isSynced: false,
+          lastUpdated: DateTime.now(),
+        );
+        await _box.put(customerId, deletedCustomer);
+      }
+    }
+    notifyListeners();
+  }
+
   // --- SEANS DEĞİŞİKLİĞİ SONRASI ---
   Future<void> updateCustomerAfterSeansChange(
     CustomerModel modifiedCustomer,
