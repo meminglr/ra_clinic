@@ -20,6 +20,9 @@ class CostumersPage extends StatefulWidget {
 
 class _CostumersPageState extends State<CostumersPage> {
   final Set<String> _selectedCustomerIds = {};
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = "";
 
   bool get _isSelectionMode => _selectedCustomerIds.isNotEmpty;
 
@@ -46,6 +49,7 @@ class _CostumersPageState extends State<CostumersPage> {
   }
 
   void navigateToAddCostumerPage() async {
+    _searchFocusNode.unfocus();
     final CustomerModel? newCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(builder: (builder) => CostumerUpdating()),
@@ -56,6 +60,7 @@ class _CostumersPageState extends State<CostumersPage> {
   }
 
   void navigateToEditCostumerPage(int index, CustomerModel costumer) async {
+    _searchFocusNode.unfocus();
     final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(
@@ -76,14 +81,24 @@ class _CostumersPageState extends State<CostumersPage> {
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<CustomerModel> costumersList = context
+    List<CustomerModel> allCostumers = context
         .watch<CustomerProvider>()
         .customersList;
+    List<CustomerModel> costumersList = _searchQuery.isEmpty
+        ? allCostumers
+        : allCostumers
+              .where(
+                (c) =>
+                    c.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -97,11 +112,33 @@ class _CostumersPageState extends State<CostumersPage> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             buildAppBar(),
-            costumersList.isEmpty ? buildNoCustomer() : buildSearchCustomer(),
-
-            buildCustomerList(costumersList),
+            buildSearchCustomer(),
+            if (costumersList.isNotEmpty)
+              buildCustomerList(costumersList)
+            else if (_searchQuery.isNotEmpty)
+              buildNoSearchResults()
+            else
+              buildNoCustomer(),
           ],
         ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter buildNoSearchResults() {
+    return SliverToBoxAdapter(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 50),
+          const Icon(Icons.search_off, size: 80, color: Colors.grey),
+          const SizedBox(height: 10),
+          Text(
+            '"$_searchQuery" bulunamadı.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }
@@ -205,8 +242,28 @@ class _CostumersPageState extends State<CostumersPage> {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       sliver: SliverToBoxAdapter(
         child: TextField(
-          focusNode: FocusNode(),
-          decoration: InputDecoration(hintText: 'Müşteri Ara...'),
+          controller: _searchController,
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+          focusNode: _searchFocusNode,
+          decoration: InputDecoration(
+            hintText: 'Müşteri Ara...',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = "";
+                      });
+                    },
+                  )
+                : null,
+          ),
         ),
       ),
     );
@@ -238,10 +295,12 @@ class _CostumersPageState extends State<CostumersPage> {
                   // liste boşaldığında UI otomatik güncellenecek (setState _toggleSelection içinde var).
                 }
               } else {
+                _searchFocusNode.unfocus();
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (builder) => CostumerDetail(index: index),
+                    builder: (builder) =>
+                        CostumerDetail(customerId: item.customerId),
                   ),
                 );
               }

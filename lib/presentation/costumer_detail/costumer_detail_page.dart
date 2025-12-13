@@ -18,8 +18,8 @@ import '../../func/communication_helper.dart';
 import '../../screens/costumer_updating.dart';
 
 class CostumerDetail extends StatefulWidget {
-  final int index;
-  const CostumerDetail({required this.index, super.key});
+  final String customerId;
+  const CostumerDetail({required this.customerId, super.key});
 
   @override
   State<CostumerDetail> createState() => _CostumerDetailState();
@@ -29,7 +29,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
   bool isMessageExpanded = false;
   bool isCallExpanded = false;
 
-  void navigateToEditCostumerPage(int index, CustomerModel costumer) async {
+  void navigateToEditCostumerPage(CustomerModel costumer) async {
     final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
       CupertinoPageRoute(
@@ -53,12 +53,16 @@ class _CostumerDetailState extends State<CostumerDetail> {
   Widget build(BuildContext context) {
     final provider = context.watch<CustomerProvider>();
 
-    // Silinme durumunda index hatası almamak için güvenlik kontrolü
-    if (widget.index >= provider.customersList.length) {
+    CustomerModel? currentCostumerNullable;
+    try {
+      currentCostumerNullable = provider.customersList.firstWhere(
+        (c) => c.customerId == widget.customerId,
+      );
+    } catch (e) {
       return const SizedBox();
     }
 
-    CustomerModel currentCostumer = provider.customersList[widget.index];
+    final CustomerModel currentCostumer = currentCostumerNullable;
     var phoneIsNotEmpty = currentCostumer.phone?.isNotEmpty ?? false;
     var noteIsNotEmpty = currentCostumer.notes?.isNotEmpty ?? false;
     final messenger = ScaffoldMessenger.of(context);
@@ -68,7 +72,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
       child: Scaffold(
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            navigateToEditCostumerPage(widget.index, currentCostumer);
+            navigateToEditCostumerPage(currentCostumer);
           },
           label: const Text("Düzenle"),
           icon: const Icon(Icons.edit_outlined),
@@ -288,7 +292,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 itemBuilder: (context) => [
                   PullDownMenuItem(
                     onTap: () {
-                      navigateToEditCostumerPage(widget.index, currentCostumer);
+                      navigateToEditCostumerPage(currentCostumer);
                     },
                     title: 'Düzenle',
                     icon: Icons.edit_outlined,
