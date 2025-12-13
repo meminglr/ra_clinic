@@ -31,9 +31,6 @@ class CostumerNotesCard extends StatelessWidget {
               child: Column(
                 children: [
                   Text(" Kayıt Tarihi :${Utils.toDate(costumer.startDate)} "),
-                  Text(
-                    " Son Güncelleme :${costumer.lastUpdated != null ? Utils.toDate(costumer.lastUpdated!) : 'Yok'} ",
-                  ),
                 ],
               ),
             ),

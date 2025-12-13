@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
@@ -18,6 +19,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image/image.dart' as img;
+
+import '../../../constants/app_constants.dart';
 
 class CustomerFilesWidget extends StatefulWidget {
   final String customerId;
@@ -359,7 +362,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => FullScreenMediaViewer(
           mediaUrls: List<String>.from(mediaUrls),
           fileNames: List<String>.from(fileNames), // Added
@@ -454,16 +457,16 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (_isSelectionMode) ...[
-                Text("${_selectedFiles.length} Seçildi"),
+                Text("${_selectedFiles.length} Öğe Seçildi"),
                 Row(
                   children: [
                     IconButton(
                       onPressed: _shareSelectedFiles,
-                      icon: const Icon(Icons.share, color: Colors.blue),
+                      icon: const Icon(Icons.share_outlined),
                     ),
                     IconButton(
                       onPressed: _deleteSelectedFiles,
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete_outlined),
                     ),
                     IconButton(
                       onPressed: _exitSelectionMode,
@@ -477,6 +480,9 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 PullDownButton(
+                  routeTheme: PullDownMenuRouteTheme(
+                    backgroundColor: AppConstants.dropDownButtonsColor(context),
+                  ),
                   itemBuilder: (context) => [
                     PullDownMenuItem(
                       onTap: _pickAndUploadFile,
@@ -486,7 +492,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                     PullDownMenuItem(
                       onTap: _takePhoto,
                       title: 'Fotoğraf Çek',
-                      icon: Icons.camera_alt,
+                      icon: Icons.camera_alt_outlined,
                     ),
                     PullDownMenuItem(
                       onTap: _pickAndUploadMultipleMedia,
@@ -496,7 +502,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                   ],
                   buttonBuilder: (context, showMenu) => FilledButton.icon(
                     onPressed: showMenu,
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add_outlined),
                     label: const Text("Ekle"),
                   ),
                 ),
@@ -514,8 +520,6 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
             padding: const EdgeInsets.all(8.0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
               childAspectRatio: 0.8,
             ),
             itemCount: _files.length,
@@ -542,15 +546,8 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                     _toggleSelection(name);
                   }
                 },
-                child: Card(
+                child: Card.filled(
                   clipBehavior: Clip.antiAlias,
-                  // Add border if selected
-                  shape: isSelected
-                      ? RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.blue, width: 3),
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
                   child: Stack(
                     children: [
                       Column(
@@ -601,7 +598,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                                         top: 4,
                                         left: 4,
                                         child: Icon(
-                                          Icons.videocam,
+                                          Icons.videocam_outlined,
                                           color: Colors.white,
                                           size: 20,
                                         ),
@@ -609,27 +606,15 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                                     ],
                                   )
                                 : Container(
-                                    color: Colors.grey[100],
+                                    color: AppConstants.dropDownButtonsColor(
+                                      context,
+                                    ),
                                     child: const Icon(
-                                      Icons.insert_drive_file,
+                                      Icons.insert_drive_file_outlined,
                                       size: 40,
                                       color: Colors.blueGrey,
                                     ),
                                   ),
-                          ),
-                          Container(
-                            color: Colors.white,
-                            padding: const EdgeInsets.all(4),
-                            child: Text(
-                              name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
                           ),
                         ],
                       ),
@@ -642,7 +627,9 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                             isSelected
                                 ? Icons.check_circle
                                 : Icons.circle_outlined,
-                            color: isSelected ? Colors.blue : Colors.white,
+                            color: isSelected
+                                ? Theme.of(context).primaryColor
+                                : Colors.white,
                             shadows: const [
                               Shadow(blurRadius: 2, color: Colors.black),
                             ],
@@ -830,23 +817,29 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            )
-          else ...[
-            IconButton(
-              icon: const Icon(Icons.share),
-              onPressed: _shareCurrentFile,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _deleteCurrentFile,
-            ),
-          ],
+          _isLoading
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  color: Colors.white,
+                  onPressed: _shareCurrentFile,
+                ),
+          IconButton(
+            color: Colors.white,
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _deleteCurrentFile,
+          ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -979,8 +972,9 @@ class _AuthenticatedVideoPlayerState extends State<AuthenticatedVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isError)
+    if (_isError) {
       return const Center(child: Icon(Icons.error, color: Colors.white));
+    }
 
     if (_videoController != null && _videoController!.value.isInitialized) {
       return GestureDetector(
@@ -999,7 +993,7 @@ class _AuthenticatedVideoPlayerState extends State<AuthenticatedVideoPlayer> {
                 color: Colors.black26,
                 child: Center(
                   child: Icon(
-                    Icons.play_circle_fill,
+                    Icons.play_arrow_outlined,
                     color: Colors.white,
                     size: 60,
                   ),
@@ -1039,8 +1033,6 @@ class _AuthenticatedVideoPlayerState extends State<AuthenticatedVideoPlayer> {
                         min: 0.0,
                         max: _videoController!.value.duration.inMilliseconds
                             .toDouble(),
-                        activeColor: Colors.red,
-                        inactiveColor: Colors.white24,
                         onChanged: (value) {
                           setState(() {
                             _isDragging = true;

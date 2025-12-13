@@ -12,7 +12,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_di
 import 'package:ra_clinic/presentation/costumer_detail/widgets/customer_files_widget.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
-import 'package:ra_clinic/providers/costumer_provider.dart';
+import 'package:ra_clinic/providers/customer_provider.dart';
 import '../../constants/app_constants.dart';
 import '../../func/communication_helper.dart';
 import '../../screens/costumer_updating.dart';
