@@ -7,6 +7,7 @@ import 'package:ra_clinic/providers/theme_provider.dart';
 
 import '../providers/auth_provider.dart';
 import 'auth_page.dart';
+import 'theme_settings_page.dart';
 import 'trash_bin_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -80,18 +81,6 @@ class _SettingsPageState extends State<SettingsPage> {
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
         title: const Text('Ayarlar'),
-        background: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-            // color: AppConstants.sliverAppBarFlexColor(context), // Renk sabitiniz varsa bunu açın
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest, // Yedek renk
-          ),
-        ),
       ),
     );
   }
@@ -144,18 +133,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget buildThemeTile(ThemeProvider themeProvider) {
-    return SwitchListTile(
-      title: const Text('Karanlık Mod'),
-      subtitle: const Text(
-        'Uygulamanın temasını karanlık/aydınlık olarak ayarla',
-      ),
-      secondary: Icon(
-        themeProvider.isDark
-            ? Icons.dark_mode_outlined
-            : Icons.light_mode_outlined,
-      ),
-      value: themeProvider.isDark,
-      onChanged: (v) => themeProvider.setDark(v),
+    return ListTile(
+      leading: const Icon(Icons.color_lens_outlined),
+      title: const Text('Tema Ayarları'),
+      subtitle: const Text('Renk teması ve karanlık mod'),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (builder) => const ThemeSettingsPage()),
+        );
+      },
     );
   }
 

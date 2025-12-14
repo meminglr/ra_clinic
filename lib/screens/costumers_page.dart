@@ -243,13 +243,11 @@ class _CostumersPageState extends State<CostumersPage> {
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 2,
+                    runSpacing: 2,
                     children: [
                       _buildSortChip(setModalState, 'name_asc', 'İsim (A-Z)'),
                       _buildSortChip(setModalState, 'name_desc', 'İsim (Z-A)'),
-                    ],
-                  ),
-                  Wrap(
-                    children: [
+
                       _buildSortChip(
                         setModalState,
                         'date_desc',
