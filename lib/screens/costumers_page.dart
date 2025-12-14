@@ -242,10 +242,14 @@ class _CostumersPageState extends State<CostumersPage> {
                   ),
                   const SizedBox(height: 10),
                   Wrap(
-                    spacing: 10,
+                    spacing: 2,
                     children: [
                       _buildSortChip(setModalState, 'name_asc', 'İsim (A-Z)'),
                       _buildSortChip(setModalState, 'name_desc', 'İsim (Z-A)'),
+                    ],
+                  ),
+                  Wrap(
+                    children: [
                       _buildSortChip(
                         setModalState,
                         'date_desc',
@@ -254,7 +258,6 @@ class _CostumersPageState extends State<CostumersPage> {
                       _buildSortChip(setModalState, 'date_asc', 'Tarih (Eski)'),
                     ],
                   ),
-                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -273,6 +276,14 @@ class _CostumersPageState extends State<CostumersPage> {
 
   Widget _buildSortChip(StateSetter setModalState, String value, String label) {
     return ChoiceChip(
+      showCheckmark: false,
+      side: BorderSide.none,
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: 0.1),
+      selectedColor: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: 0.3),
       label: Text(label),
       selected: _sortOption == value,
       onSelected: (bool selected) {
