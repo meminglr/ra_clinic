@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 /// Use same major flex_color_scheme package version. If you use a
 /// lower minor version, some properties may not be supported.
 /// In that case, remove them after copying this theme to your
-/// app or upgrade the package to version 8.3.1.
+/// app or upgrade the package to version 8.4.0.
 ///
 /// Use it in a [MaterialApp] like this:
 ///
@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 ///   darkTheme: AppTheme.dark,
 /// );
 abstract final class AppTheme {
-  
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
@@ -26,7 +25,6 @@ abstract final class AppTheme {
     useMaterial3ErrorColors: true,
     // Convenience direct styling properties.
     appBarStyle: FlexAppBarStyle.scaffoldBackground,
-    
     // Component theme configurations for light mode.
     subThemesData: const FlexSubThemesData(
       interactionEffects: true,
@@ -40,10 +38,13 @@ abstract final class AppTheme {
       inputDecoratorIsDense: true,
       inputDecoratorBackgroundAlpha: 14,
       inputDecoratorBorderType: FlexInputBorderType.outline,
-      inputDecoratorRadius: 10.0,
+      inputDecoratorRadius: 20.0,
       inputDecoratorUnfocusedHasBorder: false,
       inputDecoratorFocusedBorderWidth: 1.0,
       inputDecoratorPrefixIconSchemeColor: SchemeColor.onPrimaryFixedVariant,
+      chipRadius: 40.0,
+      cardRadius: 20.0,
+      cardElevation: 0.0,
       alignedDropdown: true,
       appBarScrolledUnderElevation: 0.0,
       appBarCenterTitle: true,
@@ -62,7 +63,6 @@ abstract final class AppTheme {
 
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
-    
     // Using FlexColorScheme built-in FlexScheme enum based colors.
     scheme: FlexScheme.shadGreen,
     // Input color modifiers.
@@ -82,10 +82,13 @@ abstract final class AppTheme {
       inputDecoratorBackgroundAlpha: 45,
       inputDecoratorBorderSchemeColor: SchemeColor.primary,
       inputDecoratorBorderType: FlexInputBorderType.outline,
-      inputDecoratorRadius: 10.0,
+      inputDecoratorRadius: 20.0,
       inputDecoratorUnfocusedHasBorder: false,
       inputDecoratorFocusedBorderWidth: 1.0,
       inputDecoratorPrefixIconSchemeColor: SchemeColor.primaryFixed,
+      chipRadius: 40.0,
+      cardRadius: 20.0,
+      cardElevation: 0.0,
       alignedDropdown: true,
       appBarScrolledUnderElevation: 0.0,
       appBarCenterTitle: true,

@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -118,9 +117,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 },
                 child: SfCalendar(
                   headerStyle: CalendarHeaderStyle(
-                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   ),
-
                   controller: _calendarController,
                   view: CalendarView.month,
                   dataSource: ScheduleDataSource(events),
