@@ -13,6 +13,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_di
 import 'package:ra_clinic/presentation/costumer_detail/widgets/customer_files_widget.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
+import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_financials_widget.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import '../../constants/app_constants.dart';
 import '../../func/communication_helper.dart';
@@ -69,7 +70,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
     final messenger = ScaffoldMessenger.of(context);
 
     return DefaultTabController(
-      length: 2, // Seanslar ve Notlar/Medya olmak üzere 2 sekme
+      length: 3, // Seanslar, Hesap, Medya olmak üzere 3 sekme
       child: Scaffold(
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
@@ -105,6 +106,10 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     tabs: const [
                       Tab(text: "Seanslar", icon: Icon(Icons.list_alt)),
                       Tab(
+                        text: "Hesap",
+                        icon: Icon(Icons.account_balance_wallet_outlined),
+                      ),
+                      Tab(
                         text: "Medya",
                         icon: Icon(Icons.photo_library_outlined),
                       ),
@@ -133,7 +138,19 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 ],
               ),
 
-              // --- SEKME 2: MEDYA ---
+              // --- SEKME 2: HESAP (FİNANSAL) ---
+              CustomScrollView(
+                key: const PageStorageKey<String>('hesap'),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: FinancialSummaryCard(customer: currentCostumer),
+                  ),
+                  FinancialsSliverList(customer: currentCostumer),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+                ],
+              ),
+
+              // --- SEKME 3: MEDYA ---
               CustomScrollView(
                 key: const PageStorageKey<String>('medya'),
                 slivers: [

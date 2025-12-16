@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'media_model.dart';
-import 'seans_model.dart'; // Dosya yolunu kendine göre ayarla
+import 'seans_model.dart';
+import 'financial_model.dart';
 
 part 'costumer_model.g.dart';
 
@@ -33,6 +34,8 @@ class CustomerModel {
   final List<CostumerMedia> mediaList;
   @HiveField(12)
   String? profileImageUrl;
+  @HiveField(13)
+  final List<FinancialTransaction> transactions;
 
   CustomerModel({
     required this.customerId,
@@ -48,6 +51,7 @@ class CustomerModel {
     this.isDeleted = false,
     this.mediaList = const [],
     this.profileImageUrl,
+    this.transactions = const [],
   });
 
   // Firebase'e gönderirken
@@ -69,6 +73,7 @@ class CustomerModel {
       'isDeleted': isDeleted,
       'mediaList': mediaList.map((x) => x.toMap()).toList(),
       'profileImageUrl': profileImageUrl,
+      'transactions': transactions.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -106,6 +111,13 @@ class CustomerModel {
             )
           : [],
       profileImageUrl: data['profileImageUrl'],
+      transactions: data['transactions'] != null
+          ? List<FinancialTransaction>.from(
+              (data['transactions'] as List).map(
+                (x) => FinancialTransaction.fromMap(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
     );
   }
 
@@ -124,6 +136,7 @@ class CustomerModel {
     bool? isDeleted,
     List<CostumerMedia>? mediaList,
     String? profileImageUrl,
+    List<FinancialTransaction>? transactions,
   }) {
     return CustomerModel(
       customerId: customerId ?? this.customerId,
@@ -139,6 +152,7 @@ class CustomerModel {
       isDeleted: isDeleted ?? this.isDeleted,
       mediaList: mediaList ?? this.mediaList,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      transactions: transactions ?? this.transactions,
     );
   }
 }

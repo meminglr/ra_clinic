@@ -13,6 +13,7 @@ import 'package:ra_clinic/providers/event_provider.dart';
 import 'package:ra_clinic/theme/app_themes.dart';
 import 'model/media_model.dart';
 import 'model/seans_model.dart';
+import 'model/financial_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
 import 'providers/auth_provider.dart';
@@ -31,6 +32,8 @@ void main() async {
   Hive.registerAdapter(SeansModelAdapter());
   Hive.registerAdapter(ScheduleAdapter());
   Hive.registerAdapter(CostumerMediaAdapter());
+  Hive.registerAdapter(FinancialTransactionAdapter());
+  Hive.registerAdapter(TransactionTypeAdapter());
   await Hive.openBox<CustomerModel>("customersBox");
   await Hive.openBox<Schedule>("scheduleBox");
   await Hive.openBox('settingsBox');

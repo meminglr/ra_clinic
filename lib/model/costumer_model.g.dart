@@ -30,13 +30,14 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       isDeleted: fields[10] as bool,
       mediaList: (fields[11] as List).cast<CostumerMedia>(),
       profileImageUrl: fields[12] as String?,
+      transactions: (fields[13] as List).cast<FinancialTransaction>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, CustomerModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.customerId)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       ..writeByte(11)
       ..write(obj.mediaList)
       ..writeByte(12)
-      ..write(obj.profileImageUrl);
+      ..write(obj.profileImageUrl)
+      ..writeByte(13)
+      ..write(obj.transactions);
   }
 
   @override
