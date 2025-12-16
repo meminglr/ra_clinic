@@ -18,6 +18,7 @@ import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 import 'providers/auth_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/user_profile_provider.dart';
 import 'services/webdav_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -43,6 +44,13 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
         ChangeNotifierProvider(create: (_) => SyncProvider()),
         Provider<WebDavService>(create: (_) => WebDavService()..init()),
+        ChangeNotifierProxyProvider<WebDavService, UserProfileProvider>(
+          create: (context) => UserProfileProvider(
+            Provider.of<WebDavService>(context, listen: false),
+          ),
+          update: (context, webDav, previous) =>
+              previous ?? UserProfileProvider(webDav),
+        ),
       ],
       child: const MainApp(),
     ),

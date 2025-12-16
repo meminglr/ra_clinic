@@ -6,6 +6,8 @@ import 'package:ra_clinic/screens/costumers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
 
 import 'providers/sync_provider.dart';
+import 'providers/user_profile_provider.dart';
+import 'screens/complete_profile_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -32,9 +34,23 @@ class _HomeState extends State<Home> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       // initState içinde Provider'a erişirken "listen: false" çok önemlidir.
-      // Veya addPostFrameCallback kullanabilirsin.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         context.read<SyncProvider>().init(user.uid);
+
+        // 2. Profil kontrolü yap
+        final profileProvider = context.read<UserProfileProvider>();
+        await profileProvider.fetchUserProfile(user.uid);
+
+        if (!profileProvider.isProfileComplete) {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CompleteProfilePage(),
+              ),
+            );
+          }
+        }
       });
     }
   }

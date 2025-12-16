@@ -2,6 +2,7 @@
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ra_clinic/providers/auth_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ra_clinic/services/webdav_service.dart';
@@ -80,8 +81,14 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
         final fileName =
             "profile_${DateTime.now().millisecondsSinceEpoch}.$extension";
 
+        final uid = context.read<FirebaseAuthProvider>().currentUser?.uid;
+        if (uid == null) throw Exception("Oturum açık değil");
+
         final service = context.read<WebDavService>();
-        await service.uploadFile(costumerId!, fileName, data);
+        final folderPath = "$uid/customers/$costumerId";
+
+        await service.ensurePath(folderPath);
+        await service.uploadFile(folderPath, fileName, data);
 
         setState(() {
           _profileImageUrl = fileName;
@@ -203,7 +210,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                               backgroundImage: _profileImageUrl != null
                                   ? CachedNetworkImageProvider(
                                       context.read<WebDavService>().getFileUrl(
-                                        "${costumerId!}/$_profileImageUrl",
+                                        "${context.read<FirebaseAuthProvider>().currentUser?.uid}/customers/$costumerId/$_profileImageUrl",
                                       ),
                                       headers: context
                                           .read<WebDavService>()

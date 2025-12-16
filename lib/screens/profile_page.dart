@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import 'auth_page.dart';
 import 'theme_settings_page.dart';
 import 'trash_bin_page.dart';
+import 'complete_profile_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -31,6 +32,9 @@ class _SettingsPageState extends State<SettingsPage> {
             delegate: SliverChildListDelegate([
               // 1. Bölüm: Auth StreamBuilder
               buildAuthStream(),
+
+              // Profil Düzenleme
+              if (currentUser != null) buildProfileTile(context),
 
               const SizedBox(height: 10),
 
@@ -142,6 +146,23 @@ class _SettingsPageState extends State<SettingsPage> {
         Navigator.push(
           context,
           CupertinoPageRoute(builder: (builder) => const ThemeSettingsPage()),
+        );
+      },
+    );
+  }
+
+  Widget buildProfileTile(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.person_pin_circle_outlined),
+      title: const Text('Profil Bilgilerim'),
+      subtitle: const Text('Ad, soyad ve işletme bilgilerini düzenle'),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (builder) => const CompleteProfilePage(isEditMode: true),
+          ),
         );
       },
     );

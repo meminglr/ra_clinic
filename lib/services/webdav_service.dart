@@ -32,8 +32,24 @@ class WebDavService {
     try {
       await _client.mkdir(path);
     } catch (e) {
-      // Ignore if exists or handle specific error code
-      print("Ensure Folder Error (might exist): $e");
+      // Ignore
+    }
+  }
+
+  Future<void> ensurePath(String path) async {
+    path = _normalizePath(path);
+    if (path.isEmpty) return;
+
+    List<String> parts = path.split("/");
+    String currentPath = "";
+
+    for (String part in parts) {
+      if (currentPath.isNotEmpty) {
+        currentPath += "/$part";
+      } else {
+        currentPath = part;
+      }
+      await ensureFolder(currentPath);
     }
   }
 

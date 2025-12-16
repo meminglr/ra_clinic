@@ -13,6 +13,7 @@ import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
+import 'package:ra_clinic/providers/auth_provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/services/webdav_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,6 +37,12 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
   String? _errorMessage;
   final ImagePicker _picker = ImagePicker();
 
+  // Helper to get base path
+  String get _basePath {
+    final uid = context.read<FirebaseAuthProvider>().currentUser?.uid ?? "";
+    return "$uid/customers/${widget.customerId}";
+  }
+
   // Selection State
   bool _isSelectionMode = false;
   final Set<String> _selectedFiles = {};
@@ -55,8 +62,9 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
     try {
       final service = context.read<WebDavService>();
-      await service.ensureFolder(widget.customerId);
-      final files = await service.listFiles(widget.customerId);
+      final path = _basePath;
+      await service.ensurePath(path);
+      final files = await service.listFiles(path);
 
       if (mounted) {
         setState(() {
@@ -81,13 +89,14 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
     try {
       final service = context.read<WebDavService>();
+      final path = _basePath;
 
       // Ensure hidden thumbnail folder exists
-      await service.ensureFolder(widget.customerId);
-      await service.ensureFolder("${widget.customerId}/.thumbnails");
+      await service.ensurePath(path);
+      await service.ensureFolder("$path/.thumbnails");
 
       // 1. Upload Original
-      await service.uploadFile(widget.customerId, fileName, data);
+      await service.uploadFile(path, fileName, data);
 
       // 2. Generate & Upload Thumbnail
       await _generateAndUploadThumbnail(service, fileName, data);
@@ -147,11 +156,8 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
       if (thumbData != null) {
         // Upload to .thumbnails folder as .jpg
         final thumbName = "$fileName.jpg";
-        await service.uploadFile(
-          "${widget.customerId}/.thumbnails",
-          thumbName,
-          thumbData,
-        );
+        final path = _basePath;
+        await service.uploadFile("$path/.thumbnails", thumbName, thumbData);
       }
     } catch (e) {
       debugPrint("Thumbnail generation failed for $fileName: $e");
@@ -312,10 +318,10 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
       for (var name in _selectedFiles) {
         try {
-          String path = "${widget.customerId}/$name";
+          String path = "$_basePath/$name";
           await service.deleteFile(path);
           // Also try to delete thumbnail if exists
-          String thumbPath = "${widget.customerId}/.thumbnails/$name.jpg";
+          String thumbPath = "$_basePath/.thumbnails/$name.jpg";
           await service.deleteFile(thumbPath);
         } catch (e) {
           debugPrint("Error deleting $name: $e");
@@ -338,7 +344,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
   void _openFile(String fileName) {
     final service = context.read<WebDavService>();
-    String path = "${widget.customerId}/$fileName";
+    String path = "$_basePath/$fileName";
     String url = service.getFileUrl(path);
     launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
@@ -352,7 +358,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
     final service = context.read<WebDavService>();
     final mediaUrls = allMedia
-        .map((f) => service.getFileUrl("${widget.customerId}/${f.name}"))
+        .map((f) => service.getFileUrl("$_basePath/${f.name}"))
         .toList();
     final currentIndex = allMedia.indexWhere((f) => f.name == currentFileName);
 
@@ -366,7 +372,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
         builder: (_) => FullScreenMediaViewer(
           mediaUrls: List<String>.from(mediaUrls),
           fileNames: List<String>.from(fileNames), // Added
-          customerId: widget.customerId, // Added
+          basePath: _basePath, // Changed
           initialIndex: currentIndex,
           headers: service.getAuthHeaders(),
           onDelete: _loadFiles, // Added callback
@@ -404,7 +410,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
       for (var name in _selectedFiles) {
         try {
           // 1. Get/Download file
-          String url = service.getFileUrl("${widget.customerId}/$name");
+          String url = service.getFileUrl("$_basePath/$name");
           final fileInfo = await DefaultCacheManager().downloadFile(
             url,
             authHeaders: service.getAuthHeaders(),
@@ -558,14 +564,14 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                             child: isImage
                                 ? CachedNetworkImage(
                                     imageUrl: service.getFileUrl(
-                                      "${widget.customerId}/.thumbnails/$name.jpg",
+                                      "$_basePath/.thumbnails/$name.jpg",
                                     ),
                                     httpHeaders: service.getAuthHeaders(),
                                     fit: BoxFit.cover,
                                     errorWidget: (context, url, error) {
                                       return CachedNetworkImage(
                                         imageUrl: service.getFileUrl(
-                                          "${widget.customerId}/$name",
+                                          "$_basePath/$name",
                                         ),
                                         httpHeaders: service.getAuthHeaders(),
                                         fit: BoxFit.cover,
@@ -580,14 +586,14 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                                       Positioned.fill(
                                         child: CachedNetworkImage(
                                           imageUrl: service.getFileUrl(
-                                            "${widget.customerId}/.thumbnails/$name.jpg",
+                                            "$_basePath/.thumbnails/$name.jpg",
                                           ),
                                           httpHeaders: service.getAuthHeaders(),
                                           fit: BoxFit.cover,
                                           errorWidget: (context, url, error) {
                                             return VideoThumbnailWidget(
                                               url: service.getFileUrl(
-                                                "${widget.customerId}/$name",
+                                                "$_basePath/$name",
                                               ),
                                               headers: service.getAuthHeaders(),
                                             );
@@ -618,23 +624,28 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
                           ),
                         ],
                       ),
+
                       // Optional: Checkbox overlay
-                      if (_isSelectionMode)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Icon(
-                            isSelected
-                                ? Icons.check_circle
-                                : Icons.circle_outlined,
-                            color: isSelected
-                                ? Theme.of(context).primaryColor
-                                : Colors.white,
-                            shadows: const [
-                              Shadow(blurRadius: 2, color: Colors.black),
-                            ],
-                          ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: _isSelectionMode
+                              ? Icon(
+                                  isSelected
+                                      ? Icons.check_circle
+                                      : Icons.circle_outlined,
+                                  color: isSelected
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.white,
+                                  shadows: const [
+                                    Shadow(blurRadius: 2, color: Colors.black),
+                                  ],
+                                )
+                              : SizedBox(),
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -649,7 +660,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 class FullScreenMediaViewer extends StatefulWidget {
   final List<String> mediaUrls;
   final List<String> fileNames; // Added
-  final String customerId; // Added
+  final String basePath; // Changed from customerId
   final int initialIndex;
   final Map<String, String>? headers;
   final VoidCallback? onDelete; // Added
@@ -658,7 +669,7 @@ class FullScreenMediaViewer extends StatefulWidget {
     super.key,
     required this.mediaUrls,
     required this.fileNames,
-    required this.customerId,
+    required this.basePath,
     required this.initialIndex,
     this.headers,
     this.onDelete,
@@ -690,7 +701,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
       final tempDir = await getTemporaryDirectory();
 
       // Download
-      String url = service.getFileUrl("${widget.customerId}/$name");
+      String url = service.getFileUrl("${widget.basePath}/$name");
       final fileInfo = await DefaultCacheManager().downloadFile(
         url,
         authHeaders: service.getAuthHeaders(),
@@ -753,10 +764,10 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
       });
       final service = context.read<WebDavService>();
 
-      await service.deleteFile("${widget.customerId}/$name");
+      await service.deleteFile("${widget.basePath}/$name");
       // Try delete thumb
       try {
-        await service.deleteFile("${widget.customerId}/.thumbnails/$name.jpg");
+        await service.deleteFile("${widget.basePath}/.thumbnails/$name.jpg");
       } catch (_) {}
 
       // Update local state

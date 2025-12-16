@@ -185,51 +185,56 @@ class _CostumersPageState extends State<CostumersPage> {
                     ),
                     childrenPadding: const EdgeInsets.only(bottom: 10),
                     children: [
-                      AspectRatio(
-                        aspectRatio: 1,
-                        child: SfDateRangePicker(
-                          showTodayButton: true,
-                          rangeTextStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          headerStyle: DateRangePickerHeaderStyle(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: SfDateRangePicker(
+                            showTodayButton: true,
+                            rangeTextStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            headerStyle: DateRangePickerHeaderStyle(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerLow,
+                            ),
+                            selectionShape:
+                                DateRangePickerSelectionShape.circle,
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.surfaceContainerLow,
-                          ),
-                          selectionShape: DateRangePickerSelectionShape.circle,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerLow,
-                          showActionButtons: false,
-                          selectionMode: DateRangePickerSelectionMode.range,
-                          selectionTextStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          monthCellStyle: const DateRangePickerMonthCellStyle(),
-                          initialSelectedRange: _selectedDateRange != null
-                              ? PickerDateRange(
-                                  _selectedDateRange!.start,
-                                  _selectedDateRange!.end,
-                                )
-                              : null,
-                          onSelectionChanged:
-                              (DateRangePickerSelectionChangedArgs args) {
-                                if (args.value is PickerDateRange) {
-                                  final range = args.value as PickerDateRange;
-                                  if (range.startDate != null &&
-                                      range.endDate != null) {
-                                    setModalState(() {
-                                      _selectedDateRange = DateTimeRange(
-                                        start: range.startDate!,
-                                        end: range.endDate!,
-                                      );
-                                    });
-                                    setState(() {});
-                                    _saveFilters();
+                            showActionButtons: false,
+                            selectionMode: DateRangePickerSelectionMode.range,
+                            selectionTextStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            monthCellStyle:
+                                const DateRangePickerMonthCellStyle(),
+                            initialSelectedRange: _selectedDateRange != null
+                                ? PickerDateRange(
+                                    _selectedDateRange!.start,
+                                    _selectedDateRange!.end,
+                                  )
+                                : null,
+                            onSelectionChanged:
+                                (DateRangePickerSelectionChangedArgs args) {
+                                  if (args.value is PickerDateRange) {
+                                    final range = args.value as PickerDateRange;
+                                    if (range.startDate != null &&
+                                        range.endDate != null) {
+                                      setModalState(() {
+                                        _selectedDateRange = DateTimeRange(
+                                          start: range.startDate!,
+                                          end: range.endDate!,
+                                        );
+                                      });
+                                      setState(() {});
+                                      _saveFilters();
+                                    }
                                   }
-                                }
-                              },
+                                },
+                          ),
                         ),
                       ),
                     ],
@@ -603,16 +608,21 @@ class _CostumersPageState extends State<CostumersPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Seçim Checkbox (Opsiyonel: Sadece modlaysa gösterilebilirdi ama renk değişimi yeterli)
-                      if (_isSelectionMode)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Icon(
-                            isSelected
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        child: _isSelectionMode
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Icon(
+                                  isSelected
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              )
+                            : SizedBox(),
+                      ),
 
                       Expanded(
                         child: Column(
@@ -632,102 +642,125 @@ class _CostumersPageState extends State<CostumersPage> {
                       ),
                       // Aksiyon butonları (Arama/Mesaj) - Seçim modunda gizlenebilir veya pasif olabilir
                       // Seçim modundaysak bunları gizlemek daha temiz bir görüntü sağlar
-                      if (!_isSelectionMode)
-                        Row(
-                          children: [
-                            FilledButton(
-                              style: const ButtonStyle(
-                                padding: WidgetStatePropertyAll(
-                                  EdgeInsets.zero,
-                                ),
-                                minimumSize: WidgetStatePropertyAll(
-                                  Size(40, 40),
-                                ),
-                                shape: WidgetStatePropertyAll(CircleBorder()),
-                              ),
-                              onPressed: () {
-                                CommunicationHelper.makePhoneCall(
-                                  context,
-                                  item.phone!,
-                                );
-                              },
-                              child: const Icon(Icons.phone_outlined),
-                            ),
-                            FilledButton(
-                              style: const ButtonStyle(
-                                padding: WidgetStatePropertyAll(
-                                  EdgeInsets.zero,
-                                ),
-                                minimumSize: WidgetStatePropertyAll(
-                                  Size(40, 40),
-                                ),
-                                shape: WidgetStatePropertyAll(CircleBorder()),
-                              ),
-                              onPressed: () {
-                                CommunicationHelper.openSmsApp(
-                                  context,
-                                  item.phone!,
-                                );
-                              },
-                              child: const Icon(Icons.message_outlined),
-                            ),
-                            PullDownButton(
-                              routeTheme: PullDownMenuRouteTheme(
-                                backgroundColor:
-                                    AppConstants.dropDownButtonsColor(context),
-                              ),
-                              itemBuilder: (context) => [
-                                PullDownMenuItem(
-                                  onTap: () {
-                                    Slidable.of(context)?.openEndActionPane(
-                                      duration: Durations.long1,
-                                    );
-                                    Slidable.of(context)?.dismiss(
-                                      ResizeRequest(Durations.medium3, () {
-                                        context
-                                            .read<CustomerProvider>()
-                                            .deleteCustomer(item.customerId);
-                                      }),
-                                    );
-                                  },
-                                  title: 'Sil',
-                                  isDestructive: true,
-                                  iconColor: Colors.red,
-                                  icon: Icons.delete_outline,
-                                ),
-                                PullDownMenuItem(
-                                  onTap: () {
-                                    navigateToEditCostumerPage(index, item);
-                                  },
-                                  title: 'Düzenle',
-                                  icon: Icons.edit_outlined,
-                                ),
-                                PullDownMenuItem(
-                                  onTap: () {
-                                    CommunicationHelper.shareCostumer(item);
-                                  },
-                                  title: 'Paylaş',
-                                  icon: Icons.share_outlined,
-                                ),
-                              ],
-                              position: PullDownMenuPosition.automatic,
-                              buttonBuilder: (context, showMenu) =>
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    onTap: showMenu,
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 5,
-                                        top: 20,
-                                        bottom: 20,
-                                        right: 5,
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        child: !_isSelectionMode
+                            ? Row(
+                                children: [
+                                  FilledButton(
+                                    style: const ButtonStyle(
+                                      padding: WidgetStatePropertyAll(
+                                        EdgeInsets.zero,
                                       ),
-                                      child: Icon(Icons.more_vert),
+                                      minimumSize: WidgetStatePropertyAll(
+                                        Size(40, 40),
+                                      ),
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
                                     ),
+                                    onPressed: () {
+                                      CommunicationHelper.makePhoneCall(
+                                        context,
+                                        item.phone!,
+                                      );
+                                    },
+                                    child: const Icon(Icons.phone_outlined),
                                   ),
-                            ),
-                          ],
-                        ),
+                                  FilledButton(
+                                    style: const ButtonStyle(
+                                      padding: WidgetStatePropertyAll(
+                                        EdgeInsets.zero,
+                                      ),
+                                      minimumSize: WidgetStatePropertyAll(
+                                        Size(40, 40),
+                                      ),
+                                      shape: WidgetStatePropertyAll(
+                                        CircleBorder(),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      CommunicationHelper.openSmsApp(
+                                        context,
+                                        item.phone!,
+                                      );
+                                    },
+                                    child: const Icon(Icons.message_outlined),
+                                  ),
+                                  PullDownButton(
+                                    routeTheme: PullDownMenuRouteTheme(
+                                      backgroundColor:
+                                          AppConstants.dropDownButtonsColor(
+                                            context,
+                                          ),
+                                    ),
+                                    itemBuilder: (context) => [
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          Slidable.of(
+                                            context,
+                                          )?.openEndActionPane(
+                                            duration: Durations.long1,
+                                          );
+                                          Slidable.of(context)?.dismiss(
+                                            ResizeRequest(
+                                              Durations.medium3,
+                                              () {
+                                                context
+                                                    .read<CustomerProvider>()
+                                                    .deleteCustomer(
+                                                      item.customerId,
+                                                    );
+                                              },
+                                            ),
+                                          );
+                                        },
+                                        title: 'Sil',
+                                        isDestructive: true,
+                                        iconColor: Colors.red,
+                                        icon: Icons.delete_outline,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          navigateToEditCostumerPage(
+                                            index,
+                                            item,
+                                          );
+                                        },
+                                        title: 'Düzenle',
+                                        icon: Icons.edit_outlined,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          CommunicationHelper.shareCostumer(
+                                            item,
+                                          );
+                                        },
+                                        title: 'Paylaş',
+                                        icon: Icons.share_outlined,
+                                      ),
+                                    ],
+                                    position: PullDownMenuPosition.automatic,
+                                    buttonBuilder: (context, showMenu) =>
+                                        GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: showMenu,
+                                          child: const Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 5,
+                                              top: 20,
+                                              bottom: 20,
+                                              right: 5,
+                                            ),
+                                            child: Icon(Icons.more_vert),
+                                          ),
+                                        ),
+                                  ),
+                                ],
+                              )
+                            : SizedBox(),
+                      ),
                     ],
                   ),
                 ),

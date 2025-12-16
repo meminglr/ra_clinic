@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/sync_provider.dart';
+import '../providers/user_profile_provider.dart';
+import 'complete_profile_page.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -64,33 +66,67 @@ class _AuthPageState extends State<AuthPage> {
                 FilledButton.icon(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      if (isLogin) {
-                        try {
-                          // 1. Firebase Girişi
+                      try {
+                        String? uid;
+                        if (isLogin) {
                           await provider.login(
                             _emailController.text.trim(),
                             _passwordController.text.trim(),
-                            context,
                           );
-                          if (provider.currentUser != null) {
-                            // 2. KRİTİK NOKTA: SyncProvider'a "Patron Geldi" de!
-                            // Bu komut, misafirken eklenen tüm verileri alıp bu hesaba yükler.
-                            context.read<SyncProvider>().init(
-                              provider.currentUser!.uid,
-                            );
-                          }
-                        } catch (e) {
-                          // Hata yönetimi
+                          uid = provider.currentUser?.uid;
+                        } else {
+                          await provider.register(
+                            _emailController.text.trim(),
+                            _passwordController.text.trim(),
+                          );
+                          // Kayıt sonrası uid al
+                          uid = provider.currentUser?.uid;
                         }
-                      } else {
-                        provider.register(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                          context,
-                        );
+
+                        if (mounted && uid != null) {
+                          // 1. Sync Başlat
+                          context.read<SyncProvider>().init(uid);
+
+                          // 2. Profil Kontrolü
+                          final profileProvider = context
+                              .read<UserProfileProvider>();
+                          await profileProvider.fetchUserProfile(uid);
+
+                          if (mounted) {
+                            if (!profileProvider.isProfileComplete) {
+                              // Profil eksikse yönlendir (AuthPage'i kapatarak)
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CompleteProfilePage(),
+                                ),
+                              );
+                            } else {
+                              // Tamamsa sadece kapat
+                              if (!isLogin) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Hesap oluşturuldu!"),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                              Navigator.pop(context);
+                            }
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     }
-                    Navigator.pop(context);
                   },
                   label: isLoading
                       ? CircularProgressIndicator(

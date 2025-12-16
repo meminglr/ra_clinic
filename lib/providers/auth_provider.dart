@@ -17,45 +17,27 @@ class FirebaseAuthProvider extends ChangeNotifier {
   }
 
   // Giriş Fonksiyonu
-  Future<void> login(
-    String email,
-    String password,
-    BuildContext context,
-  ) async {
+  Future<void> login(String email, String password) async {
     _setLoading(true);
     try {
       await _authService.signIn(email, password);
       // Başarılı olursa authStateChanges tetiklenecek ve main.dart yönlendirmeyi yapacak.
-      // O yüzden burada navigator.push yapmana gerek yok.
     } catch (e) {
-      // Hata mesajını ekranda göster (SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-      );
+      // Hatayı yukarı fırlat, UI tarafında yakalanacak
+      rethrow;
     } finally {
       _setLoading(false);
     }
   }
 
   // Kayıt Fonksiyonu
-  Future<void> register(
-    String email,
-    String password,
-    BuildContext context,
-  ) async {
+  Future<void> register(String email, String password) async {
     _setLoading(true);
     try {
       await _authService.signUp(email, password);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Hesap oluşturuldu!"),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // Başarılı
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-      );
+      rethrow;
     } finally {
       _setLoading(false);
     }

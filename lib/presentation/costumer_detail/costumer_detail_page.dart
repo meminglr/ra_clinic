@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:ra_clinic/providers/auth_provider.dart';
 import 'package:ra_clinic/services/webdav_service.dart';
 // Proje importlarınızın doğru olduğundan emin olun
 import 'package:ra_clinic/model/costumer_model.dart';
@@ -232,7 +233,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 ),
                 child: CachedNetworkImage(
                   imageUrl: context.read<WebDavService>().getFileUrl(
-                    "${currentCostumer.customerId}/${currentCostumer.profileImageUrl}",
+                    "${context.read<FirebaseAuthProvider>().currentUser?.uid}/customers/${currentCostumer.customerId}/${currentCostumer.profileImageUrl}",
                   ),
                   httpHeaders: context.read<WebDavService>().getAuthHeaders(),
                   fit: BoxFit.cover,
