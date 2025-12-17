@@ -17,10 +17,26 @@ class CustomerProvider extends ChangeNotifier {
     });
   }
 
+  // --- STATE ---
+  final Set<String> _uploadingFiles = {}; // Currently uploading filenames
+
   // --- GETTER ---
   List<CustomerModel> get customersList {
-    // costumers -> customers
     return _box.values.where((c) => !c.isDeleted).toList();
+  }
+
+  bool isFileUploading(String fileName) {
+    return _uploadingFiles.contains(fileName);
+  }
+
+  void markFileAsUploading(String fileName) {
+    _uploadingFiles.add(fileName);
+    notifyListeners();
+  }
+
+  void markFileAsUploaded(String fileName) {
+    _uploadingFiles.remove(fileName);
+    notifyListeners();
   }
 
   // --- MÜŞTERİ EKLEME ---

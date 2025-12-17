@@ -17,6 +17,8 @@ class SeansModel {
   String? seansNote;
   @HiveField(5)
   bool isDeleted;
+  @HiveField(6)
+  final List<String> imageUrls;
 
   SeansModel({
     this.seansNote,
@@ -25,6 +27,7 @@ class SeansModel {
     required this.seansCount,
     required this.startDate,
     this.endDate,
+    this.imageUrls = const [],
   });
 
   // Firebase'e veri gönderirken (Nesne -> Map)
@@ -36,6 +39,7 @@ class SeansModel {
       'seansCount': seansCount,
       'seansNote': seansNote,
       'isDeleted': isDeleted,
+      'imageUrls': imageUrls,
     };
   }
 
@@ -45,10 +49,13 @@ class SeansModel {
       seansId: map['seansId'] ?? '',
       // Timestamp -> DateTime dönüşümü çok önemlidir:
       startDate: (map['startDate'] as Timestamp).toDate(),
-      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
+      endDate: map['endDate'] != null
+          ? (map['endDate'] as Timestamp).toDate()
+          : null,
       seansCount: map['seansCount']?.toInt() ?? 0,
       seansNote: map['seansNote'],
       isDeleted: map['isDeleted'] ?? false,
+      imageUrls: List<String>.from(map['imageUrls'] ?? []),
     );
   }
 
@@ -59,6 +66,7 @@ class SeansModel {
     int? seansCount,
     String? seansNote,
     bool? isDeleted,
+    List<String>? imageUrls,
   }) {
     return SeansModel(
       seansId: seansId ?? this.seansId,
@@ -67,6 +75,7 @@ class SeansModel {
       seansCount: seansCount ?? this.seansCount,
       seansNote: seansNote ?? this.seansNote,
       isDeleted: isDeleted ?? this.isDeleted,
+      imageUrls: imageUrls ?? this.imageUrls,
     );
   }
 }

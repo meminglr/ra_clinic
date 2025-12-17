@@ -4,9 +4,14 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/model/seans_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/add_seans_sheet.dart';
+import 'package:ra_clinic/presentation/widgets/media_viewer_common.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ra_clinic/services/webdav_service.dart';
+import 'package:ra_clinic/providers/auth_provider.dart';
+import 'package:flutter/cupertino.dart';
 
 class SeansManagerView extends StatefulWidget {
   final CustomerModel customer;
@@ -44,6 +49,55 @@ class _SeansManagerViewState extends State<SeansManagerView> {
     }
   }
 
+  void _removeFileFromSeans(SeansModel seans, String fileName) {
+    List<SeansModel> seansList = List.from(widget.customer.seansList);
+    final index = seansList.indexWhere((s) => s.seansId == seans.seansId);
+
+    if (index != -1) {
+      List<String> updatedImages = List.from(seansList[index].imageUrls);
+      updatedImages.remove(fileName);
+
+      seansList[index] = seansList[index].copyWith(imageUrls: updatedImages);
+
+      CustomerModel updatedCustomer = widget.customer.copyWith(
+        seansList: seansList,
+      );
+
+      context.read<CustomerProvider>().updateCustomerAfterSeansChange(
+        updatedCustomer,
+      );
+    }
+  }
+
+  void _viewMedia(SeansModel seans, String currentFileName) {
+    if (seans.imageUrls.isEmpty) return;
+
+    final webDavService = context.read<WebDavService>();
+    final uid = context.read<FirebaseAuthProvider>().currentUser?.uid;
+    final basePath =
+        "$uid/customers/${widget.customer.customerId}/sessions/${seans.seansId}";
+
+    final mediaUrls = seans.imageUrls.map((name) {
+      return webDavService.getFileUrl("$basePath/$name");
+    }).toList();
+
+    final index = seans.imageUrls.indexOf(currentFileName);
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (_) => FullScreenMediaViewer(
+          mediaUrls: mediaUrls,
+          fileNames: List.from(seans.imageUrls),
+          basePath: basePath,
+          initialIndex: index == -1 ? 0 : index,
+          headers: webDavService.getAuthHeaders(),
+          onFileDeleted: (name) => _removeFileFromSeans(seans, name),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -69,6 +123,7 @@ class _SeansManagerViewState extends State<SeansManagerView> {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
+                      showDragHandle: true,
                       builder: (context) =>
                           AddSeansSheet(customer: widget.customer),
                     );
@@ -108,7 +163,7 @@ class _SeansManagerViewState extends State<SeansManagerView> {
   Widget _buildSeansCard(BuildContext context, SeansModel seans, int index) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -169,6 +224,7 @@ class _SeansManagerViewState extends State<SeansManagerView> {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
+                          showDragHandle: true,
                           builder: (context) => AddSeansSheet(
                             customer: widget.customer,
                             editingSeans: seans,
@@ -204,6 +260,85 @@ class _SeansManagerViewState extends State<SeansManagerView> {
               ),
             ),
           ],
+          if (seans.imageUrls.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 80,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: seans.imageUrls.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, imgIndex) {
+                  final fileName = seans.imageUrls[imgIndex];
+                  final webDavService = context.read<WebDavService>();
+                  final path =
+                      "${context.read<FirebaseAuthProvider>().currentUser?.uid}/customers/${widget.customer.customerId}/sessions/${seans.seansId}/$fileName";
+
+                  final url = webDavService.getFileUrl(path);
+                  final headers = webDavService.getAuthHeaders();
+
+                  // Check if it's video
+                  final isVideo =
+                      fileName.toLowerCase().endsWith('.mp4') ||
+                      fileName.toLowerCase().endsWith('.mov');
+
+                  final isUploading = context
+                      .watch<CustomerProvider>()
+                      .isFileUploading(fileName);
+
+                  if (isUploading) {
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    );
+                  }
+
+                  return GestureDetector(
+                    onTap: () => _viewMedia(seans, fileName),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: isVideo
+                            ? VideoThumbnailWidget(url: url, headers: headers)
+                            : CachedNetworkImage(
+                                imageUrl: url,
+                                httpHeaders: headers,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[200],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(
+                                    Icons.refresh,
+                                    color: Colors.grey,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
         ],
       ),
     );
@@ -216,33 +351,38 @@ class _SeansManagerViewState extends State<SeansManagerView> {
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).cardColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: ListTile(
-        leading: Icon(
-          Icons.delete_sweep_outlined,
-          color: Theme.of(context).disabledColor,
-        ),
-        title: Text(
-          "${seans.seansCount}. Seans (Silindi)",
-          style: TextStyle(
-            decoration: TextDecoration.lineThrough,
-            color: Theme.of(context).disabledColor,
-          ),
-        ),
-        trailing: FilledButton.icon(
-          onPressed: () => removeSeans(index),
-          icon: const Icon(Icons.restore, size: 18),
-          label: const Text("Geri Al"),
-          style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${seans.seansCount}. Seans (Silindi)",
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    decoration: TextDecoration.lineThrough,
+                    color: Theme.of(context).disabledColor,
+                  ),
+                ),
+                Text(
+                  "${seans.startDate.day}.${seans.startDate.month}.${seans.startDate.year}",
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).disabledColor,
+                  ),
+                ),
+              ],
+            ),
+            IconButton.filledTonal(
+              onPressed: () => removeSeans(index),
+              icon: const Icon(Icons.restore),
+              tooltip: "Geri Yükle",
+            ),
+          ],
         ),
       ),
     );
