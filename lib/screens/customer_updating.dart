@@ -28,8 +28,6 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _telNoController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
-  List<SeansModel> _seansList = [];
-  final Map<SeansModel, TextEditingController> _seansControllers = {};
 
   DateTime costumerStartDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
@@ -45,9 +43,6 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
   void initState() {
     super.initState();
     if (widget.costumer == null) {
-      for (var seans in _seansList) {
-        _seansControllers[seans] = TextEditingController(text: seans.seansNote);
-      }
       costumerId = const Uuid().v4();
     }
 
@@ -55,12 +50,10 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
       _nameController.text = widget.costumer!.name;
       _telNoController.text = widget.costumer!.phone ?? "";
       _noteController.text = widget.costumer!.notes ?? "";
-      _seansList = widget.costumer!.seansList;
+      _noteController.text = widget.costumer!.notes ?? "";
       costumerStartDate = widget.costumer!.startDate;
       costumerId = widget.costumer!.customerId;
-      for (var seans in widget.costumer!.seansList) {
-        _seansControllers[seans] = TextEditingController(text: seans.seansNote);
-      }
+
       _profileImageUrl = widget.costumer!.profileImageUrl;
     }
     kayitTarihiGuncelle();
@@ -111,32 +104,6 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
     }
   }
 
-  void removeSeans(int seansIndex) {
-    if (_seansList.isNotEmpty) {
-      _seansList[seansIndex].isDeleted = !_seansList[seansIndex].isDeleted;
-    }
-    // context.read<CostumerProvider>().removeSeans(index, seansList);
-    setState(() {});
-  }
-
-  void seansEkle() {
-    String newSeansId = const Uuid().v4();
-    final newSeans = SeansModel(
-      seansId: newSeansId,
-      startDate: DateTime.now(),
-      seansCount: _seansList.length + 1,
-    );
-    _seansControllers[newSeans] = TextEditingController();
-    _seansList.add(newSeans);
-    if (widget.costumer != null) {
-      context.read<CustomerProvider>().updateCustomerAfterSeansChange(
-        widget.costumer!,
-      );
-    }
-
-    setState(() {});
-  }
-
   void kayitTarihiGuncelle() {
     kayitTarihi = Utils.toDate(costumerStartDate);
     setState(() {});
@@ -151,7 +118,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
         startDate: costumerStartDate,
         notes: _noteController.text,
 
-        seansList: _seansList,
+        seansList: widget.costumer?.seansList ?? [],
         profileImageUrl: _profileImageUrl,
       );
       Navigator.pop(context, newCostumer);
@@ -167,9 +134,7 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
     _nameController.dispose();
     _telNoController.dispose();
     _noteController.dispose();
-    for (var controller in _seansControllers.values) {
-      controller.dispose();
-    }
+
     super.dispose();
   }
 
@@ -382,102 +347,6 @@ class _CostumerUpdatingState extends State<CostumerUpdating> {
                       ],
                     ),
                   ],
-                ),
-              ),
-            ),
-            SliverList.builder(
-              itemCount: _seansList.length,
-              itemBuilder: (context, index) {
-                SeansModel seans = _seansList[index];
-                return Column(
-                  children: [
-                    seans.isDeleted
-                        ? FilledButton.tonal(
-                            onPressed: () {
-                              removeSeans(index);
-                            },
-                            child: Text("${seans.seansCount}. Seansı Ekle"),
-                          )
-                        : Card.filled(
-                            child: Column(
-                              spacing: 10,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onInverseSurface,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "${seans.seansCount}. Seans·",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            Text(
-                                              Utils.toDate(seans.startDate),
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                          ],
-                                        ),
-                                        GestureDetector(
-                                          onTap: () => removeSeans(index),
-                                          child: Icon(
-                                            Icons.delete_outline,
-                                            size: 30,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: _seansControllers[seans],
-                                  minLines: 1,
-                                  maxLines: null,
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  onChanged: (value) {
-                                    seans.seansNote = value;
-                                  },
-                                  decoration: InputDecoration(
-                                    filled: false,
-                                    hintText: "Seans Notu Ekle",
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ],
-                );
-              },
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 5,
-                  bottom: 100,
-                  left: 100,
-                  right: 100,
-                ),
-                child: FilledButton(
-                  onPressed: () {
-                    seansEkle();
-                  },
-                  child: Text("Seans Ekle"),
                 ),
               ),
             ),

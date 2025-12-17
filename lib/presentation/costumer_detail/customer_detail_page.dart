@@ -11,13 +11,14 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_but
 import 'package:ra_clinic/presentation/costumer_detail/widgets/communication_notes_cards.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_phone_display.dart';
 import 'package:ra_clinic/presentation/costumer_detail/widgets/customer_files_widget.dart';
-import 'package:ra_clinic/presentation/costumer_detail/widgets/no_seans_warning_view.dart';
-import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_list_view.dart';
+
 import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_financials_widget.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
+
 import '../../constants/app_constants.dart';
 import '../../func/communication_helper.dart';
 import '../../screens/customer_updating.dart';
+import 'package:ra_clinic/presentation/costumer_detail/widgets/seans_manager_view.dart';
 
 class CostumerDetail extends StatefulWidget {
   final String customerId;
@@ -72,13 +73,6 @@ class _CostumerDetailState extends State<CostumerDetail> {
     return DefaultTabController(
       length: 3, // Seanslar, Hesap, Medya olmak üzere 3 sekme
       child: Scaffold(
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            navigateToEditCostumerPage(currentCostumer);
-          },
-          label: const Text("Düzenle"),
-          icon: const Icon(Icons.edit_outlined),
-        ),
         body: NestedScrollView(
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
@@ -123,20 +117,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
           body: TabBarView(
             children: [
               // --- SEKME 1: SEANSLAR ---
-              CustomScrollView(
-                key: const PageStorageKey<String>('seanslar'),
-                slivers: [
-                  if (currentCostumer.seansList.isEmpty)
-                    // NoSeansWarning normal bir Widget olduğu için Adapter içinde olmalı
-                    NoSeansWarning()
-                  else
-                    // DÜZELTME: SeansListView zaten Sliver olduğu için Adapter kaldırıldı!
-                    SeansListView(seansList: currentCostumer.seansList),
-
-                  // FAB butonunun altında içerik kalmasın diye boşluk
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
-                ],
-              ),
+              SeansManagerView(customer: currentCostumer),
 
               // --- SEKME 2: HESAP (FİNANSAL) ---
               CustomScrollView(

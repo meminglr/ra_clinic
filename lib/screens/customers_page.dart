@@ -8,9 +8,9 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
 import 'package:ra_clinic/func/communication_helper.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
-import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:ra_clinic/func/utils.dart';
+import '../presentation/costumer_detail/customer_detail_page.dart';
 import 'customer_updating.dart';
 
 class CostumersPage extends StatefulWidget {
