@@ -11,7 +11,7 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/presentation/costumer_detail/costumer_detail_page.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:ra_clinic/func/utils.dart';
-import 'costumer_updating.dart';
+import 'customer_updating.dart';
 
 class CostumersPage extends StatefulWidget {
   const CostumersPage({super.key});

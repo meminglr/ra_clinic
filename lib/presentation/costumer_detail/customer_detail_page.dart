@@ -17,7 +17,7 @@ import 'package:ra_clinic/presentation/costumer_detail/widgets/costumer_financia
 import 'package:ra_clinic/providers/customer_provider.dart';
 import '../../constants/app_constants.dart';
 import '../../func/communication_helper.dart';
-import '../../screens/costumer_updating.dart';
+import '../../screens/customer_updating.dart';
 
 class CostumerDetail extends StatefulWidget {
   final String customerId;

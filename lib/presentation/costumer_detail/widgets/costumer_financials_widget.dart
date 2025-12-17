@@ -8,6 +8,7 @@ import 'package:ra_clinic/model/financial_model.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import 'package:ra_clinic/constants/app_constants.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 
 // 1. Özet Kartı (SliverToBoxAdapter içinde kullanılacak)
 class FinancialSummaryCard extends StatelessWidget {
@@ -155,7 +156,8 @@ class FinancialSummaryCard extends StatelessWidget {
 
 // 2. İşlem Ekleme Bottom Sheet
 class AddTransactionSheet extends StatefulWidget {
-  const AddTransactionSheet({super.key});
+  final FinancialTransaction? transaction;
+  const AddTransactionSheet({super.key, this.transaction});
 
   @override
   State<AddTransactionSheet> createState() => _AddTransactionSheetState();
@@ -163,10 +165,23 @@ class AddTransactionSheet extends StatefulWidget {
 
 class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  TransactionType _type = TransactionType.debt;
-  DateTime _selectedDate = DateTime.now();
+  late TextEditingController _amountController;
+  late TextEditingController _descriptionController;
+  late TransactionType _type;
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(
+      text: widget.transaction?.amount.toString() ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.transaction?.description ?? '',
+    );
+    _type = widget.transaction?.type ?? TransactionType.debt;
+    _selectedDate = widget.transaction?.date ?? DateTime.now();
+  }
 
   @override
   void dispose() {
@@ -179,7 +194,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
     if (_formKey.currentState!.validate()) {
       final amount = double.parse(_amountController.text);
       final transaction = FinancialTransaction(
-        id: const Uuid().v4(),
+        id: widget.transaction?.id ?? const Uuid().v4(),
         amount: amount,
         type: _type,
         description: _descriptionController.text,
@@ -206,7 +221,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Finansal İşlem Ekle",
+                widget.transaction == null
+                    ? "Finansal İşlem Ekle"
+                    : "İşlemi Düzenle",
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -277,7 +294,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _amountController,
-                autofocus: true,
+                autofocus: widget.transaction == null,
                 decoration: const InputDecoration(
                   labelText: "Tutar (TL)",
                   prefixIcon: Icon(Icons.attach_money),
@@ -408,7 +425,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _saveTransaction,
-                child: const Text("Kaydet"),
+                child: Text(widget.transaction == null ? "Kaydet" : "Güncelle"),
               ),
               const SizedBox(height: 48), // Bottom padding for ease of use
             ],
@@ -428,11 +445,61 @@ class FinancialsSliverList extends StatelessWidget {
     BuildContext context,
     FinancialTransaction transaction,
   ) {
-    final updatedList = List<FinancialTransaction>.from(customer.transactions);
-    updatedList.remove(transaction);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("İşlemi Sil"),
+        content: const Text("Bu işlemi silmek istediğinize emin misiniz?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("İptal"),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              final updatedList = List<FinancialTransaction>.from(
+                customer.transactions,
+              );
+              updatedList.remove(transaction);
 
-    final updatedCustomer = customer.copyWith(transactions: updatedList);
-    context.read<CustomerProvider>().editCustomer(updatedCustomer);
+              final updatedCustomer = customer.copyWith(
+                transactions: updatedList,
+              );
+              context.read<CustomerProvider>().editCustomer(updatedCustomer);
+            },
+            child: const Text("Sil"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editTransaction(
+    BuildContext context,
+    FinancialTransaction transaction,
+  ) async {
+    final FinancialTransaction? updatedTransaction =
+        await showModalBottomSheet<FinancialTransaction>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          showDragHandle: true,
+          builder: (context) => AddTransactionSheet(transaction: transaction),
+        );
+
+    if (updatedTransaction != null && context.mounted) {
+      final updatedList = List<FinancialTransaction>.from(
+        customer.transactions,
+      );
+      final index = updatedList.indexWhere((t) => t.id == transaction.id);
+
+      if (index != -1) {
+        updatedList[index] = updatedTransaction;
+        final updatedCustomer = customer.copyWith(transactions: updatedList);
+        context.read<CustomerProvider>().editCustomer(updatedCustomer);
+      }
+    }
   }
 
   @override
@@ -496,12 +563,28 @@ class FinancialsSliverList extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(width: 8),
+                PullDownButton(
+                  routeTheme: PullDownMenuRouteTheme(
+                    backgroundColor: AppConstants.dropDownButtonsColor(context),
                   ),
-                  onPressed: () => _deleteTransaction(context, item),
+                  itemBuilder: (context) => [
+                    PullDownMenuItem(
+                      title: 'Düzenle',
+                      icon: Icons.edit_outlined,
+                      onTap: () => _editTransaction(context, item),
+                    ),
+                    PullDownMenuItem(
+                      title: 'Sil',
+                      icon: Icons.delete_outline,
+                      isDestructive: true,
+                      onTap: () => _deleteTransaction(context, item),
+                    ),
+                  ],
+                  buttonBuilder: (context, showMenu) => IconButton(
+                    onPressed: showMenu,
+                    icon: const Icon(Icons.more_vert),
+                  ),
                 ),
               ],
             ),

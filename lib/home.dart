@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/calendar/calendar_page.dart';
-import 'package:ra_clinic/screens/costumers_page.dart';
+import 'package:ra_clinic/screens/customers_page.dart';
 import 'package:ra_clinic/screens/profile_page.dart';
 
 import 'providers/sync_provider.dart';
