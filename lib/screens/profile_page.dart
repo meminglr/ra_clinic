@@ -22,7 +22,10 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final currentUser = context.read<FirebaseAuthProvider>().currentUser;
+    // Watch auth state changes directly in the build method or via a consumer/stream builder wrapper
+    // Here we use the provider for the current user instance
+    final currentUser = context.watch<FirebaseAuthProvider>().currentUser;
+
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -30,15 +33,18 @@ class _SettingsPageState extends State<SettingsPage> {
           buildAppBar(context),
           SliverList(
             delegate: SliverChildListDelegate([
-              // 1. Bölüm: Auth StreamBuilder
-              buildAuthStream(),
-
-              // Profil Düzenleme
-              if (currentUser != null) buildProfileTile(context),
+              // 1. Profil Düzenleme
+              if (currentUser != null) ...[
+                const SizedBox(height: 10),
+                buildProfileTile(context),
+              ] else ...[
+                // Not logged in: Show Sign In Tile
+                buildSignInTile(context),
+              ],
 
               const SizedBox(height: 10),
 
-              // 2. Bölüm: Tema Ayarı
+              // 2. Tema Ayarı
               buildThemeTile(themeProvider),
 
               const Divider(),
@@ -49,6 +55,13 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(),
               buildTrashBinTile(context),
+
+              // 3. Çıkış Yap Butonu (En altta)
+              if (currentUser != null) ...[
+                const Divider(),
+                buildSignOutTile(context),
+                const SizedBox(height: 20), // Bottom padding
+              ],
             ]),
           ),
         ],
@@ -89,50 +102,41 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  StreamBuilder<User?> buildAuthStream() {
-    return StreamBuilder(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          context.read<SyncProvider>().syncNow();
-          // Kullanıcı giriş yapmamışsa
-          return ListTile(
-            title: const Text('Giriş Yap / Kayıt Ol'),
-            subtitle: const Text(" "),
-            trailing: FilledButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (builder) => const AuthPage()),
-                );
-              },
-              icon: const Icon(Icons.login),
-              label: const Text('Giriş Yap'),
-            ),
+  // New method for Sign In tile
+  Widget buildSignInTile(BuildContext context) {
+    return ListTile(
+      title: const Text('Giriş Yap / Kayıt Ol'),
+      subtitle: const Text("Verilerinizi yedeklemek için giriş yapın"),
+      trailing: FilledButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (builder) => const AuthPage()),
           );
-        } else {
-          // Kullanıcı giriş yapmışsa
-          // Button'un çok geniş durmaması için Padding içine aldım
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: FilledButton.icon(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                setState(() {});
-              },
-              icon: const Icon(Icons.person),
-              label: const Text('Çıkış Yap'),
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                    Colors.redAccent, // Çıkış butonu için renk önerisi
-              ),
-            ),
-          );
-        }
-      },
+        },
+        icon: const Icon(Icons.login),
+        label: const Text('Giriş Yap'),
+      ),
+    );
+  }
+
+  // New method for Sign Out tile
+  Widget buildSignOutTile(BuildContext context) {
+    return Center(
+      child: ListTile(
+        leading: const Icon(Icons.logout, color: Colors.redAccent),
+        title: const Text(
+          'Çıkış Yap',
+          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+        ),
+        onTap: () async {
+          // Confirm dialog could be added here
+          await FirebaseAuth.instance.signOut();
+          // UI updates automatically via StreamBuilder/Provider listeners usually,
+          // but setState ensures this widget rebuilds if it relies on local state.
+          if (mounted) setState(() {});
+        },
+      ),
     );
   }
 

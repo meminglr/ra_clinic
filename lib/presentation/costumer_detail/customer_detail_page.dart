@@ -265,13 +265,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
             children: [
               GestureDetector(
                 onTap: () {
-                  context.read<CustomerProvider>().deleteCustomer(
-                    currentCostumer.customerId,
-                  );
-                  Navigator.pop(context);
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text("Müşteri silindi")),
-                  );
+                  navigateToEditCostumerPage(currentCostumer);
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -279,8 +273,8 @@ class _CostumerDetailState extends State<CostumerDetail> {
                     shape: BoxShape.circle,
                   ),
                   child: const Padding(
-                    padding: EdgeInsets.all(5),
-                    child: Icon(Icons.delete_outline, size: 30),
+                    padding: EdgeInsets.all(8),
+                    child: Icon(Icons.edit_outlined, size: 25),
                   ),
                 ),
               ),
@@ -291,10 +285,17 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 itemBuilder: (context) => [
                   PullDownMenuItem(
                     onTap: () {
-                      navigateToEditCostumerPage(currentCostumer);
+                      context.read<CustomerProvider>().deleteCustomer(
+                        currentCostumer.customerId,
+                      );
+                      Navigator.pop(context);
+                      messenger.showSnackBar(
+                        const SnackBar(content: Text("Müşteri silindi")),
+                      );
                     },
-                    title: 'Düzenle',
-                    icon: Icons.edit_outlined,
+                    isDestructive: true,
+                    title: 'Sil',
+                    icon: Icons.delete_outline,
                   ),
                   PullDownMenuItem(
                     onTap: () {
