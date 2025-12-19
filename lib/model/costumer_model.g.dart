@@ -31,13 +31,14 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       mediaList: (fields[11] as List).cast<CostumerMedia>(),
       profileImageUrl: fields[12] as String?,
       transactions: (fields[13] as List).cast<FinancialTransaction>(),
+      isArchived: fields[14] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, CustomerModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.customerId)
       ..writeByte(1)
@@ -65,7 +66,9 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       ..writeByte(12)
       ..write(obj.profileImageUrl)
       ..writeByte(13)
-      ..write(obj.transactions);
+      ..write(obj.transactions)
+      ..writeByte(14)
+      ..write(obj.isArchived);
   }
 
   @override

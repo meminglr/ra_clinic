@@ -5,14 +5,14 @@ import 'package:ra_clinic/model/costumer_model.dart';
 import 'package:ra_clinic/providers/customer_provider.dart';
 import 'package:ra_clinic/func/utils.dart';
 
-class TrashBinPage extends StatefulWidget {
-  const TrashBinPage({super.key});
+class ArchivePage extends StatefulWidget {
+  const ArchivePage({super.key});
 
   @override
-  State<TrashBinPage> createState() => _TrashBinPageState();
+  State<ArchivePage> createState() => _ArchivePageState();
 }
 
-class _TrashBinPageState extends State<TrashBinPage> {
+class _ArchivePageState extends State<ArchivePage> {
   final Set<String> _selectedCustomerIds = {};
 
   bool get _isSelectionMode => _selectedCustomerIds.isNotEmpty;
@@ -35,15 +35,15 @@ class _TrashBinPageState extends State<TrashBinPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<CustomerModel> deletedList = context
+    List<CustomerModel> archivedList = context
         .watch<CustomerProvider>()
-        .deletedCustomersList;
+        .archivedCustomersList;
 
     return Scaffold(
       appBar: AppBar(
         title: _isSelectionMode
             ? Text("${_selectedCustomerIds.length} Seçildi")
-            : const Text("Çöp Kutusu"),
+            : const Text("Arşiv Kutusu"),
         centerTitle: true,
         leading: _isSelectionMode
             ? IconButton(
@@ -54,50 +54,52 @@ class _TrashBinPageState extends State<TrashBinPage> {
         actions: _isSelectionMode
             ? [
                 IconButton(
-                  icon: const Icon(Icons.restore),
-                  tooltip: 'Seçilenleri Geri Yükle',
-                  onPressed: () => _confirmRestoreSelected(context),
+                  icon: const Icon(Icons.unarchive_outlined),
+                  tooltip: 'Seçilenleri Çıkar',
+                  onPressed: () => _confirmUnarchiveSelected(context),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_forever),
-                  tooltip: 'Seçilenleri Kalıcı Sil',
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Seçilenleri Sil',
                   onPressed: () => _confirmDeleteSelected(context),
                 ),
               ]
             : null,
       ),
-      floatingActionButton: !_isSelectionMode && deletedList.isNotEmpty
+      floatingActionButton: !_isSelectionMode && archivedList.isNotEmpty
           ? Column(
               spacing: 10,
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 FloatingActionButton.extended(
-                  heroTag: 'emptyTrash',
-                  onPressed: () => _confirmEmptyTrash(context),
+                  heroTag: 'deleteAllArchive',
+                  onPressed: () => _confirmMoveAllToTrash(context),
                   backgroundColor: Colors.red,
-                  icon: const Icon(Icons.delete_sweep),
-                  label: const Text("Boşalt"),
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.delete_sweep_outlined),
+                  label: const Text("Hepsini Sil"),
                 ),
                 FloatingActionButton.extended(
-                  heroTag: 'restoreAll',
-                  onPressed: () => _confirmRestoreAll(context),
-                  backgroundColor: Colors.green,
-                  icon: const Icon(Icons.restore_from_trash),
-                  label: const Text("Tümünü Geri Yükle"),
+                  heroTag: 'unarchiveAll',
+                  onPressed: () => _confirmUnarchiveAll(context),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.unarchive_outlined),
+                  label: const Text("Tümünü Çıkar"),
                 ),
               ],
             )
           : null,
-      body: deletedList.isEmpty
+      body: archivedList.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.delete_outline, size: 80, color: Colors.grey),
+                  Icon(Icons.archive_outlined, size: 80, color: Colors.grey),
                   SizedBox(height: 10),
                   Text(
-                    "Çöp Kutusu Boş",
+                    "Arşiv Kutusu Boş",
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
@@ -105,9 +107,9 @@ class _TrashBinPageState extends State<TrashBinPage> {
             )
           : ListView.builder(
               padding: const EdgeInsets.all(10),
-              itemCount: deletedList.length,
+              itemCount: archivedList.length,
               itemBuilder: (context, index) {
-                final customer = deletedList[index];
+                final customer = archivedList[index];
                 final isSelected = _selectedCustomerIds.contains(
                   customer.customerId,
                 );
@@ -131,14 +133,14 @@ class _TrashBinPageState extends State<TrashBinPage> {
                       children: [
                         SlidableAction(
                           onPressed: (context) {
-                            context.read<CustomerProvider>().restoreCustomer(
+                            context.read<CustomerProvider>().unarchiveCustomer(
                               customer.customerId,
                             );
                           },
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.green.shade100,
-                          icon: Icons.restore,
-                          label: 'Geri Yükle',
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.blue.shade100,
+                          icon: Icons.unarchive_outlined,
+                          label: 'Arşivden Çıkar',
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ],
@@ -152,8 +154,8 @@ class _TrashBinPageState extends State<TrashBinPage> {
                           },
                           backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.red.shade100,
-                          icon: Icons.delete_forever,
-                          label: 'Tamamen Sil',
+                          icon: Icons.delete_outline,
+                          label: 'Sil',
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ],
@@ -201,7 +203,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
                                     ),
                                   ),
                                   Text(
-                                    "Silinme Tarihi: ${Utils.toDate(customer.lastUpdated ?? DateTime.now())}",
+                                    "Arşivlenme Tarihi: ${Utils.toDate(customer.lastUpdated ?? DateTime.now())}",
                                   ),
                                 ],
                               ),
@@ -213,7 +215,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
                               child: !_isSelectionMode
                                   ? IconButton.filled(
                                       icon: Icon(
-                                        Icons.restore_from_trash,
+                                        Icons.unarchive_outlined,
                                         color: Theme.of(
                                           context,
                                         ).colorScheme.surface,
@@ -221,7 +223,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
                                       onPressed: () {
                                         context
                                             .read<CustomerProvider>()
-                                            .restoreCustomer(
+                                            .unarchiveCustomer(
                                               customer.customerId,
                                             );
                                       },
@@ -243,9 +245,9 @@ class _TrashBinPageState extends State<TrashBinPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Kalıcı Olarak Sil"),
+        title: const Text("Sil"),
         content: Text(
-          "${customer.name} adlı müşteriyi tamamen silmek istiyor musunuz? Bu işlem geri alınamaz.",
+          "${customer.name} adlı müşteriyi silmek istiyor musunuz? (Çöp kutusuna taşınır)",
         ),
         actions: [
           TextButton(
@@ -255,7 +257,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () {
-              context.read<CustomerProvider>().permanentlyDeleteCustomer(
+              context.read<CustomerProvider>().deleteCustomer(
                 customer.customerId,
               );
               Navigator.pop(ctx);
@@ -271,9 +273,9 @@ class _TrashBinPageState extends State<TrashBinPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Seçilenleri Kalıcı Sil"),
+        title: const Text("Seçilenleri Sil"),
         content: Text(
-          "${_selectedCustomerIds.length} müşteriyi tamamen silmek istiyor musunuz? Bu işlem geri alınamaz.",
+          "${_selectedCustomerIds.length} müşteriyi silmek istiyor musunuz? (Çöp kutusuna taşınır)",
         ),
         actions: [
           TextButton(
@@ -283,7 +285,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () {
-              context.read<CustomerProvider>().permanentlyDeleteCustomers(
+              context.read<CustomerProvider>().deleteCustomers(
                 _selectedCustomerIds.toList(),
               );
               _clearSelection();
@@ -296,13 +298,13 @@ class _TrashBinPageState extends State<TrashBinPage> {
     );
   }
 
-  void _confirmRestoreSelected(BuildContext context) {
+  void _confirmUnarchiveSelected(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Seçilenleri Geri Yükle"),
+        title: const Text("Seçilenleri Arşivden Çıkar"),
         content: Text(
-          "${_selectedCustomerIds.length} müşteriyi geri yüklemek istiyor musunuz?",
+          "${_selectedCustomerIds.length} müşteriyi arşivden çıkarmak istiyor musunuz?",
         ),
         actions: [
           TextButton(
@@ -310,28 +312,28 @@ class _TrashBinPageState extends State<TrashBinPage> {
             child: const Text("İptal"),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.green),
+            style: TextButton.styleFrom(foregroundColor: Colors.blue),
             onPressed: () {
-              context.read<CustomerProvider>().restoreCustomers(
+              context.read<CustomerProvider>().unarchiveCustomers(
                 _selectedCustomerIds.toList(),
               );
               _clearSelection();
               Navigator.pop(ctx);
             },
-            child: const Text("Geri Yükle"),
+            child: const Text("Çıkar"),
           ),
         ],
       ),
     );
   }
 
-  void _confirmEmptyTrash(BuildContext context) {
+  void _confirmMoveAllToTrash(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Çöp Kutusunu Boşalt"),
+        title: const Text("Hepsini Sil"),
         content: const Text(
-          "Çöp kutusundaki TÜM müşteriler kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misiniz?",
+          "Arşivdeki TÜM müşteriler çöp kutusuna taşınacak. Emin misiniz?",
         ),
         actions: [
           TextButton(
@@ -341,7 +343,7 @@ class _TrashBinPageState extends State<TrashBinPage> {
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () {
-              context.read<CustomerProvider>().clearTrash();
+              context.read<CustomerProvider>().moveAllArchivedToTrash();
               Navigator.pop(ctx);
             },
             child: const Text("Hepsini Sil"),
@@ -351,13 +353,13 @@ class _TrashBinPageState extends State<TrashBinPage> {
     );
   }
 
-  void _confirmRestoreAll(BuildContext context) {
+  void _confirmUnarchiveAll(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Tümünü Geri Yükle"),
+        title: const Text("Tümünü Çıkar"),
         content: const Text(
-          "Çöp kutusundaki tüm müşteriler geri yüklenecek. Onaylıyor musunuz?",
+          "Arşivdeki tüm müşteriler arşivden çıkarılacak. Onaylıyor musunuz?",
         ),
         actions: [
           TextButton(
@@ -365,12 +367,12 @@ class _TrashBinPageState extends State<TrashBinPage> {
             child: const Text("İptal"),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.green),
+            style: TextButton.styleFrom(foregroundColor: Colors.blue),
             onPressed: () {
-              context.read<CustomerProvider>().restoreAllTrash();
+              context.read<CustomerProvider>().unarchiveAll();
               Navigator.pop(ctx);
             },
-            child: const Text("Geri Yükle"),
+            child: const Text("Çıkar"),
           ),
         ],
       ),

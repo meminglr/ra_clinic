@@ -572,6 +572,23 @@ class _CostumersPageState extends State<CostumersPage> {
             child: Slidable(
               key: Key(item.customerId),
               enabled: !_isSelectionMode, // Seçim modunda kaydırmayı kapat
+              startActionPane: ActionPane(
+                motion: const ScrollMotion(),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) {
+                      context.read<CustomerProvider>().archiveCustomer(
+                        item.customerId,
+                      );
+                    },
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    icon: Icons.archive_outlined,
+                    label: 'Arşivle',
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ],
+              ),
               endActionPane: ActionPane(
                 dismissible: DismissiblePane(
                   onDismissed: () {
@@ -600,9 +617,9 @@ class _CostumersPageState extends State<CostumersPage> {
                 child: Padding(
                   padding: const EdgeInsets.only(
                     left: 16,
-                    right: 16,
-                    top: 8,
-                    bottom: 16,
+                    right: 10,
+                    top: 5,
+                    bottom: 5,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -636,7 +653,6 @@ class _CostumersPageState extends State<CostumersPage> {
                               ),
                             ),
                             Text(Utils.toDate(item.startDate)),
-                            Text("Seans Sayısı: ${item.seansList.length}"),
                           ],
                         ),
                       ),
@@ -720,6 +736,15 @@ class _CostumersPageState extends State<CostumersPage> {
                                         isDestructive: true,
                                         iconColor: Colors.red,
                                         icon: Icons.delete_outline,
+                                      ),
+                                      PullDownMenuItem(
+                                        onTap: () {
+                                          context
+                                              .read<CustomerProvider>()
+                                              .archiveCustomer(item.customerId);
+                                        },
+                                        title: 'Arşive Ekle',
+                                        icon: Icons.archive_outlined,
                                       ),
                                       PullDownMenuItem(
                                         onTap: () {

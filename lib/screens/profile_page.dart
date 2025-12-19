@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import 'auth_page.dart';
 import 'theme_settings_page.dart';
 import 'trash_bin_page.dart';
+import 'archive_page.dart';
 import 'complete_profile_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -41,8 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 // Not logged in: Show Sign In Tile
                 buildSignInTile(context),
               ],
-
-              const SizedBox(height: 10),
+              const Divider(),
 
               // 2. Tema Ayarı
               buildThemeTile(themeProvider),
@@ -55,6 +55,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(),
               buildTrashBinTile(context),
+              const Divider(),
+              buildArchiveTile(context),
 
               // 3. Çıkış Yap Butonu (En altta)
               if (currentUser != null) ...[
@@ -127,7 +129,10 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: const Icon(Icons.logout, color: Colors.redAccent),
         title: const Text(
           'Çıkış Yap',
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         onTap: () async {
           // Confirm dialog could be added here
@@ -182,6 +187,21 @@ class _SettingsPageState extends State<SettingsPage> {
         Navigator.push(
           context,
           CupertinoPageRoute(builder: (builder) => const TrashBinPage()),
+        );
+      },
+    );
+  }
+
+  Widget buildArchiveTile(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.archive_outlined),
+      title: const Text("Arşiv Kutusu"),
+      subtitle: const Text("Arşivlenen müşterileri yönet"),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (builder) => const ArchivePage()),
         );
       },
     );

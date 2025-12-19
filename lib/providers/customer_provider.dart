@@ -22,7 +22,11 @@ class CustomerProvider extends ChangeNotifier {
 
   // --- GETTER ---
   List<CustomerModel> get customersList {
-    return _box.values.where((c) => !c.isDeleted).toList();
+    return _box.values.where((c) => !c.isDeleted && !c.isArchived).toList();
+  }
+
+  List<CustomerModel> get archivedCustomersList {
+    return _box.values.where((c) => !c.isDeleted && c.isArchived).toList();
   }
 
   bool isFileUploading(String fileName) {
@@ -51,6 +55,7 @@ class CustomerProvider extends ChangeNotifier {
       lastUpdated: DateTime.now(),
       isSynced: false,
       isDeleted: false,
+      isArchived: false,
     );
 
     await _box.put(finalId, customerToSave);
@@ -112,6 +117,89 @@ class CustomerProvider extends ChangeNotifier {
     await _box.put(finalCustomer.customerId, finalCustomer);
     notifyListeners();
   }
+
+  // --- ARŞİVLEME İŞLEMLERİ ---
+  Future<void> archiveCustomer(String customerId) async {
+    final existingCustomer = _box.get(customerId);
+
+    if (existingCustomer != null) {
+      final archivedCustomer = existingCustomer.copyWith(
+        isArchived: true,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+
+      await _box.put(customerId, archivedCustomer);
+      notifyListeners();
+    }
+  }
+
+  Future<void> unarchiveCustomer(String customerId) async {
+    final existingCustomer = _box.get(customerId);
+
+    if (existingCustomer != null) {
+      final unarchivedCustomer = existingCustomer.copyWith(
+        isArchived: false,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+
+      await _box.put(customerId, unarchivedCustomer);
+      notifyListeners();
+    }
+  }
+
+  Future<void> unarchiveCustomers(List<String> customerIds) async {
+    for (var customerId in customerIds) {
+      final existingCustomer = _box.get(customerId);
+      if (existingCustomer != null) {
+        final unarchivedCustomer = existingCustomer.copyWith(
+          isArchived: false,
+          isSynced: false,
+          lastUpdated: DateTime.now(),
+        );
+        await _box.put(customerId, unarchivedCustomer);
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> unarchiveAll() async {
+    final archivedCustomers = _box.values
+        .where((c) => !c.isDeleted && c.isArchived)
+        .toList();
+
+    for (var customer in archivedCustomers) {
+      final unarchived = customer.copyWith(
+        isArchived: false,
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+      await _box.put(customer.customerId, unarchived);
+    }
+    notifyListeners();
+  }
+
+  Future<void> moveAllArchivedToTrash() async {
+    final archivedCustomers = _box.values
+        .where((c) => !c.isDeleted && c.isArchived)
+        .toList();
+
+    for (var customer in archivedCustomers) {
+      final deleted = customer.copyWith(
+        isDeleted: true,
+        // isArchived: true, // İstersek arşivde kalsın ama silinsin, ya da arşivden çıksın.
+        // Genelde Trash'e gidince arşiv flag'i önemsizdir ama liste mantığında !isDeleted && isArchived baktığımız için sorun olmaz.
+        // Yine de temiz olsun diye silindiğinde de arşiv flagini tutabiliriz veya resetleyebiliriz.
+        // TrashBinPage sadece isDeleted'a bakıyor.
+        isSynced: false,
+        lastUpdated: DateTime.now(),
+      );
+      await _box.put(customer.customerId, deleted);
+    }
+    notifyListeners();
+  }
+
   // --- ÇÖP KUTUSU İŞLEMLERİ ---
 
   // Silinmiş müşterileri getir
@@ -169,5 +257,29 @@ class CustomerProvider extends ChangeNotifier {
       await _box.put(customer.customerId, restored);
     }
     notifyListeners();
+  }
+
+  // --- ÇOKLU GERİ YÜKLEME ---
+  Future<void> restoreCustomers(List<String> customerIds) async {
+    for (var customerId in customerIds) {
+      final existingCustomer = _box.get(customerId);
+      if (existingCustomer != null) {
+        final restoredCustomer = existingCustomer.copyWith(
+          isDeleted: false,
+          isSynced: false,
+          lastUpdated: DateTime.now(),
+        );
+        await _box.put(customerId, restoredCustomer);
+      }
+    }
+    notifyListeners();
+  }
+
+  // --- ÇOKLU KALICI SİLME ---
+  Future<void> permanentlyDeleteCustomers(List<String> customerIds) async {
+    if (customerIds.isNotEmpty) {
+      await _box.deleteAll(customerIds);
+      notifyListeners();
+    }
   }
 }

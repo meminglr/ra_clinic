@@ -36,6 +36,8 @@ class CustomerModel {
   String? profileImageUrl;
   @HiveField(13)
   final List<FinancialTransaction> transactions;
+  @HiveField(14)
+  bool isArchived;
 
   CustomerModel({
     required this.customerId,
@@ -52,6 +54,7 @@ class CustomerModel {
     this.mediaList = const [],
     this.profileImageUrl,
     this.transactions = const [],
+    this.isArchived = false,
   });
 
   // Firebase'e gönderirken
@@ -74,6 +77,7 @@ class CustomerModel {
       'mediaList': mediaList.map((x) => x.toMap()).toList(),
       'profileImageUrl': profileImageUrl,
       'transactions': transactions.map((x) => x.toMap()).toList(),
+      'isArchived': isArchived,
     };
   }
 
@@ -118,6 +122,7 @@ class CustomerModel {
               ),
             )
           : [],
+      isArchived: data['isArchived'] ?? false,
     );
   }
 
@@ -137,6 +142,7 @@ class CustomerModel {
     List<CostumerMedia>? mediaList,
     String? profileImageUrl,
     List<FinancialTransaction>? transactions,
+    bool? isArchived,
   }) {
     return CustomerModel(
       customerId: customerId ?? this.customerId,
@@ -153,6 +159,7 @@ class CustomerModel {
       mediaList: mediaList ?? this.mediaList,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       transactions: transactions ?? this.transactions,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 }

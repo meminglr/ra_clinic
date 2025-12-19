@@ -285,6 +285,19 @@ class _CostumerDetailState extends State<CostumerDetail> {
                 itemBuilder: (context) => [
                   PullDownMenuItem(
                     onTap: () {
+                      context.read<CustomerProvider>().archiveCustomer(
+                        currentCostumer.customerId,
+                      );
+                      Navigator.pop(context);
+                      messenger.showSnackBar(
+                        const SnackBar(content: Text("Müşteri arşivlendi")),
+                      );
+                    },
+                    title: 'Arşive Ekle',
+                    icon: Icons.archive_outlined,
+                  ),
+                  PullDownMenuItem(
+                    onTap: () {
                       context.read<CustomerProvider>().deleteCustomer(
                         currentCostumer.customerId,
                       );
