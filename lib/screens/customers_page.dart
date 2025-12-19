@@ -536,9 +536,73 @@ class _CostumersPageState extends State<CostumersPage> {
   SliverPadding buildCustomerList(List<CustomerModel> costumersList) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      sliver: SliverList.builder(
-        itemCount: costumersList.length,
-        itemBuilder: (context, index) {
+      sliver: SliverPrototypeExtentList(
+        prototypeItem: Card.filled(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 10,
+              top: 5,
+              bottom: 5,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(), // Checkbox placeholder for consistency
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        "İsim Soyisim",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text("01.01.2024"),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    FilledButton(
+                      style: const ButtonStyle(
+                        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                        minimumSize: WidgetStatePropertyAll(Size(40, 40)),
+                        shape: WidgetStatePropertyAll(CircleBorder()),
+                      ),
+                      onPressed: null,
+                      child: const Icon(Icons.phone_outlined),
+                    ),
+                    FilledButton(
+                      style: const ButtonStyle(
+                        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                        minimumSize: WidgetStatePropertyAll(Size(40, 40)),
+                        shape: WidgetStatePropertyAll(CircleBorder()),
+                      ),
+                      onPressed: null,
+                      child: const Icon(Icons.message_outlined),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: 5,
+                        top: 20,
+                        bottom: 20,
+                        right: 5,
+                      ),
+                      child: Icon(Icons.more_vert),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
           CustomerModel item = costumersList[index];
           final isSelected = _selectedCustomerIds.contains(item.customerId);
 
@@ -644,6 +708,7 @@ class _CostumersPageState extends State<CostumersPage> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               item.name,
@@ -651,6 +716,8 @@ class _CostumersPageState extends State<CostumersPage> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             Text(Utils.toDate(item.startDate)),
                           ],
@@ -792,7 +859,7 @@ class _CostumersPageState extends State<CostumersPage> {
               ),
             ),
           );
-        },
+        }, childCount: costumersList.length),
       ),
     );
   }
