@@ -59,6 +59,7 @@ class FinancialSummaryCard extends StatelessWidget {
     }
 
     return Card(
+      color: Theme.of(context).colorScheme.surfaceContainer,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
         children: [
