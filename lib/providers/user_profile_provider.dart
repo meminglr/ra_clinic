@@ -100,4 +100,10 @@ class UserProfileProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clearProfile() {
+    _profile = null;
+    _isProfileComplete = false;
+    notifyListeners();
+  }
 }

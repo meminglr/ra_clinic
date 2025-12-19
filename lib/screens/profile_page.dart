@@ -5,6 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:ra_clinic/providers/sync_provider.dart';
 import 'package:ra_clinic/providers/theme_provider.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ra_clinic/providers/user_profile_provider.dart';
+import 'package:ra_clinic/services/webdav_service.dart';
+
 import '../providers/auth_provider.dart';
 import 'auth_page.dart';
 import 'theme_settings_page.dart';
@@ -94,12 +98,76 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   SliverAppBar buildAppBar(BuildContext context) {
+    final userProfileProvider = Provider.of<UserProfileProvider>(context);
+    final profile = userProfileProvider.profile;
+    final webDavService = Provider.of<WebDavService>(context, listen: false);
+
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 150,
+      expandedHeight: 250,
+      stretch: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Theme.of(context).highlightColor,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        title: const Text('Ayarlar'),
+        titlePadding: const EdgeInsets.only(bottom: 16),
+        expandedTitleScale: 1.0,
+        title: CollapseAwareTitle(title: profile?.businessName ?? 'Profil'),
+        background: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: 3,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage:
+                      (profile != null && profile.photoUrl.isNotEmpty)
+                      ? CachedNetworkImageProvider(
+                          profile.photoUrl,
+                          headers: webDavService.getAuthHeaders(),
+                        )
+                      : null,
+                  child: (profile == null || profile.photoUrl.isEmpty)
+                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                profile != null
+                    ? "${profile.firstName} ${profile.lastName}"
+                    : "Misafir Kullanıcı",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              if (profile != null && profile.businessName.isNotEmpty)
+                Text(
+                  profile.businessName,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+              if (profile == null)
+                Text(
+                  "Giriş yapın",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -137,6 +205,12 @@ class _SettingsPageState extends State<SettingsPage> {
         onTap: () async {
           // Confirm dialog could be added here
           await FirebaseAuth.instance.signOut();
+          if (context.mounted) {
+            Provider.of<UserProfileProvider>(
+              context,
+              listen: false,
+            ).clearProfile();
+          }
           // UI updates automatically via StreamBuilder/Provider listeners usually,
           // but setState ensures this widget rebuilds if it relies on local state.
           if (mounted) setState(() {});
@@ -204,6 +278,45 @@ class _SettingsPageState extends State<SettingsPage> {
           CupertinoPageRoute(builder: (builder) => const ArchivePage()),
         );
       },
+    );
+  }
+}
+
+class CollapseAwareTitle extends StatelessWidget {
+  final String title;
+  const CollapseAwareTitle({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context
+        .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    if (settings == null) {
+      return Text(
+        title,
+        style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
+      );
+    }
+
+    final deltaExtent = settings.maxExtent - settings.minExtent;
+    final currentExtent = settings.currentExtent;
+    // 0.0 = expanded, 1.0 = collapsed
+    final t = (1.0 - (currentExtent - settings.minExtent) / deltaExtent).clamp(
+      0.0,
+      1.0,
+    );
+
+    // Fade in when almost collapsed
+    double opacity = 0.0;
+    if (t > 0.8) {
+      opacity = ((t - 0.8) * 5.0).clamp(0.0, 1.0);
+    }
+
+    return Opacity(
+      opacity: opacity,
+      child: Text(
+        title,
+        style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
+      ),
     );
   }
 }

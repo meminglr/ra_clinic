@@ -485,50 +485,48 @@ class _CostumersPageState extends State<CostumersPage> {
     );
   }
 
-  SliverPadding buildSearchCustomer() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      sliver: SliverToBoxAdapter(
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-                focusNode: _searchFocusNode,
-                decoration: InputDecoration(
-                  hintText: 'Müşteri Ara...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              _searchQuery = "";
-                            });
-                          },
-                        )
-                      : null,
+  Widget buildSearchCustomer() {
+    return SliverAppBar(
+      pinned: true,
+      title: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              focusNode: _searchFocusNode,
+              decoration: InputDecoration(
+                hintText: 'Müşteri Ara...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (_searchQuery.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = "";
+                          });
+                        },
+                      ),
+
+                    IconButton(
+                      onPressed: _showFilterBottomSheet,
+                      icon: Icon(Icons.filter_list),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            FilledButton.tonal(
-              style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(
-                  Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                ),
-              ),
-              onPressed: _showFilterBottomSheet,
-              child: Icon(Icons.filter_list),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
