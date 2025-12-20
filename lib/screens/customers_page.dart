@@ -400,6 +400,35 @@ class _CostumersPageState extends State<CostumersPage> {
     }
   }
 
+  void _confirmArchiveSelected(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Seçilenleri Arşivle"),
+        content: Text(
+          "${_selectedCustomerIds.length} müşteriyi arşive taşımak istiyor musunuz?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("İptal"),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.blue),
+            onPressed: () {
+              context.read<CustomerProvider>().archiveCustomers(
+                _selectedCustomerIds.toList(),
+              );
+              _clearSelection();
+              Navigator.pop(ctx);
+            },
+            child: const Text("Arşivle"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _confirmDeleteSelected(BuildContext context) {
     showDialog(
       context: context,
@@ -439,13 +468,18 @@ class _CostumersPageState extends State<CostumersPage> {
       actions: _isSelectionMode
           ? [
               IconButton(
-                icon: const Icon(Icons.share_outlined, color: Colors.black87),
+                icon: const Icon(Icons.share_outlined),
                 onPressed: () {
                   final allCustomers = context
                       .read<CustomerProvider>()
                       .customersList;
                   _shareSelected(allCustomers);
                 },
+              ),
+              IconButton(
+                style: IconButton.styleFrom(foregroundColor: Colors.blue),
+                icon: const Icon(Icons.archive_outlined),
+                onPressed: () => _confirmArchiveSelected(context),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -458,6 +492,7 @@ class _CostumersPageState extends State<CostumersPage> {
       floating: true,
       expandedHeight: 130.0,
       flexibleSpace: FlexibleSpaceBar(
+        
         centerTitle: true,
         title: _isSelectionMode
             ? Text(
@@ -487,7 +522,6 @@ class _CostumersPageState extends State<CostumersPage> {
 
   Widget buildSearchCustomer() {
     return SliverAppBar(
-      pinned: true,
       title: Row(
         children: [
           Expanded(

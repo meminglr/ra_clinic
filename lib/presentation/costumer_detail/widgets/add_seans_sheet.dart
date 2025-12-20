@@ -31,7 +31,7 @@ class _AddSeansSheetState extends State<AddSeansSheet> {
   late DateTime _selectedDate;
   late TextEditingController _noteController;
   final ImagePicker _picker = ImagePicker();
-  List<XFile> _selectedFiles = [];
+  final List<XFile> _selectedFiles = [];
   List<String> _existingImageUrls = [];
 
   @override

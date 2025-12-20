@@ -11,13 +11,11 @@ import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/providers/auth_provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:ra_clinic/services/webdav_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image/image.dart' as img;
 
@@ -108,10 +106,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
         ).showSnackBar(SnackBar(content: Text("Hata ($fileName): $e")));
       }
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
+      }
     }
   }
 
@@ -134,11 +133,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
       } else if (mimeType != null && mimeType.startsWith('video/')) {
         // Generate Video Thumb (requires saving to file first)
         final tempDir = await getTemporaryDirectory();
-        final tempFile = File("${tempDir.path}/temp_upload_${fileName}");
+        final tempFile = File("${tempDir.path}/temp_upload_$fileName");
         await tempFile.writeAsBytes(originalData);
 
         final plugin = FcNativeVideoThumbnail();
-        final destFile = File("${tempDir.path}/thumb_upload_${fileName}.jpg");
+        final destFile = File("${tempDir.path}/thumb_upload_$fileName.jpg");
 
         await plugin.getVideoThumbnail(
           srcFile: tempFile.path,
@@ -189,10 +188,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
         }
 
         await _loadFiles();
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text("Dosyalar yüklendi")));
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -223,10 +223,11 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
         }
 
         await _loadFiles();
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text("Medyalar yüklendi")));
+        }
       }
     } catch (e) {
       if (mounted) {

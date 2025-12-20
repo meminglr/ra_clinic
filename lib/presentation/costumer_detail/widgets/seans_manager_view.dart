@@ -351,7 +351,7 @@ class _SeansManagerViewState extends State<SeansManagerView> {
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.5),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(

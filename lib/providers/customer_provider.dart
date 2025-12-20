@@ -134,6 +134,21 @@ class CustomerProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> archiveCustomers(List<String> customerIds) async {
+    for (var customerId in customerIds) {
+      final existingCustomer = _box.get(customerId);
+      if (existingCustomer != null) {
+        final archivedCustomer = existingCustomer.copyWith(
+          isArchived: true,
+          isSynced: false,
+          lastUpdated: DateTime.now(),
+        );
+        await _box.put(customerId, archivedCustomer);
+      }
+    }
+    notifyListeners();
+  }
+
   Future<void> unarchiveCustomer(String customerId) async {
     final existingCustomer = _box.get(customerId);
 
