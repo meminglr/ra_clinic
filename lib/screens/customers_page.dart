@@ -88,7 +88,7 @@ class _CostumersPageState extends State<CostumersPage> {
     _searchFocusNode.unfocus();
     final CustomerModel? newCostumer = await Navigator.push<CustomerModel>(
       context,
-      CupertinoPageRoute(builder: (builder) => CostumerUpdating()),
+      MaterialPageRoute(builder: (builder) => CostumerUpdating()),
     );
     if (newCostumer != null) {
       context.read<CustomerProvider>().addCustomer(newCostumer);
@@ -99,7 +99,7 @@ class _CostumersPageState extends State<CostumersPage> {
     _searchFocusNode.unfocus();
     final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (builder) {
           return CostumerUpdating(costumer: costumer);
         },
@@ -657,7 +657,7 @@ class _CostumersPageState extends State<CostumersPage> {
                 _searchFocusNode.unfocus();
                 Navigator.push(
                   context,
-                  CupertinoPageRoute(
+                  MaterialPageRoute(
                     builder: (builder) =>
                         CostumerDetail(customerId: item.customerId),
                   ),

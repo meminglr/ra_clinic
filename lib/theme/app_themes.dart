@@ -18,6 +18,15 @@ import 'package:flutter/material.dart';
 /// );
 abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
+  // Shared PageTransitionsTheme
+  static final PageTransitionsTheme _pageTransitionsTheme =
+      PageTransitionsTheme(
+        builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+          TargetPlatform.values,
+          value: (_) => const OpenUpwardsPageTransitionsBuilder(),
+        ),
+      );
+
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light(FlexScheme scheme) => FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
@@ -58,6 +67,7 @@ abstract final class AppTheme {
       navigationRailLabelType: NavigationRailLabelType.all,
     ),
     // Direct ThemeData properties.
+    pageTransitionsTheme: _pageTransitionsTheme,
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
@@ -102,6 +112,7 @@ abstract final class AppTheme {
       navigationRailLabelType: NavigationRailLabelType.all,
     ),
     // Direct ThemeData properties.
+    pageTransitionsTheme: _pageTransitionsTheme,
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );

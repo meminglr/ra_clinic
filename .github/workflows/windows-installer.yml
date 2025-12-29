@@ -1,0 +1,39 @@
+name: Windows Setup EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Enable Windows
+        run: flutter config --enable-windows-desktop
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build Installer
+        run: |
+          iscc installer.iss
+
+      - name: Upload setup.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-exe
+          path: installer/MyFlutterAppSetup.exe
