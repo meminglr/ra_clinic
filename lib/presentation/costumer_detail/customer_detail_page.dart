@@ -183,7 +183,6 @@ class _CostumerDetailState extends State<CostumerDetail> {
           ],
         ),
       ),
-      
     );
   }
 
@@ -339,7 +338,6 @@ class _CostumerDetailState extends State<CostumerDetail> {
           ),
         ),
       ],
-     
     );
   }
 }

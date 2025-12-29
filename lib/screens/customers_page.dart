@@ -492,7 +492,6 @@ class _CostumersPageState extends State<CostumersPage> {
       floating: true,
       expandedHeight: 130.0,
       flexibleSpace: FlexibleSpaceBar(
-        
         centerTitle: true,
         title: _isSelectionMode
             ? Text(
@@ -670,6 +669,13 @@ class _CostumersPageState extends State<CostumersPage> {
               enabled: !_isSelectionMode, // Seçim modunda kaydırmayı kapat
               startActionPane: ActionPane(
                 motion: const ScrollMotion(),
+                dismissible: DismissiblePane(
+                  onDismissed: () {
+                    context.read<CustomerProvider>().archiveCustomer(
+                      item.customerId,
+                    );
+                  },
+                ),
                 children: [
                   SlidableAction(
                     onPressed: (context) {
