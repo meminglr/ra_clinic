@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +34,7 @@ class _CostumerDetailState extends State<CostumerDetail> {
   void navigateToEditCostumerPage(CustomerModel costumer) async {
     final CustomerModel? modifiedCostumer = await Navigator.push<CustomerModel>(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (builder) {
           return CostumerUpdating(costumer: costumer);
         },

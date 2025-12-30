@@ -11,7 +11,6 @@ import 'package:ra_clinic/constants/app_constants.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ra_clinic/services/webdav_service.dart';
 import 'package:ra_clinic/providers/auth_provider.dart';
-import 'package:flutter/cupertino.dart';
 
 class SeansManagerView extends StatefulWidget {
   final CustomerModel customer;
@@ -85,7 +84,7 @@ class _SeansManagerViewState extends State<SeansManagerView> {
 
     Navigator.push(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (_) => FullScreenMediaViewer(
           mediaUrls: mediaUrls,
           fileNames: List.from(seans.imageUrls),

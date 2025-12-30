@@ -471,7 +471,7 @@ class EventDialogsWidgets {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  CupertinoPageRoute(
+                  MaterialPageRoute(
                     builder: (builder) => EventEditinPage(
                       selectedDate: event.startDate,
                       event: event,
@@ -495,7 +495,7 @@ class EventDialogsWidgets {
   static void showEditingPage(Schedule event, BuildContext context) {
     Navigator.push(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (builder) =>
             EventEditinPage(selectedDate: event.startDate, event: event),
       ),

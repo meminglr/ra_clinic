@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/providers/sync_provider.dart';
@@ -181,7 +180,7 @@ class _SettingsPageState extends State<SettingsPage> {
         onPressed: () {
           Navigator.push(
             context,
-            CupertinoPageRoute(builder: (builder) => const AuthPage()),
+            MaterialPageRoute(builder: (builder) => const AuthPage()),
           );
         },
         icon: const Icon(Icons.login),
@@ -228,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {
         Navigator.push(
           context,
-          CupertinoPageRoute(builder: (builder) => const ThemeSettingsPage()),
+          MaterialPageRoute(builder: (builder) => const ThemeSettingsPage()),
         );
       },
     );
@@ -243,7 +242,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {
         Navigator.push(
           context,
-          CupertinoPageRoute(
+          MaterialPageRoute(
             builder: (builder) => const CompleteProfilePage(isEditMode: true),
           ),
         );
@@ -260,7 +259,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {
         Navigator.push(
           context,
-          CupertinoPageRoute(builder: (builder) => const TrashBinPage()),
+          MaterialPageRoute(builder: (builder) => const TrashBinPage()),
         );
       },
     );
@@ -275,7 +274,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {
         Navigator.push(
           context,
-          CupertinoPageRoute(builder: (builder) => const ArchivePage()),
+          MaterialPageRoute(builder: (builder) => const ArchivePage()),
         );
       },
     );

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
@@ -44,7 +43,7 @@ class _CalendarPageState extends State<CalendarPage> {
           // );
           Navigator.push(
             context,
-            CupertinoPageRoute(
+            MaterialPageRoute(
               builder: (_) => EventEditinPage(selectedDate: selectedDate!),
             ),
           );

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ra_clinic/model/costumer_model.dart';
@@ -214,7 +213,7 @@ class _AddSeansSheetState extends State<AddSeansSheet> {
 
     Navigator.push(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (_) => FullScreenMediaViewer(
           mediaUrls: mediaUrls,
           fileNames: List.from(_existingImageUrls),

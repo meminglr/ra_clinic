@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
@@ -370,7 +369,7 @@ class _CustomerFilesWidgetState extends State<CustomerFilesWidget> {
 
     Navigator.push(
       context,
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (_) => FullScreenMediaViewer(
           mediaUrls: List<String>.from(mediaUrls),
           fileNames: List<String>.from(fileNames), // Added
