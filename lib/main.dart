@@ -15,7 +15,6 @@ import 'model/media_model.dart';
 import 'model/seans_model.dart';
 import 'model/financial_model.dart';
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
-
 import 'providers/auth_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/theme_provider.dart';

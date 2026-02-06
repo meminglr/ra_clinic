@@ -72,22 +72,24 @@ class _EventEditinPageState extends State<EventEditinPage> {
         child: Form(
           key: _formKey,
           child: Column(
-            spacing: 10,
             children: [
               buildTitle(),
               buildDateTimePicker(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  spacing: 5,
+              // Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: Row(
+              //     spacing: 5,
 
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(flex: 2, child: buildPullDownColorPicker()),
-                    Expanded(flex: 3, child: buildAllDay()),
-                  ],
-                ),
-              ),
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Expanded(flex: 2, child: buildPullDownColorPicker()),
+              //       Expanded(flex: 3, child: buildAllDay()),
+              //     ],
+              //   ),
+              // ),
+              buildAllDayListTile(),
+              buildColorExpansionTile(),
+              SizedBox(height: 10),
               buildDescription(),
             ],
           ),
@@ -375,10 +377,87 @@ class _EventEditinPageState extends State<EventEditinPage> {
     );
   }
 
+  Widget buildAllDayListTile() {
+    return Card(
+      child: SwitchListTile(
+        title: const Text("Tüm Gün"),
+        subtitle: Text("Etkinlik tüm gün sürer"),
+        value: isAllDay,
+        secondary: isAllDay ? Icon(Icons.timer) : Icon(Icons.timer_off),
+        onChanged: (value) {
+          setState(() {
+            isAllDay = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget buildColorExpansionTile() {
+    return Card(
+      child: ExpansionTile(
+        title: Text("Renk Seçimi "),
+        leading: Icon(Icons.palette),
+        children: [
+          Padding(
+            padding: EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      [
+                        Colors.blue,
+                        Colors.red,
+                        Colors.green,
+                        Colors.orange,
+                        Colors.purple,
+                        Colors.pink,
+                        Colors.teal,
+                        Colors.amber,
+                      ].map((color) {
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              selectedColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: selectedColor == color
+                                    ? Colors.black
+                                    : Colors.transparent,
+                                width: 3,
+                              ),
+                            ),
+                            child: selectedColor == color
+                                ? Icon(Icons.check, color: Colors.white)
+                                : null,
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildDescription() => TextFormField(
     controller: descriptionController,
     onFieldSubmitted: (_) {},
-    maxLines: 8,
+    minLines: 9,
+    maxLines: null,
     style: TextStyle(fontSize: 24),
     decoration: InputDecoration(hintText: "Açıklama"),
   );
